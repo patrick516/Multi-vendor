@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styling applied to the entire site */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans bg-bg-light text-text-main antialiased transition-colors duration-300;
+  }
+
+  /* Dark mode styles */
+  .dark body {
+    @apply bg-bg-dark text-text-light;
+  }
+
+  /* Headings */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold text-text-main;
+  }
+
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6 {
+    @apply text-text-light;
+  }
+
+  /* Links */
+  a {
+    @apply text-brand-green hover:text-brand-green-dark transition-colors duration-200;
+  }
+
+  .dark a {
+    @apply text-brand-yellow hover:text-brand-yellow-dark;
+  }
+
+  /* Buttons reset for consistency */
+  button {
+    @apply focus:outline-none;
+  }
+}
