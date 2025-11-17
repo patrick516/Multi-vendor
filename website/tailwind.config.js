@@ -12,18 +12,18 @@ module.exports = {
         // BRAND COLORS (client requirement)
         brand: {
           green: {
-            DEFAULT: "#16A34A", // main green
+            DEFAULT: "#16A34A",
             light: "#4ADE80",
             dark: "#15803D",
           },
           yellow: {
-            DEFAULT: "#FACC15", // main yellow
+            DEFAULT: "#FACC15",
             light: "#FDE047",
             dark: "#CA8A04",
           },
         },
 
-        // ACCENT COLORS (our enhancements)
+        // ACCENT COLORS
         accent: {
           blue: "#3B82F6",
           darkBlue: "#1E40AF",
@@ -49,6 +49,17 @@ module.exports = {
           soft: "#F9FAFB",
           dark: "#111827",
         },
+      },
+
+      //  ADDED ANIMATION + KEYFRAMES
+      keyframes: {
+        "slide-down": {
+          "0%": { opacity: 0, transform: "translateY(-6px)" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "slide-down": "slide-down 0.18s ease-out",
       },
     },
   },

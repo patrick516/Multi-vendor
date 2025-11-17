@@ -1,9 +1,7 @@
 // backend/routes/cart.js
 const express = require("express");
 const router = express.Router();
-const { createCartLead } = require("../controllers/cartController");
-
-// Public endpoint – customers are not authenticated
-router.post("/", createCartLead);
+const { createCartRequest } = require("../controllers/cartController");
+router.post("/", createCartRequest);
 
 module.exports = router;

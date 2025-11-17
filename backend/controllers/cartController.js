@@ -1,16 +1,62 @@
 // backend/controllers/cartController.js
 const prisma = require("../config/prisma");
-const transporter = require("../config/mailer"); // you created this earlier
+const nodemailer = require("nodemailer");
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
-async function createCartLead(req, res) {
+// Reuse your SMTP settings (same as productsController)
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+// Helper: find or create a "customer" user for this email
+async function findOrCreateCustomerUser(customerName, customerEmail) {
+  const safeEmail =
+    customerEmail && customerEmail.trim().length > 0
+      ? customerEmail.trim()
+      : `web-guest-${Date.now()}-${Math.random()
+          .toString(16)
+          .slice(2)}@guest.local`;
+
+  let user = await prisma.user.findUnique({
+    where: { email: safeEmail },
+  });
+
+  if (!user) {
+    const randomPass = crypto.randomBytes(16).toString("hex");
+    const hashed = await bcrypt.hash(randomPass, 10);
+
+    user = await prisma.user.create({
+      data: {
+        name: customerName || "",
+        email: safeEmail,
+        password: hashed,
+        role: "CUSTOMER",
+        mustChangePassword: false,
+      },
+    });
+  }
+
+  return user;
+}
+
+// POST /api/cart
+// Public endpoint: creates a lead, notifies vendor via email, and records an Order
+async function createCartRequest(req, res) {
   try {
     const {
       productId,
+      quantity,
       customerName,
       customerEmail,
       customerPhone,
       note,
-      quantity,
     } = req.body;
 
     if (!productId || !customerName) {
@@ -19,10 +65,12 @@ async function createCartLead(req, res) {
         .json({ message: "productId and customerName are required" });
     }
 
+    const qty = Number(quantity) || 1;
+
     const product = await prisma.product.findUnique({
       where: { id: Number(productId) },
       include: {
-        vendor: { select: { id: true, name: true, email: true } },
+        vendor: true,
       },
     });
 
@@ -30,87 +78,93 @@ async function createCartLead(req, res) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const qty = Number(quantity) || 1;
+    if (!product.vendor || !product.vendor.email) {
+      return res.status(400).json({
+        message:
+          "Vendor email is not configured for this product. Contact admin.",
+      });
+    }
 
-    const lead = await prisma.cartLead.create({
+    const vendorEmail = product.vendor.email;
+    const vendorName = product.vendor.name || product.vendor.email;
+
+    // 1) ensure we have a customer user for orders
+    const customerUser = await findOrCreateCustomerUser(
+      customerName,
+      customerEmail
+    );
+
+    const unitPrice =
+      typeof product.displayPrice === "number" && !isNaN(product.displayPrice)
+        ? product.displayPrice
+        : product.basePrice || 0;
+
+    const totalAmount = unitPrice * qty;
+
+    // Create an Order so vendor sees it in Orders page
+    await prisma.order.create({
       data: {
-        productId: product.id,
-        vendorId: product.vendorId,
-        customerName,
-        customerEmail: customerEmail || null,
+        customerId: customerUser.id,
+        totalAmount,
+        status: "PENDING",
         customerPhone: customerPhone || null,
-        quantity: qty,
-        note: note || null,
+        customerNote: note || null,
+        items: {
+          create: {
+            productId: product.id,
+            quantity: qty,
+            unitPrice,
+          },
+        },
       },
     });
-
-    // send email notification to admin + vendor
-    const adminEmail = process.env.SUPPORT_EMAIL || process.env.SMTP_USER;
-    const to = [
-      adminEmail,
-      product.vendor?.email, // may be null
-    ]
-      .filter(Boolean)
-      .join(",");
-
-    const subject = `New cart request (${qty} x ${product.name})`;
-
-    const accountsText = [
-      process.env.ADMIN_ACCOUNT_TNM && `• ${process.env.ADMIN_ACCOUNT_TNM}`,
-      process.env.ADMIN_ACCOUNT_AIRTEL &&
-        `• ${process.env.ADMIN_ACCOUNT_AIRTEL}`,
-      process.env.ADMIN_ACCOUNT_BANK && `• ${process.env.ADMIN_ACCOUNT_BANK}`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-
+    // 2) Send email to vendor
+    const subject = `New order request: ${qty} x ${product.name}`;
     const text = `
-A customer added the following product to cart:
+Hello ${vendorName},
 
-Product: ${product.name}
-Vendor: ${product.vendor?.name || product.vendor?.email || product.vendorId}
-Quantity requested: ${qty}
-Display price per unit: MK ${
-      product.displayPrice ?? product.basePrice ?? product.price
-    }
-Total (customer side): MK ${
-      (product.displayPrice ?? product.basePrice ?? product.price) * qty
-    }
+A customer has requested to buy your product "${product.name}".
 
-Customer details:
-- Name: ${customerName}
-- Email: ${customerEmail || "N/A"}
-- Phone: ${customerPhone || "N/A"}
+Details:
+- Product: ${product.name}
+- Quantity requested: ${qty}
+- Customer name: ${customerName}
+- Customer email: ${customerEmail || "N/A"}
+- Customer phone: ${customerPhone || "N/A"}
 - Note: ${note || "N/A"}
 
-Please contact the customer to proceed with the business.
+Please contact the customer as soon as possible to process payment and delivery.
 
-Admin accounts for commission (for your reference):
-${accountsText || "Not configured."}
+You can log in to your vendor portal to update this sale by marking the product as SOLD with the appropriate quantity. This will keep your stock and commission records up to date.
 
-Generated automatically by ${process.env.BRAND_NAME || "Multi Vendor Shop"}.
+Regards,
+${process.env.BRAND_NAME || "Multi Vendor Shop"} System
 `;
 
-    if (to) {
-      try {
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM,
-          to,
-          subject,
-          text,
-        });
-      } catch (e) {
-        console.error("Failed to send cart lead email:", e);
-      }
+    const mailOptions = {
+      from: process.env.SMTP_FROM,
+      to: vendorEmail,
+      subject,
+      text,
+    };
+
+    if (customerEmail && customerEmail.trim().length > 0) {
+      mailOptions.replyTo = customerEmail.trim();
     }
 
-    res.status(201).json({ message: "Cart lead created", lead });
+    await transporter.sendMail(mailOptions);
+
+    return res.status(201).json({
+      message: "Cart request sent to vendor and order recorded.",
+    });
   } catch (err) {
-    console.error("createCartLead error:", err);
-    res.status(500).json({ message: "Failed to create cart lead" });
+    console.error("createCartRequest error:", err);
+    return res
+      .status(500)
+      .json({ message: "Failed to send cart request to vendor" });
   }
 }
 
 module.exports = {
-  createCartLead,
+  createCartRequest,
 };

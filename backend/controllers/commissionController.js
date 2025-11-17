@@ -2,45 +2,81 @@
 const prisma = require("../config/prisma");
 
 // GET /api/admin/commissions/summary
-// Returns per-vendor totals + global totals
+// Returns per-vendor totals + global totals including pending vs paid
 async function getCommissionSummary(req, res) {
   try {
-    const byVendor = await prisma.vendorCommission.groupBy({
+    // All commissions grouped per vendor (regardless of status)
+    const allByVendor = await prisma.vendorCommission.groupBy({
       by: ["vendorId"],
       _sum: { totalCommission: true },
       _count: { id: true },
-      where: {},
+    });
+
+    // Pending only
+    const pendingByVendor = await prisma.vendorCommission.groupBy({
+      by: ["vendorId"],
+      _sum: { totalCommission: true },
+      where: { status: "PENDING" },
+    });
+
+    // Paid only
+    const paidByVendor = await prisma.vendorCommission.groupBy({
+      by: ["vendorId"],
+      _sum: { totalCommission: true },
+      where: { status: "PAID" },
     });
 
     const vendors = await prisma.user.findMany({
-      where: { id: { in: byVendor.map((v) => v.vendorId) } },
+      where: { id: { in: allByVendor.map((v) => v.vendorId) } },
       select: { id: true, name: true, email: true },
     });
 
     const vendorMap = new Map(vendors.map((v) => [v.id, v]));
+    const pendingMap = new Map(
+      pendingByVendor.map((r) => [r.vendorId, r._sum.totalCommission || 0])
+    );
+    const paidMap = new Map(
+      paidByVendor.map((r) => [r.vendorId, r._sum.totalCommission || 0])
+    );
 
-    const vendorRows = byVendor.map((row) => {
+    const vendorRows = allByVendor.map((row) => {
       const vendor = vendorMap.get(row.vendorId);
+      const total = row._sum.totalCommission || 0;
+      const pending = pendingMap.get(row.vendorId) || 0;
+      const paid = paidMap.get(row.vendorId) || 0;
+
       return {
         vendorId: row.vendorId,
         vendorName: vendor?.name || vendor?.email || "Unknown",
         vendorEmail: vendor?.email || null,
-        totalCommission: row._sum.totalCommission || 0,
+        totalCommission: total,
+        pendingCommission: pending,
+        paidCommission: paid,
         salesCount: row._count.id,
       };
     });
 
-    const globalTotals = await prisma.vendorCommission.aggregate({
+    // Global totals
+    const globalAll = await prisma.vendorCommission.aggregate({
       _sum: { totalCommission: true },
       _count: { id: true },
-      where: {},
+    });
+    const globalPending = await prisma.vendorCommission.aggregate({
+      _sum: { totalCommission: true },
+      where: { status: "PENDING" },
+    });
+    const globalPaid = await prisma.vendorCommission.aggregate({
+      _sum: { totalCommission: true },
+      where: { status: "PAID" },
     });
 
     res.json({
       vendors: vendorRows,
       totals: {
-        totalCommission: globalTotals._sum.totalCommission || 0,
-        salesCount: globalTotals._count.id || 0,
+        totalCommission: globalAll._sum.totalCommission || 0,
+        pendingCommission: globalPending._sum.totalCommission || 0,
+        paidCommission: globalPaid._sum.totalCommission || 0,
+        salesCount: globalAll._count.id || 0,
       },
     });
   } catch (err) {
@@ -95,8 +131,33 @@ async function markCommissionPaid(req, res) {
   }
 }
 
+// POST /api/admin/commissions/vendor/:vendorId/mark-paid-all
+// Marks all PENDING commissions for a vendor as PAID
+async function markVendorCommissionsPaid(req, res) {
+  try {
+    const vendorId = Number(req.params.vendorId);
+
+    const result = await prisma.vendorCommission.updateMany({
+      where: { vendorId, status: "PENDING" },
+      data: {
+        status: "PAID",
+        paidAt: new Date(),
+      },
+    });
+
+    return res.json({
+      message: "All pending commissions for this vendor marked as PAID",
+      updatedCount: result.count,
+    });
+  } catch (err) {
+    console.error("markVendorCommissionsPaid error:", err);
+    res.status(500).json({ message: "Failed to update commissions" });
+  }
+}
+
 module.exports = {
   getCommissionSummary,
   getVendorCommissions,
   markCommissionPaid,
+  markVendorCommissionsPaid,
 };

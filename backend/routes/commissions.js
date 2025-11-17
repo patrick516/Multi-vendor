@@ -5,6 +5,7 @@ const {
   getCommissionSummary,
   getVendorCommissions,
   markCommissionPaid,
+  markVendorCommissionsPaid,
 } = require("../controllers/commissionController");
 const { authRequired, requireRole } = require("../middleware/auth");
 
@@ -26,6 +27,14 @@ router.post(
   authRequired,
   requireRole("SUPER_ADMIN"),
   markCommissionPaid
+);
+
+// NEW: mark all pending commissions for a vendor as PAID
+router.post(
+  "/vendor/:vendorId/mark-paid-all",
+  authRequired,
+  requireRole("SUPER_ADMIN"),
+  markVendorCommissionsPaid
 );
 
 module.exports = router;

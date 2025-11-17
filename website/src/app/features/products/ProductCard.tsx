@@ -113,9 +113,15 @@ export default function ProductCard({ product }: ProductCardProps) {
           MK {displayPrice.toLocaleString()}
         </span>
         {product.vendor && (
-          <span className="text-[11px] text-text-muted">
-            by {product.vendor.name || product.vendor.email}
-          </span>
+          <div className="flex flex-col items-end gap-0">
+            <span className="text-[11px] text-text-muted">
+              by {product.vendor.name || product.vendor.email}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-brand-green">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
+              Verified vendor
+            </span>
+          </div>
         )}
       </div>
 

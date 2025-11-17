@@ -86,8 +86,67 @@ async function createOrder(req, res) {
     res.status(500).json({ message: "Failed to create order" });
   }
 }
+// POST /api/orders/:id/mark-status or PUT /api/orders/:id
+// For now we'll just support status updates (COMPLETED after mark sold)
+async function updateOrder(req, res) {
+  try {
+    const id = Number(req.params.id);
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
+    }
+
+    const validStatuses = ["PENDING", "PAID", "CANCELLED", "COMPLETED"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    // Load order with items + product to check ownership
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Authorization:
+    // SUPER_ADMIN can always update
+    // VENDOR can update if any item belongs to their product
+    if (req.user.role !== "SUPER_ADMIN") {
+      const isVendorOwner = order.items.some(
+        (item) => item.product.vendorId === req.user.id
+      );
+      if (!isVendorOwner) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+    }
+
+    const updated = await prisma.order.update({
+      where: { id },
+      data: { status },
+    });
+
+    return res.json({
+      message: "Order updated successfully",
+      order: updated,
+    });
+  } catch (err) {
+    console.error("updateOrder error:", err);
+    res.status(500).json({ message: "Failed to update order" });
+  }
+}
 
 module.exports = {
   getOrders,
   createOrder,
+  updateOrder,
 };

@@ -27,6 +27,9 @@ export interface Order {
     email: string;
   };
   items: OrderItem[];
+
+  customerPhone?: string | null;
+  customerNote?: string | null;
 }
 
 interface OrdersState {
