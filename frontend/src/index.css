@@ -1,0 +1,99 @@
+/* Tailwind Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Make the whole app full-screen */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Root variables for light mode */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 210 10% 10%; /* dark gray text */
+
+  --card: 0 0% 100%;
+  --card-foreground: 210 10% 10%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 10% 10%;
+
+  /* Client colors - aligned with website palette */
+  --primary: 142 72% 35%; /* green: #16A34A */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 48 96% 54%; /* yellow: #FACC15 */
+  --secondary-foreground: 210 10% 12%;
+
+  --accent: 217 91% 60%; /* blue: #3B82F6 */
+  --accent-foreground: 0 0% 100%;
+
+  --muted: 210 20% 96%; /* soft gray bg */
+  --muted-foreground: 210 10% 45%;
+
+  --destructive: 0 72% 51%; /* red */
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 210 20% 90%;
+  --input: 210 20% 90%;
+  --ring: 210 10% 12%;
+
+  /* Example chart colors (green / yellow / blue family) */
+  --chart-1: 142 72% 35%; /* green */
+  --chart-2: 48 96% 54%; /* yellow */
+  --chart-3: 217 91% 60%; /* blue */
+  --chart-4: 160 60% 45%; /* teal */
+  --chart-5: 30 80% 55%; /* orange */
+
+  --radius: 0.5rem;
+}
+
+/* Dark mode variables */
+.dark {
+  --background: 220 18% 7%; /* very dark gray */
+  --foreground: 0 0% 98%;
+
+  --card: 220 18% 10%;
+  --card-foreground: 0 0% 98%;
+
+  --popover: 220 18% 10%;
+  --popover-foreground: 0 0% 98%;
+
+  /* Keep brand colors same in dark mode for consistency */
+  --primary: 142 72% 40%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 48 96% 60%;
+  --secondary-foreground: 210 10% 12%;
+
+  --accent: 217 91% 65%;
+  --accent-foreground: 0 0% 100%;
+
+  --muted: 220 18% 15%;
+  --muted-foreground: 0 0% 75%;
+
+  --destructive: 0 62% 40%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 220 18% 15%;
+  --input: 220 18% 15%;
+  --ring: 220 18% 70%;
+
+  --chart-1: 217 91% 60%; /* blue */
+  --chart-2: 160 60% 45%; /* teal */
+  --chart-3: 48 96% 54%; /* yellow */
+  --chart-4: 280 65% 60%; /* purple */
+  --chart-5: 340 75% 55%; /* pink */
+}
+
+/* Base styles */
+body {
+  @apply bg-background text-foreground font-sans antialiased;
+}

@@ -1,0 +1,147 @@
+// backend/prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  VENDOR
+  CUSTOMER
+}
+
+enum CommissionStatus {
+  PENDING
+  PAID
+}
+
+enum CartLeadStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products          Product[]          @relation("VendorProducts")
+  orders            Order[]            @relation("CustomerOrders")
+  vendorCommissions VendorCommission[]
+  cartLeads         CartLead[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  id                Int      @id @default(autoincrement())
+  name              String
+  description       String?
+  // OLD: price       Float
+  basePrice         Float // what vendor wants to receive
+  displayPrice      Float // what customer sees (base + markup)
+  commissionPerUnit Float // displayPrice - basePrice
+  stock             Int      @default(0)
+  imageUrl          String?
+  mainImageUrl      String? // main/cover image
+  galleryImageUrls  String[] // image URLs for carousel
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendorId Int
+  vendor   User @relation("VendorProducts", fields: [vendorId], references: [id])
+
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  orderItems  OrderItem[]
+  commissions VendorCommission[]
+  cartLeads   CartLead[]
+}
+
+model Order {
+  id         Int  @id @default(autoincrement())
+  customerId Int
+  customer   User @relation("CustomerOrders", fields: [customerId], references: [id])
+
+  totalAmount Float
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id      Int   @id @default(autoincrement())
+  orderId Int
+  order   Order @relation(fields: [orderId], references: [id])
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity  Int   @default(1)
+  unitPrice Float
+}
+
+model VendorCommission {
+  id       Int  @id @default(autoincrement())
+  vendorId Int
+  vendor   User @relation(fields: [vendorId], references: [id])
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity        Int   @default(1)
+  basePrice       Float // what vendor gets per unit
+  displayPrice    Float // customer price peenum r unit
+  commission      Float // admin share per unit
+  totalCommission Float // quantity * commission
+
+  status    CommissionStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  paidAt    DateTime?
+}
+
+model CartLead {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  vendorId Int
+  vendor   User @relation(fields: [vendorId], references: [id])
+
+  customerName  String
+  customerEmail String?
+  customerPhone String?
+
+  note      String?
+  status    CartLeadStatus @default(NEW)
+  createdAt DateTime       @default(now())
+}
