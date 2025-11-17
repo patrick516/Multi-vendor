@@ -1,13 +1,17 @@
 // backend/controllers/cartController.js
 const prisma = require("../config/prisma");
-const nodemailer = require("nodemailer");
-
-const transporter = require("../config/mailer"); // we’ll create this small helper below
+const transporter = require("../config/mailer"); // you created this earlier
 
 async function createCartLead(req, res) {
   try {
-    const { productId, customerName, customerEmail, customerPhone, note } =
-      req.body;
+    const {
+      productId,
+      customerName,
+      customerEmail,
+      customerPhone,
+      note,
+      quantity,
+    } = req.body;
 
     if (!productId || !customerName) {
       return res
@@ -26,6 +30,8 @@ async function createCartLead(req, res) {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    const qty = Number(quantity) || 1;
+
     const lead = await prisma.cartLead.create({
       data: {
         productId: product.id,
@@ -33,6 +39,7 @@ async function createCartLead(req, res) {
         customerName,
         customerEmail: customerEmail || null,
         customerPhone: customerPhone || null,
+        quantity: qty,
         note: note || null,
       },
     });
@@ -46,7 +53,8 @@ async function createCartLead(req, res) {
       .filter(Boolean)
       .join(",");
 
-    const subject = `New cart request for product: ${product.name}`;
+    const subject = `New cart request (${qty} x ${product.name})`;
+
     const accountsText = [
       process.env.ADMIN_ACCOUNT_TNM && `• ${process.env.ADMIN_ACCOUNT_TNM}`,
       process.env.ADMIN_ACCOUNT_AIRTEL &&
@@ -61,7 +69,13 @@ A customer added the following product to cart:
 
 Product: ${product.name}
 Vendor: ${product.vendor?.name || product.vendor?.email || product.vendorId}
-Display price: MK ${product.displayPrice ?? product.basePrice ?? product.price}
+Quantity requested: ${qty}
+Display price per unit: MK ${
+      product.displayPrice ?? product.basePrice ?? product.price
+    }
+Total (customer side): MK ${
+      (product.displayPrice ?? product.basePrice ?? product.price) * qty
+    }
 
 Customer details:
 - Name: ${customerName}

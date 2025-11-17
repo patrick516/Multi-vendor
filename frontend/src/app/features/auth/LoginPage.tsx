@@ -42,7 +42,14 @@ export default function LoginPage() {
       if (data.user)
         localStorage.setItem("authUser", JSON.stringify(data.user));
 
-      navigate("/dashboard");
+      // If backend says password must be changed, force that first
+      const mustChange = data.user?.mustChangePassword === true;
+
+      if (mustChange) {
+        navigate("/change-password");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {
@@ -51,9 +58,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-muted">
-      <div className="w-full max-w-md rounded-lg bg-card border border-border shadow-lg p-6 space-y-5">
-        <div className="text-center space-y-1">
+    <div className="flex items-center justify-center w-full min-h-screen bg-muted">
+      <div className="w-full max-w-md p-6 space-y-5 border rounded-lg shadow-lg bg-card border-border">
+        <div className="space-y-1 text-center">
           <h1 className="text-lg font-semibold text-foreground">
             Multi Vendor Admin Login
           </h1>
@@ -66,7 +73,7 @@ export default function LoginPage() {
           <div className="space-y-1">
             <label className="text-xs font-medium">Email</label>
             <input
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -77,7 +84,7 @@ export default function LoginPage() {
           <div className="space-y-1">
             <label className="text-xs font-medium">Password</label>
             <input
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -90,7 +97,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60"
+            className="w-full px-4 py-2 mt-2 text-sm font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
