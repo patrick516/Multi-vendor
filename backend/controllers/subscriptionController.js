@@ -160,6 +160,7 @@ async function unblockVendor(req, res) {
   }
 }
 
+// UPDATE SUBSCRIPTION AMOUNT
 // ===========================
 // UPDATE SUBSCRIPTION AMOUNT
 // ===========================
@@ -171,18 +172,31 @@ async function updateSubscriptionAmount(req, res) {
       return res.status(400).json({ message: "Invalid amount" });
     }
 
-    // Update global settings
-    const updated = await prisma.subscriptionSettings.update({
+    const numericAmount = Number(amount);
+
+    // Upsert global settings (create if missing, update if exists)
+    const updated = await prisma.subscriptionSettings.upsert({
       where: { id: 1 },
-      data: {
-        amount: Number(amount),
+      update: {
+        amount: numericAmount,
+        updatedAt: new Date(),
+      },
+      create: {
+        amount: numericAmount,
         updatedAt: new Date(),
       },
     });
 
-    // Notify all vendors
+    // 🔹 NEW: update all vendors' subscriptionAmount so UI sees new value
+    await prisma.user.updateMany({
+      where: { role: "VENDOR" },
+      data: { subscriptionAmount: numericAmount },
+    });
+
+    // Notify all vendors by email
     const vendors = await prisma.user.findMany({
       where: { role: "VENDOR" },
+      select: { email: true, name: true },
     });
 
     vendors.forEach((vendor) => {
@@ -191,7 +205,7 @@ async function updateSubscriptionAmount(req, res) {
         "Subscription Fee Updated",
         `Hello ${
           vendor.name
-        },\n\nThe monthly vendor subscription fee has been updated to MK${amount}.\n\n${
+        },\n\nThe monthly vendor subscription fee has been updated to MK${numericAmount}.\n\n${
           process.env.BRAND_NAME || "Trade Point Malawi"
         }`
       );
@@ -207,9 +221,8 @@ async function updateSubscriptionAmount(req, res) {
   }
 }
 
-// ===========================
 // GET VENDOR DETAILS + PAYMENT HISTORY
-// ===========================
+
 async function getVendorPayments(req, res) {
   try {
     const vendorId = Number(req.params.vendorId);

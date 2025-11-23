@@ -38,6 +38,8 @@ export default function AddProductForm({
   // CATEGORY
   const [categoryId, setCategoryId] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categorySearch, setCategorySearch] = useState(""); // search / display text
+  const [categoryOpen, setCategoryOpen] = useState(false); // dropdown open/close
 
   // IMAGES
   const [mainImage, setMainImage] = useState<File | null>(null);
@@ -60,6 +62,15 @@ export default function AddProductForm({
   const galleryPreviews = useMemo(
     () => galleryImages.map((file) => URL.createObjectURL(file)),
     [galleryImages]
+  );
+
+  // Filtered categories based on what's typed
+  const filteredCategories = useMemo(
+    () =>
+      categories.filter((c) =>
+        c.name.toLowerCase().includes(categorySearch.toLowerCase())
+      ),
+    [categories, categorySearch]
   );
 
   // Use current location (browser geolocation)
@@ -236,6 +247,8 @@ export default function AddProductForm({
       setLatitude("");
       setLongitude("");
       setLocError(null);
+      setCategorySearch("");
+      setCategoryOpen(false);
 
       onCreated?.();
       onClose();
@@ -375,22 +388,58 @@ export default function AddProductForm({
             )}
           </div>
 
-          {/* CATEGORY FIELD */}
+          {/* CATEGORY FIELD - SINGLE INPUT WITH DROPDOWN FILTER */}
           <div className="space-y-1">
             <label className="text-xs font-medium">Category *</label>
-            <select
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              disabled={metaLoading}
-            >
-              <option value="">Select category</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <input
+                className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background pr-7"
+                type="text"
+                value={categorySearch}
+                onChange={(e) => {
+                  setCategorySearch(e.target.value);
+                  setCategoryOpen(true);
+                }}
+                onFocus={() => setCategoryOpen(true)}
+                onBlur={() => {
+                  // small delay to allow click on option
+                  setTimeout(() => setCategoryOpen(false), 150);
+                }}
+                placeholder="Type to search and select category"
+                disabled={metaLoading || !categories.length}
+              />
+              <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] text-muted-foreground">
+                ▼
+              </span>
+
+              {categoryOpen && filteredCategories.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 overflow-auto border rounded-md shadow-lg max-h-40 border-border bg-background">
+                  {filteredCategories.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // prevent input blur before click
+                        setCategoryId(String(c.id));
+                        setCategorySearch(c.name);
+                        setCategoryOpen(false);
+                      }}
+                      className={`block w-full px-3 py-1 text-left text-xs hover:bg-muted ${
+                        String(c.id) === categoryId ? "bg-muted" : ""
+                      }`}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {categoryOpen && !filteredCategories.length && (
+                <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-[11px] text-muted-foreground shadow-lg">
+                  No category matches &quot;{categorySearch}&quot;
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-1">
