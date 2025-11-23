@@ -1,9 +1,14 @@
 // backend/routes/stats.js
 const express = require("express");
 const router = express.Router();
-const { getPublicStats } = require("../controllers/statsController");
+const {
+  getPublicStats,
+  getMarketplaceStats,
+  getTopProducts,
+} = require("../controllers/statsController");
 
-// Public stats for website
 router.get("/stats", getPublicStats);
+router.get("/marketplace", getMarketplaceStats);
+router.get("/top-products", getTopProducts);
 
 module.exports = router;

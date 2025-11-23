@@ -1,3 +1,5 @@
+@import "leaflet/dist/leaflet.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,7 +11,7 @@
   }
 
   body {
-    @apply font-sans bg-bg-light text-text-main antialiased transition-colors duration-300;
+    @apply font-sans antialiased transition-colors duration-300 bg-bg-light text-text-main;
   }
 
   /* Dark mode styles */
@@ -38,7 +40,7 @@
 
   /* Links */
   a {
-    @apply text-brand-green hover:text-brand-green-dark transition-colors duration-200;
+    @apply transition-colors duration-200 text-brand-green hover:text-brand-green-dark;
   }
 
   .dark a {

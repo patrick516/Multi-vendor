@@ -4,7 +4,7 @@ const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 
-// Reuse your SMTP settings (same as productsController)
+// Reuse SMTP settings
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT || 587),
@@ -15,7 +15,33 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Helper: find or create a "customer" user for this email
+// Convert Malawi numbers: 0882 → 265882
+function normalizeToWhatsAppPhone(rawPhone, defaultCountry = "265") {
+  if (!rawPhone) return null;
+  let digits = rawPhone.replace(/[^\d]/g, "");
+
+  if (!digits) return null;
+
+  if (digits.startsWith("0") && digits.length >= 9 && digits.length <= 10) {
+    return defaultCountry + digits.slice(1);
+  }
+
+  // If already starts with 265 keep it
+  if (digits.startsWith(defaultCountry)) return digits;
+
+  // Fallback: prefix
+  return defaultCountry + digits;
+}
+
+function buildWhatsAppLink(phone, message) {
+  if (!phone) return null;
+  const encoded = encodeURIComponent(message || "");
+  return `https://wa.me/${phone}?text=${encoded}`;
+}
+
+// ----------------------------------------------
+// Helper: create or reuse a customer user
+// ----------------------------------------------
 async function findOrCreateCustomerUser(customerName, customerEmail) {
   const safeEmail =
     customerEmail && customerEmail.trim().length > 0
@@ -46,8 +72,9 @@ async function findOrCreateCustomerUser(customerName, customerEmail) {
   return user;
 }
 
-// POST /api/cart
-// Public endpoint: creates a lead, notifies vendor via email, and records an Order
+// ------------------------------------------------------
+// Main createCartRequest
+// ------------------------------------------------------
 async function createCartRequest(req, res) {
   try {
     const {
@@ -57,6 +84,8 @@ async function createCartRequest(req, res) {
       customerEmail,
       customerPhone,
       note,
+      type,
+      skipOrder,
     } = req.body;
 
     if (!productId || !customerName) {
@@ -65,13 +94,12 @@ async function createCartRequest(req, res) {
         .json({ message: "productId and customerName are required" });
     }
 
+    const leadType = type === "BUY_NOW" ? "BUY_NOW" : "CONTACT";
     const qty = Number(quantity) || 1;
 
     const product = await prisma.product.findUnique({
       where: { id: Number(productId) },
-      include: {
-        vendor: true,
-      },
+      include: { vendor: true },
     });
 
     if (!product) {
@@ -79,21 +107,21 @@ async function createCartRequest(req, res) {
     }
 
     if (!product.vendor || !product.vendor.email) {
-      return res.status(400).json({
-        message:
-          "Vendor email is not configured for this product. Contact admin.",
-      });
+      return res
+        .status(400)
+        .json({ message: "Vendor email missing — contact admin." });
     }
 
     const vendorEmail = product.vendor.email;
-    const vendorName = product.vendor.name || product.vendor.email;
+    const vendorName = product.vendor.name || vendorEmail;
 
-    // 1) ensure we have a customer user for orders
+    // Create or reuse a user for BUY NOW orders
     const customerUser = await findOrCreateCustomerUser(
       customerName,
       customerEmail
     );
 
+    // Calculate price
     const unitPrice =
       typeof product.displayPrice === "number" && !isNaN(product.displayPrice)
         ? product.displayPrice
@@ -101,67 +129,111 @@ async function createCartRequest(req, res) {
 
     const totalAmount = unitPrice * qty;
 
-    // Create an Order so vendor sees it in Orders page
-    await prisma.order.create({
+    // 1) Create CartLead (userId optional)
+    const lead = await prisma.cartLead.create({
       data: {
-        customerId: customerUser.id,
-        totalAmount,
-        status: "PENDING",
+        productId: product.id,
+        vendorId: product.vendorId,
+        customerName,
+        customerEmail: customerEmail || null,
         customerPhone: customerPhone || null,
-        customerNote: note || null,
-        items: {
-          create: {
-            productId: product.id,
-            quantity: qty,
-            unitPrice,
-          },
-        },
+        quantity: qty,
+        note: note || null,
+        status: "NEW",
+        type: leadType,
       },
     });
-    // 2) Send email to vendor
-    const subject = `New order request: ${qty} x ${product.name}`;
+
+    // 2) Create Order (if BUY NOW)
+    let order = null;
+    if (!skipOrder && leadType === "BUY_NOW") {
+      order = await prisma.order.create({
+        data: {
+          customerId: customerUser.id,
+          totalAmount,
+          status: "PENDING",
+          customerPhone: customerPhone || null,
+          customerNote: note || null,
+          items: {
+            create: {
+              productId: product.id,
+              quantity: qty,
+              unitPrice,
+            },
+          },
+        },
+      });
+    }
+
+    // -------------------------------------------------------
+    // 🔥 PREFILLED WHATSAPP MESSAGE FOR THE VENDOR
+    // -------------------------------------------------------
+    const waNumber = normalizeToWhatsAppPhone(customerPhone);
+
+    const waMessage = `
+Hello ${customerName},
+
+Regarding your enquiry on Trade Point Malawi:
+
+Product: ${product.name}
+Product ID: ${product.id}
+Quantity: ${qty}
+
+Message from customer:
+${note || "No message provided."}
+
+Contact details:
+Phone: ${customerPhone || "N/A"}
+Email: ${customerEmail || "N/A"}
+`.trim();
+
+    const whatsappLink = buildWhatsAppLink(waNumber, waMessage);
+
+    // -------------------------------------------------------
+    // 3) SEND EMAIL TO VENDOR (UPDATED WITH WHATSAPP LINK)
+    // -------------------------------------------------------
+    const subject =
+      leadType === "BUY_NOW"
+        ? `New BUY NOW order: ${qty} x ${product.name}`
+        : `New enquiry: ${product.name}`;
+
     const text = `
 Hello ${vendorName},
 
-A customer has requested to buy your product "${product.name}".
+You have a new ${leadType === "BUY_NOW" ? "BUY NOW order" : "customer enquiry"}.
 
-Details:
-- Product: ${product.name}
-- Quantity requested: ${qty}
-- Customer name: ${customerName}
-- Customer email: ${customerEmail || "N/A"}
-- Customer phone: ${customerPhone || "N/A"}
-- Note: ${note || "N/A"}
+Product: ${product.name}
+Quantity: ${qty}
+Customer: ${customerName}
+Contact: ${customerPhone || "N/A"} / ${customerEmail || "N/A"}
+Message: ${note || "N/A"}
 
-Please contact the customer as soon as possible to process payment and delivery.
-
-You can log in to your vendor portal to update this sale by marking the product as SOLD with the appropriate quantity. This will keep your stock and commission records up to date.
+Click below to reply instantly on WhatsApp:
+${whatsappLink || "Customer did not provide a valid phone number."}
 
 Regards,
-${process.env.BRAND_NAME || "Multi Vendor Shop"} System
-`;
+${process.env.BRAND_NAME || "Trade Point Malawi"} System
+`.trim();
 
-    const mailOptions = {
+    await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: vendorEmail,
       subject,
       text,
-    };
-
-    if (customerEmail && customerEmail.trim().length > 0) {
-      mailOptions.replyTo = customerEmail.trim();
-    }
-
-    await transporter.sendMail(mailOptions);
+      replyTo: customerEmail || undefined,
+    });
 
     return res.status(201).json({
-      message: "Cart request sent to vendor and order recorded.",
+      message:
+        leadType === "BUY_NOW"
+          ? "Buy now request sent to vendor."
+          : "Your message has been sent to the vendor.",
+      lead,
+      order,
     });
   } catch (err) {
     console.error("createCartRequest error:", err);
-    return res
-      .status(500)
-      .json({ message: "Failed to send cart request to vendor" });
+    return res.status(500).json({ message: "Failed to process your request" });
   }
 }
 

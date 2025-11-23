@@ -7,13 +7,13 @@ export default function HowItWorksPage() {
       <header className="space-y-1">
         <h1 className="text-2xl font-bold text-text-main">How it works</h1>
         <p className="text-sm text-text-muted">
-          Multi Vendor Shop connects vendors, admin and customers in one
+          Trade Point Malawi connects vendors, admin and customers in one
           workflow.
         </p>
       </header>
 
       <section className="space-y-3 text-sm text-text-muted">
-        <div className="rounded-lg bg-bg-light border border-gray-soft p-4 space-y-2">
+        <div className="p-4 space-y-2 border rounded-lg bg-bg-light border-gray-soft">
           <h2 className="text-sm font-semibold text-text-main">
             1. Admin & vendors manage products
           </h2>
@@ -24,7 +24,7 @@ export default function HowItWorksPage() {
           </p>
         </div>
 
-        <div className="rounded-lg bg-bg-light border border-gray-soft p-4 space-y-2">
+        <div className="p-4 space-y-2 border rounded-lg bg-bg-light border-gray-soft">
           <h2 className="text-sm font-semibold text-text-main">
             2. Products appear on this website
           </h2>
@@ -35,7 +35,7 @@ export default function HowItWorksPage() {
           </p>
         </div>
 
-        <div className="rounded-lg bg-bg-light border border-gray-soft p-4 space-y-2">
+        <div className="p-4 space-y-2 border rounded-lg bg-bg-light border-gray-soft">
           <h2 className="text-sm font-semibold text-text-main">
             3. Customers add items to cart as a request
           </h2>
@@ -46,7 +46,7 @@ export default function HowItWorksPage() {
           </p>
         </div>
 
-        <div className="rounded-lg bg-bg-light border border-gray-soft p-4 space-y-2">
+        <div className="p-4 space-y-2 border rounded-lg bg-bg-light border-gray-soft">
           <h2 className="text-sm font-semibold text-text-main">
             4. Admin tracks commission and payments
           </h2>
@@ -60,7 +60,7 @@ export default function HowItWorksPage() {
 
       <Link
         href="/products"
-        className="inline-flex items-center px-4 py-2 rounded-md bg-brand-green text-white text-sm font-semibold hover:bg-brand-greenLight"
+        className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white rounded-md bg-brand-green hover:bg-brand-greenLight"
       >
         Browse products
       </Link>

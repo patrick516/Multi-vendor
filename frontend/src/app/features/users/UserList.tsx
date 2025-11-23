@@ -1,11 +1,34 @@
 // src/app/features/users/UserList.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUsers, selectUsers } from "./userSlice";
-import UserCard from "./UserCard";
+import { Trash } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { formatDate } from "../../utils/formatDate";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
+// Helper for subscription label
+function getSubscriptionLabel(user: any): string {
+  if (!user.subscriptionActive) return "Inactive";
+
+  if (user.lastPaymentDate) {
+    return `Paid on ${formatDate(user.lastPaymentDate)}`;
+  }
+
+  if (user.nextPaymentDue) {
+    return `Active (due ${formatDate(user.nextPaymentDue)})`;
+  }
+
+  return "Active";
+}
 
 export default function UserList() {
   const dispatch = useDispatch<any>();
@@ -19,6 +42,7 @@ export default function UserList() {
   const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // 🔐 Get current logged-in user from localStorage
   const authUserJson =
@@ -32,6 +56,14 @@ export default function UserList() {
       dispatch(fetchUsers());
     }
   }, [dispatch, isSuperAdmin]);
+
+  function resetForm() {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setRole("VENDOR");
+    setSaveError(null);
+  }
 
   async function handleAddUser(e: React.FormEvent) {
     e.preventDefault();
@@ -76,20 +108,137 @@ export default function UserList() {
 
       await res.json();
 
-      // Refresh users + reset form
+      // Refresh users + reset form + close modal
       if (isSuperAdmin) {
         dispatch(fetchUsers());
       }
-      setName("");
-      setEmail("");
-      setPassword("");
-      setRole("VENDOR");
+      resetForm();
+      setShowAddModal(false);
     } catch (err: any) {
       setSaveError(err.message || "Failed to create user");
     } finally {
       setSaving(false);
     }
   }
+
+  async function handleDeleteUser(user: any) {
+    if (!window.confirm(`Delete user "${user.name || user.email}"?`)) return;
+
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("authToken")
+          : null;
+
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/users/${user.id}`, {
+        method: "DELETE",
+        headers,
+      });
+
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(body.message || "Failed to delete user");
+      }
+
+      // Refresh list
+      dispatch(fetchUsers());
+    } catch (err: any) {
+      alert(err.message || "Failed to delete user");
+    }
+  }
+
+  // 🧱 TanStack table columns
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+      {
+        header: "Name",
+        accessorKey: "name",
+        cell: (info) => (
+          <span className="text-xs">{info.getValue() as string}</span>
+        ),
+      },
+      {
+        header: "Email",
+        accessorKey: "email",
+        cell: (info) => (
+          <span className="text-xs">{info.getValue() as string}</span>
+        ),
+      },
+      {
+        header: "Role",
+        accessorKey: "role",
+        cell: (info) => (
+          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-[2px] text-[10px] font-medium uppercase">
+            {info.getValue() as string}
+          </span>
+        ),
+      },
+      {
+        header: "Joined",
+        accessorKey: "createdAt",
+        cell: ({ getValue }) => (
+          <span className="text-xs text-muted-foreground">
+            {formatDate(getValue() as string)}
+          </span>
+        ),
+      },
+      {
+        header: "Subscription",
+        cell: ({ row }) => {
+          const user = row.original;
+          const label = getSubscriptionLabel(user);
+          const active = user.subscriptionActive;
+
+          return (
+            <span
+              className={`inline-flex items-center px-2 py-[2px] text-[10px] rounded-full ${
+                active
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-red-50 text-red-700"
+              }`}
+            >
+              {label}
+            </span>
+          );
+        },
+      },
+      {
+        header: "Actions",
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <button
+              type="button"
+              className="inline-flex items-center rounded-md  px-1 py-0.5 text-[11px] font-medium text-white "
+              onClick={() => handleDeleteUser(user)}
+            >
+              <Trash className="text-gray-500" />
+            </button>
+          );
+        },
+      },
+    ],
+    []
+  );
+
+  const table = useReactTable({
+    data: items,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageIndex: 0,
+        pageSize: 10,
+      },
+    },
+  });
 
   // 🔒 NON-ADMIN VIEW (Vendor / Customer)
   if (!isSuperAdmin) {
@@ -104,7 +253,7 @@ export default function UserList() {
           </div>
         </header>
 
-        <section className="rounded-lg bg-card border border-border shadow-sm p-4 space-y-2">
+        <section className="p-4 space-y-2 border rounded-lg shadow-sm bg-card border-border">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold">
@@ -139,96 +288,192 @@ export default function UserList() {
             Super admin can view and create users (vendors, admins, customers).
           </p>
         </div>
+        <button
+          type="button"
+          className="px-3 py-2 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+          onClick={() => {
+            resetForm();
+            setShowAddModal(true);
+          }}
+        >
+          + Add user
+        </button>
       </header>
 
-      {/* Add user form (SUPER_ADMIN only) */}
-      <section className="rounded-lg bg-card border border-border shadow-sm p-4 space-y-3">
-        <h3 className="text-sm font-semibold">Add User</h3>
-        <p className="text-[11px] text-muted-foreground">
-          Use this to add vendors or other admin users. Vendors will log in and
-          manage their own products.
-        </p>
+      {/* Add User Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40">
+          <div className="w-full max-w-lg p-4 space-y-3 border rounded-lg shadow-lg bg-card border-border">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">Add User</h3>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
 
-        <form className="grid gap-3 md:grid-cols-4" onSubmit={handleAddUser}>
-          <div className="space-y-1">
-            <label className="text-xs font-medium">Name</label>
-            <input
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Optional full name"
-            />
-          </div>
+            <p className="text-[11px] text-muted-foreground">
+              Use this to add vendors or other admin users. Vendors will log in
+              and manage their own products.
+            </p>
 
-          <div className="space-y-1 md:col-span-2">
-            <label className="text-xs font-medium">Email</label>
-            <input
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="vendor@example.com"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium">Role</label>
-            <select
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-              value={role}
-              onChange={(e) =>
-                setRole(e.target.value as "SUPER_ADMIN" | "VENDOR" | "CUSTOMER")
-              }
+            <form
+              className="grid gap-3 md:grid-cols-2"
+              onSubmit={handleAddUser}
             >
-              <option value="VENDOR">Vendor</option>
-              <option value="SUPER_ADMIN">Super Admin</option>
-              <option value="CUSTOMER">Customer</option>
-            </select>
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-medium">Name</label>
+                <input
+                  className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Optional full name"
+                />
+              </div>
+
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-medium">Email</label>
+                <input
+                  className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="vendor@example.com"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Role</label>
+                <select
+                  className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+                  value={role}
+                  onChange={(e) =>
+                    setRole(
+                      e.target.value as "SUPER_ADMIN" | "VENDOR" | "CUSTOMER"
+                    )
+                  }
+                >
+                  <option value="VENDOR">Vendor</option>
+                  <option value="SUPER_ADMIN">Super Admin</option>
+                  <option value="CUSTOMER">Customer</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Password</label>
+                <input
+                  className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="temporary password"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 md:col-span-2">
+                <button
+                  type="button"
+                  className="px-3 py-2 text-xs border rounded-md border-border text-muted-foreground hover:bg-muted"
+                  onClick={() => setShowAddModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {saving ? "Saving..." : "Save user"}
+                </button>
+              </div>
+            </form>
+
+            {saveError && (
+              <p className="mt-1 text-xs text-destructive">{saveError}</p>
+            )}
           </div>
+        </div>
+      )}
 
-          <div className="space-y-1 md:col-span-3">
-            <label className="text-xs font-medium">Password</label>
-            <input
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="temporary password"
-            />
-          </div>
-
-          <div className="flex items-center justify-end md:col-span-1">
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 disabled:opacity-60"
-            >
-              {saving ? "Saving..." : "Save user"}
-            </button>
-          </div>
-        </form>
-
-        {saveError && (
-          <p className="text-xs text-destructive mt-1">{saveError}</p>
-        )}
-      </section>
-
-      {/* User cards */}
+      {/* User table */}
       {loading && (
         <p className="text-sm text-muted-foreground">Loading users...</p>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {!loading && !error && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((user) => (
-            <UserCard key={user.id} user={user} />
-          ))}
-          {items.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              No users found. Once you add users, they will appear here.
-            </p>
-          )}
+        <div className="overflow-hidden border rounded-lg border-border bg-card">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-muted text-muted-foreground">
+              {table.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((header) => (
+                    <th key={header.id} className="px-3 py-2">
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="border-t border-border">
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-3 py-2">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={columns.length}
+                    className="px-3 py-4 text-sm text-center text-muted-foreground"
+                  >
+                    No users found. Once you add users, they will appear here.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between px-3 py-2 text-[11px] text-muted-foreground">
+            <button
+              type="button"
+              className="px-2 py-1 border rounded-md border-border hover:bg-muted disabled:opacity-50"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Previous
+            </button>
+            <span>
+              Page{" "}
+              <span className="font-semibold">
+                {table.getState().pagination.pageIndex + 1} /{" "}
+                {table.getPageCount() || 1}
+              </span>
+            </span>
+            <button
+              type="button"
+              className="px-2 py-1 border rounded-md border-border hover:bg-muted disabled:opacity-50"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

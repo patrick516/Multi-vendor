@@ -33,25 +33,42 @@ enum OrderStatus {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
-  role      Role     @default(CUSTOMER)
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  name     String
+  password String
+  role     Role   @default(CUSTOMER)
+
+  subscriptionActive Boolean @default(true)
+
+  lastPaymentDate    DateTime?
+  nextPaymentDue     DateTime?
+  subscriptionAmount Float     @default(1000)
+  mustPay            Boolean   @default(true)
+
+  //  ADD THIS LINE
+  mustChangePassword Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  mustChangePassword Boolean @default(false)
 
   products          Product[]          @relation("VendorProducts")
   orders            Order[]            @relation("CustomerOrders")
   vendorCommissions VendorCommission[]
-  cartLeads         CartLead[]
+
+  cartLeads            CartLead[]
+  subscriptionPayments SubscriptionPayment[]
+}
+
+model SubscriptionSettings {
+  id        Int      @id @default(autoincrement())
+  amount    Float    @default(1000) // MK 1000 default
+  updatedAt DateTime @default(now())
 }
 
 model Category {
   id        Int      @id @default(autoincrement())
-  name      String
+  name      String   @unique
   slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -63,24 +80,26 @@ model Product {
   id                Int      @id @default(autoincrement())
   name              String
   description       String?
-  // OLD: price       Float
-  basePrice         Float // what vendor wants to receive
-  displayPrice      Float // what customer sees (base + markup)
-  commissionPerUnit Float // displayPrice - basePrice
+  basePrice         Float
+  displayPrice      Float
+  commissionPerUnit Float
   stock             Int      @default(0)
   imageUrl          String?
-  mainImageUrl      String? // main/cover image
-  galleryImageUrls  String[] // image URLs for carousel
+  galleryImageUrls  String[] @default([])
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  district  String
+  area      String?
+  latitude  Float?
+  longitude Float?
 
   vendorId Int
   vendor   User @relation("VendorProducts", fields: [vendorId], references: [id])
 
-  categoryId Int?
-  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
 
   orderItems  OrderItem[]
   commissions VendorCommission[]
@@ -92,13 +111,13 @@ model Order {
   customerId Int
   customer   User @relation("CustomerOrders", fields: [customerId], references: [id])
 
-  totalAmount Float
-  status      OrderStatus @default(PENDING)
-  customerPhone String?   
-  customerNote  String?   
+  totalAmount   Float
+  status        OrderStatus @default(PENDING)
+  customerPhone String?
+  customerNote  String?
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   items OrderItem[]
 }
@@ -135,19 +154,33 @@ model VendorCommission {
 }
 
 model CartLead {
-  id        Int     @id @default(autoincrement())
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
-
-  vendorId Int
-  vendor   User @relation(fields: [vendorId], references: [id])
-
+  id            Int     @id @default(autoincrement())
+  productId     Int
+  vendorId      Int
   customerName  String
   customerEmail String?
   customerPhone String?
-  quantity      Int     @default(1)
+  userId        Int?
+  user          User?   @relation(fields: [userId], references: [id])
 
-  note      String?
-  status    CartLeadStatus @default(NEW)
-  createdAt DateTime       @default(now())
+  product Product @relation(fields: [productId], references: [id])
+
+  quantity Int            @default(1)
+  note     String?
+  status   CartLeadStatus @default(NEW)
+
+  type String @default("CONTACT")
+
+  createdAt DateTime @default(now())
+}
+
+model SubscriptionPayment {
+  id          Int      @id @default(autoincrement())
+  vendorId    Int
+  vendor      User     @relation(fields: [vendorId], references: [id])
+  amount      Float
+  periodStart DateTime
+  periodEnd   DateTime
+  paidAt      DateTime @default(now())
+  createdAt   DateTime @default(now())
 }

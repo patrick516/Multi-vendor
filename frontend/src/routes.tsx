@@ -4,6 +4,7 @@ import OrderList from "./app/features/orders/OrderList";
 import ProductList from "@/app/features/products/ProductList";
 import UserList from "@/app/features/users/UserList";
 import CommissionPage from "@/app/features/commissions/CommissionPage";
+import SubscriptionPage from "@/app/features/subscriptions/SubscriptionPage"; // 👈 NEW
 
 export type AppRole = "SUPER_ADMIN" | "VENDOR" | "CUSTOMER";
 
@@ -43,6 +44,12 @@ export const routes: AppRoute[] = [
     path: "/commissions",
     label: "Commissions",
     component: CommissionPage,
+    roles: ["SUPER_ADMIN"], // admin only
+  },
+  {
+    path: "/subscriptions",
+    label: "Subscriptions",
+    component: SubscriptionPage, // 👈 NEW
     roles: ["SUPER_ADMIN"], // admin only
   },
 ];

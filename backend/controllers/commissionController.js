@@ -155,9 +155,42 @@ async function markVendorCommissionsPaid(req, res) {
   }
 }
 
+async function getRecentCommissions(req, res) {
+  try {
+    const days = Number(req.query.days || 30);
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    const commissions = await prisma.vendorCommission.findMany({
+      where: {
+        createdAt: {
+          gte: since,
+        },
+      },
+      select: {
+        id: true,
+        vendorId: true,
+        totalCommission: true,
+        status: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    res.json({
+      days,
+      commissions,
+    });
+  } catch (err) {
+    console.error("getRecentCommissions error:", err);
+    res.status(500).json({ message: "Failed to fetch recent commissions" });
+  }
+}
+
 module.exports = {
   getCommissionSummary,
   getVendorCommissions,
   markCommissionPaid,
   markVendorCommissionsPaid,
+  getRecentCommissions,
 };

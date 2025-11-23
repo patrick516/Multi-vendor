@@ -49,6 +49,25 @@ export default function ProductCard({
           Qty available: <span className="font-medium">{product.stock}</span>
         </p>
 
+        {/* Location */}
+        {(product.district || product.area) && (
+          <p className="text-[11px] text-muted-foreground">
+            Location:{" "}
+            <span className="font-medium">
+              {product.district}
+              {product.area ? `, ${product.area}` : ""}
+            </span>
+          </p>
+        )}
+
+        {/* Category */}
+        {product.category && (
+          <p className="text-[11px] text-muted-foreground">
+            Category:{" "}
+            <span className="font-medium">{product.category.name}</span>
+          </p>
+        )}
+
         {product.vendor && (
           <p className="text-[11px] text-muted-foreground">
             Vendor: {product.vendor.name || product.vendor.email}

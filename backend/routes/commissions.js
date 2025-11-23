@@ -6,6 +6,7 @@ const {
   getVendorCommissions,
   markCommissionPaid,
   markVendorCommissionsPaid,
+  getRecentCommissions, // 👈
 } = require("../controllers/commissionController");
 const { authRequired, requireRole } = require("../middleware/auth");
 
@@ -16,12 +17,21 @@ router.get(
   requireRole("SUPER_ADMIN"),
   getCommissionSummary
 );
+
+router.get(
+  "/recent",
+  authRequired,
+  requireRole("SUPER_ADMIN"),
+  getRecentCommissions
+);
+
 router.get(
   "/vendor/:vendorId",
   authRequired,
   requireRole("SUPER_ADMIN"),
   getVendorCommissions
 );
+
 router.post(
   "/:id/mark-paid",
   authRequired,
@@ -29,7 +39,6 @@ router.post(
   markCommissionPaid
 );
 
-// NEW: mark all pending commissions for a vendor as PAID
 router.post(
   "/vendor/:vendorId/mark-paid-all",
   authRequired,

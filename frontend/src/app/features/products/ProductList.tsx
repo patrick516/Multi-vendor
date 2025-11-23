@@ -16,7 +16,6 @@ export default function ProductList() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // Get current user from localStorage
   const authUserJson =
     typeof window !== "undefined" ? localStorage.getItem("authUser") : null;
   const authUser = authUserJson ? JSON.parse(authUserJson) : null;
@@ -27,7 +26,6 @@ export default function ProductList() {
     dispatch(fetchProducts());
   }, [dispatch]);
 
-  // SUPER_ADMIN → all products; others → only own
   const visibleProducts = useMemo(() => {
     if (isSuperAdmin || !currentUserId) return items;
     return items.filter((p: any) => p.vendorId === currentUserId);
@@ -56,8 +54,6 @@ export default function ProductList() {
       }
 
       dispatch(fetchProducts());
-      // plug in toast here if you use one
-      // toast.success("Product deleted");
     } catch (err: any) {
       alert(err.message || "Failed to delete product");
     }
@@ -71,8 +67,8 @@ export default function ProductList() {
           <h2 className="text-lg font-semibold">Products</h2>
           <p className="text-xs text-muted-foreground">
             {isSuperAdmin
-              ? "View and manage products across all vendors."
-              : "View and manage the products you have added."}
+              ? "View and manage products across all vendors, including their districts and categories."
+              : "View and manage the products you have added, including where they are sold from."}
           </p>
         </div>
 
@@ -88,9 +84,10 @@ export default function ProductList() {
       <section className="rounded-lg bg-card border border-border shadow-sm p-4 space-y-2">
         <h3 className="text-sm font-semibold">How it works</h3>
         <p className="text-[11px] text-muted-foreground">
-          Click &quot;Add product&quot; to set your base price and upload a main
-          image plus gallery images. The system will automatically calculate the
-          customer display price by adding the admin commission.
+          When adding a product, select the district where the product is
+          available, optionally specify the area, and choose a category. The
+          system will use this information on the customer website so buyers can
+          search by location and category.
         </p>
       </section>
 
@@ -102,7 +99,7 @@ export default function ProductList() {
 
       {!loading && !error && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleProducts.map((product: any) => (
+          {visibleProducts.map((product: Product) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -126,12 +123,11 @@ export default function ProductList() {
           onClose={() => setShowAddForm(false)}
           onCreated={() => {
             dispatch(fetchProducts());
-            // toast.success("Product added successfully");
           }}
         />
       )}
 
-      {/* Edit Product modal (inline component) */}
+      {/* Edit Product modal (unchanged except fields) */}
       {editingProduct && (
         <EditProductModal
           product={editingProduct}
@@ -139,7 +135,6 @@ export default function ProductList() {
           onUpdated={() => {
             setEditingProduct(null);
             dispatch(fetchProducts());
-            // toast.success("Product updated successfully");
           }}
         />
       )}
@@ -147,7 +142,7 @@ export default function ProductList() {
   );
 }
 
-/** Inline edit modal (updates name, basePrice, stock, description) */
+/** Inline edit modal (name, basePrice, stock, description only for now) */
 interface EditModalProps {
   product: Product;
   onClose: () => void;
@@ -157,7 +152,7 @@ interface EditModalProps {
 function EditProductModal({ product, onClose, onUpdated }: EditModalProps) {
   const [name, setName] = useState(product.name);
   const [basePrice, setBasePrice] = useState(
-    String(product.displayPrice ?? product.price ?? "")
+    String(product.basePrice ?? product.displayPrice ?? product.price ?? "")
   );
   const [stock, setStock] = useState(String(product.stock));
   const [description, setDescription] = useState(product.description ?? "");

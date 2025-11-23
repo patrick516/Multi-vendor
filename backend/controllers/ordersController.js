@@ -1,7 +1,8 @@
 // backend/controllers/ordersController.js
 const prisma = require("../config/prisma");
+const { createCartRequest } = require("./cartController");
 
-// GET /api/orders (for vendor: orders for their products, for customer: their orders, admin: all)
+// GET /api/orders
 async function getOrders(req, res) {
   try {
     let where = {};
@@ -30,8 +31,7 @@ async function getOrders(req, res) {
   }
 }
 
-// POST /api/orders
-// Simple version: expects items [{ productId, quantity }]
+// POST /api/orders (generic)
 async function createOrder(req, res) {
   try {
     const { items } = req.body;
@@ -40,7 +40,6 @@ async function createOrder(req, res) {
       return res.status(400).json({ message: "Order items are required" });
     }
 
-    // Calculate total
     const productIds = items.map((i) => Number(i.productId));
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
@@ -56,7 +55,7 @@ async function createOrder(req, res) {
     const orderItemsData = items.map((item) => {
       const product = products.find((p) => p.id === Number(item.productId));
       const quantity = Number(item.quantity) || 1;
-      const unitPrice = product.price;
+      const unitPrice = product.displayPrice || product.basePrice || 0;
       totalAmount += unitPrice * quantity;
 
       return {
@@ -86,8 +85,8 @@ async function createOrder(req, res) {
     res.status(500).json({ message: "Failed to create order" });
   }
 }
-// POST /api/orders/:id/mark-status or PUT /api/orders/:id
-// For now we'll just support status updates (COMPLETED after mark sold)
+
+// PUT /api/orders/:id (update status)
 async function updateOrder(req, res) {
   try {
     const id = Number(req.params.id);
@@ -102,14 +101,11 @@ async function updateOrder(req, res) {
       return res.status(400).json({ message: "Invalid status value" });
     }
 
-    // Load order with items + product to check ownership
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
         items: {
-          include: {
-            product: true,
-          },
+          include: { product: true },
         },
       },
     });
@@ -118,14 +114,11 @@ async function updateOrder(req, res) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // Authorization:
-    // SUPER_ADMIN can always update
-    // VENDOR can update if any item belongs to their product
     if (req.user.role !== "SUPER_ADMIN") {
-      const isVendorOwner = order.items.some(
+      const ownsAny = order.items.some(
         (item) => item.product.vendorId === req.user.id
       );
-      if (!isVendorOwner) {
+      if (!ownsAny) {
         return res.status(403).json({ message: "Forbidden" });
       }
     }
@@ -145,8 +138,24 @@ async function updateOrder(req, res) {
   }
 }
 
+// POST /api/orders/buy-now
+async function buyNow(req, res) {
+  req.body.type = "BUY_NOW";
+  req.body.skipOrder = false;
+  return createCartRequest(req, res);
+}
+
+// POST /api/orders/contact-vendor
+async function contactVendor(req, res) {
+  req.body.type = "CONTACT";
+  req.body.skipOrder = true; // we only want a lead + email
+  return createCartRequest(req, res);
+}
+
 module.exports = {
   getOrders,
   createOrder,
   updateOrder,
+  buyNow,
+  contactVendor,
 };

@@ -1,39 +1,40 @@
-// backend/controllers/productsController.js
 const prisma = require("../config/prisma");
+const malawiDistricts = require("../constants/malawiDistricts");
 const nodemailer = require("nodemailer");
 
+// We keep these env vars for future flexibility, but they no longer affect price
 const MARKUP_TYPE = process.env.ADMIN_MARKUP_TYPE || "FLAT"; // FLAT | PERCENT
 const MARKUP_VALUE = Number(process.env.ADMIN_MARKUP_VALUE || "0");
 
-// helper to compute display price + commission
+// ✅ No top up: displayPrice is exactly the vendor's base price, commission is 0
 function applyMarkup(basePrice) {
-  let displayPrice = basePrice;
-  if (MARKUP_TYPE === "PERCENT") {
-    displayPrice = basePrice + (basePrice * MARKUP_VALUE) / 100;
-  } else {
-    // FLAT
-    displayPrice = basePrice + MARKUP_VALUE;
-  }
-  const commissionPerUnit = displayPrice - basePrice;
+  const displayPrice = basePrice;
+  const commissionPerUnit = 0;
   return { displayPrice, commissionPerUnit };
 }
 
-// Helper to build a public URL for files
 function buildFileUrl(req, filename) {
   const baseUrl = `${req.protocol}://${req.get("host")}`;
   return `${baseUrl}/uploads/products/${filename}`;
 }
 
-// ========================
 // POST /api/products
-// Vendor / SUPER_ADMIN creates product
-// ========================
 async function createProduct(req, res) {
   try {
-    const { name, description, price, basePrice, stock, imageUrl, categoryId } =
-      req.body;
+    const {
+      name,
+      description,
+      basePrice,
+      price, // fallback name
+      stock,
+      imageUrl, // optional legacy field
+      categoryId,
+      district,
+      area,
+      latitude,
+      longitude,
+    } = req.body;
 
-    // Vendor always sends their price; allow `basePrice` or `price` for convenience
     const vendorBasePrice = Number(basePrice || price);
     if (!name || !vendorBasePrice) {
       return res
@@ -41,28 +42,28 @@ async function createProduct(req, res) {
         .json({ message: "Name and vendor price are required" });
     }
 
-    // Files from multer
-    const files = req.files || {};
-    const mainImageFile = files.mainImage && files.mainImage[0];
-    const galleryFiles = files.galleryImages || [];
-
-    let mainImageUrl = null;
-    let galleryImageUrls = [];
-
-    if (mainImageFile) {
-      mainImageUrl = buildFileUrl(req, mainImageFile.filename);
-    } else if (imageUrl) {
-      // fallback: allow pure JSON request without file upload (e.g. old clients)
-      mainImageUrl = imageUrl;
+    if (!district || !malawiDistricts.includes(district)) {
+      return res.status(400).json({ message: "Valid district is required" });
     }
 
-    galleryImageUrls = galleryFiles.map((f) => buildFileUrl(req, f.filename));
+    if (!categoryId) {
+      return res.status(400).json({ message: "Category is required" });
+    }
 
-    // If you want to hard-require main image when using this route:
-    if (!mainImageUrl) {
-      return res
-        .status(400)
-        .json({ message: "Main image is required for this product" });
+    // 🔹 NEW: build image URL from uploaded file (mainImage)
+    let mainImageUrl = null;
+    const files = req.files || {};
+
+    if (files.mainImage && files.mainImage.length > 0) {
+      const file = files.mainImage[0];
+      mainImageUrl = buildFileUrl(req, file.filename);
+    }
+
+    let galleryImageUrls = [];
+    if (files.galleryImages && files.galleryImages.length > 0) {
+      galleryImageUrls = files.galleryImages.map((f) =>
+        buildFileUrl(req, f.filename)
+      );
     }
 
     const { displayPrice, commissionPerUnit } = applyMarkup(vendorBasePrice);
@@ -75,36 +76,24 @@ async function createProduct(req, res) {
         displayPrice,
         commissionPerUnit,
         stock: stock ? Number(stock) : 1,
-
-        // images
-        mainImageUrl,
+        imageUrl: mainImageUrl || imageUrl || null,
         galleryImageUrls,
-        imageUrl: mainImageUrl, // keep legacy field in sync
-
-        categoryId: categoryId ? Number(categoryId) : null,
-        vendorId: req.user.id, // from auth token
+        categoryId: Number(categoryId),
+        district,
+        area: area || null,
+        latitude: latitude ? Number(latitude) : null,
+        longitude: longitude ? Number(longitude) : null,
+        vendorId: req.user.id, // admin or vendor
       },
     });
 
-    res.status(201).json({
-      ...product,
-      info: `Note: Display price is MK ${displayPrice.toFixed(
-        2
-      )} (your base price MK ${vendorBasePrice.toFixed(
-        2
-      )} + commission MK ${commissionPerUnit.toFixed(2)} per unit).`,
-    });
+    res.status(201).json(product);
   } catch (err) {
     console.error("createProduct error:", err);
     res.status(500).json({ message: "Failed to create product" });
   }
 }
 
-// ========================
-// Email + mark-sold logic (unchanged, just kept as is)
-// ========================
-
-// mail transporter (basic)
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT || 587),
@@ -225,11 +214,34 @@ async function markProductSold(req, res) {
   }
 }
 
+// GET /api/products?district=Blantyre&categoryId=1&search=toyota
 async function getProducts(req, res) {
   try {
+    const { district, categoryId, search } = req.query;
+
+    const where = {
+      isActive: true,
+      ...(district ? { district } : {}),
+      ...(categoryId ? { categoryId: Number(categoryId) } : {}),
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { description: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    };
+
     const products = await prisma.product.findMany({
-      include: { vendor: true, category: true },
+      where,
+      include: {
+        category: true,
+        vendor: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: "desc" },
     });
+
     res.json(products);
   } catch (err) {
     console.error("getProducts error:", err);
@@ -237,9 +249,34 @@ async function getProducts(req, res) {
   }
 }
 
-// backend/controllers/productsController.js
+// GET /api/products/:id
+async function getProductById(req, res) {
+  try {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ message: "Invalid product id" });
+    }
 
-// ... keep everything above unchanged (applyMarkup, createProduct, markProductSold, getProducts, etc.)
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        vendor: { select: { id: true, name: true, email: true } },
+        category: true,
+      },
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json(product);
+  } catch (err) {
+    console.error("getProductById error:", err);
+    res.status(500).json({ message: "Failed to fetch product" });
+  }
+}
+
+// backend/controllers/productsController.js
 
 async function updateProduct(req, res) {
   try {
@@ -349,6 +386,7 @@ module.exports = {
   createProduct,
   markProductSold,
   getProducts,
+  getProductById,
   updateProduct,
   deleteProduct,
 };

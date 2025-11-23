@@ -9,14 +9,34 @@ export interface Product {
   id: number;
   name: string;
   description?: string | null;
-  price: number; // original price from older data if any
-  displayPrice?: number;
-  commissionPerUnit?: number;
+
+  // pricing
+  price: number; // old field, keep for backward compatibility
+  basePrice?: number | null;
+  displayPrice?: number | null;
+  commissionPerUnit?: number | null;
+
+  // stock
   stock: number;
+
+  // images
   imageUrl?: string | null;
-  mainImageUrl?: string | null; // 👈 optional for future
-  galleryImageUrls?: string[] | null; // 👈 optional for future
+  mainImageUrl?: string | null;
+  galleryImageUrls?: string[] | null;
+
+  // location
+  district?: string | null;
+  area?: string | null;
+
+  // category
+  categoryId?: number | null;
+  category?: {
+    id: number;
+    name: string;
+  } | null;
+
   createdAt?: string;
+
   vendor?: {
     id: number;
     name: string;

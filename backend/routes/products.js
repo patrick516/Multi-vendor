@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const {
   getProducts,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -13,6 +14,7 @@ const uploadProductImages = require("../middleware/uploadProductImages");
 
 // Public list
 router.get("/", getProducts);
+router.get("/:id", getProductById);
 
 // Protected (vendor / super admin) - create product with images
 router.post(
