@@ -146,10 +146,10 @@ export default function ProductList() {
         id="product-filters"
         className="px-4 py-4 space-y-3 bg-white shadow-sm rounded-2xl ring-1 ring-slate-100"
       >
-        <h2 className="text-sm font-semibold text-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900">
           Find products near you
         </h2>
-        <p className="text-[11px] text-slate-600">
+        <p className="text-md text-slate-600">
           Start by choosing the district you want to buy from, or let us use
           your current location to find nearby products.
         </p>
@@ -157,11 +157,11 @@ export default function ProductList() {
         <div className="grid items-end gap-3 md:grid-cols-3">
           {/* District */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-700">
+            <label className="text-lg font-medium text-slate-700">
               District
             </label>
             <select
-              className="w-full px-3 py-2 text-sm bg-white border rounded-md border-slate-300"
+              className="w-full px-3 py-2 bg-white border rounded-md text-md border-slate-300"
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
             >
@@ -176,11 +176,11 @@ export default function ProductList() {
 
           {/* Category */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-700">
+            <label className="text-lg font-medium text-slate-700">
               Category
             </label>
             <select
-              className="w-full px-3 py-2 text-sm bg-white border rounded-md border-slate-300"
+              className="w-full px-3 py-2 bg-white border rounded-md text-md border-slate-300"
               value={selectedCategoryId}
               onChange={(e) => setSelectedCategoryId(e.target.value)}
             >
@@ -195,11 +195,9 @@ export default function ProductList() {
 
           {/* Search */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-700">
-              Search
-            </label>
+            <label className="text-lg font-medium text-slate-700">Search</label>
             <input
-              className="w-full px-3 py-2 text-sm bg-white border rounded-md border-slate-300"
+              className="w-full px-3 py-2 bg-white border rounded-md text-md border-slate-300"
               placeholder='e.g. "maize", "tractor", "laptop"...'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -211,7 +209,7 @@ export default function ProductList() {
       {/* Nearby products section */}
       {userLocation && (
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">
+          <h2 className="text-lg font-semibold text-slate-900">
             Products near you (within {NEARBY_RADIUS_KM} km)
           </h2>
           {nearbyProducts.length === 0 && (
@@ -231,7 +229,7 @@ export default function ProductList() {
 
       {/* All/other products */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900">
           {userLocation ? "More products" : "All products"}
         </h2>
         {loading && <p className="text-sm text-slate-500">Loading products…</p>}

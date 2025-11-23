@@ -2,9 +2,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import clsx from "clsx";
 
 import { API_BASE_URL } from "@/app/utils/fetcher";
 
@@ -168,22 +170,27 @@ export default function Navbar() {
       <div className="flex items-center justify-between max-w-6xl px-4 py-3 mx-auto md:px-6">
         {/* Left: logo + flag + search */}
         <div className="flex items-center gap-3">
-          <button
-            className="flex items-center gap-2"
+          <div
+            className="flex items-center gap-3 cursor-pointer"
             onClick={() => router.push("/")}
           >
-            <div className="flex items-center justify-center text-xs font-bold text-white rounded-lg shadow-sm h-9 w-9 bg-gradient-to-br from-green-600 to-emerald-500">
-              TP
-            </div>
+            <Image
+              src="/tp_logo.svg"
+              alt="Trade Point Logo"
+              width={40}
+              height={13}
+              className="h-auto"
+            />
+
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-semibold text-slate-900">
+              <span className="font-semibold text-md text-slate-900">
                 Trade Point Malawi
               </span>
-              <span className="text-[11px] text-slate-500">
+              <span className="text-xs text-slate-500">
                 Gateway to trade in Malawi
               </span>
             </div>
-          </button>
+          </div>
 
           <div className="hidden items-center gap-1 rounded-full bg-slate-50 px-2 py-[2px] text-[11px] text-slate-600 sm:flex">
             <span className="text-base">🇲🇼</span>
@@ -291,7 +298,7 @@ export default function Navbar() {
                               </span>
                             </div>
                             <span
-                              className={classNames(
+                              className={clsx(
                                 "rounded-full px-2 py-[2px] text-[9px] font-semibold",
                                 v.subscriptionActive
                                   ? "bg-emerald-50 text-emerald-700"

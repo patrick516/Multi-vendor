@@ -52,3 +52,114 @@
     @apply focus:outline-none;
   }
 }
+
+/* -------------------------------------------------------
+   ✅ Animation utilities
+-------------------------------------------------------- */
+@layer utilities {
+  /* Vertical fade up */
+  @keyframes fadeUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-up {
+    animation-name: fadeUp;
+    animation-duration: 1.2s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+    animation-delay: 0.05s;
+  }
+
+  /* One-time slide right → left with color change */
+  @keyframes slideRightToLeft {
+    0% {
+      transform: translateX(60px);
+      color: #16a34a;
+      opacity: 0;
+    }
+    50% {
+      color: #0284c7;
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(0);
+      color: #0f172a;
+      opacity: 1;
+    }
+  }
+
+  .slide-rl {
+    animation-name: slideRightToLeft;
+    animation-duration: 1.5s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+  }
+
+  /* Infinite marquee slide with color change and center pause */
+  @keyframes slideCenterPause {
+    0% {
+      transform: translateX(100%);
+      color: #15803d;
+      opacity: 1;
+    }
+    30% {
+      transform: translateX(35%);
+      color: #16a34a;
+    }
+    40%,
+    75% {
+      transform: translateX(0);
+      color: #000;
+    } /* pause in center */
+    100% {
+      transform: translateX(-120%);
+      color: #166534;
+      opacity: 0;
+    }
+  }
+
+  .slide-loop {
+    display: inline-block;
+    animation-name: slideCenterPause;
+    animation-duration: 20s; /* slower movement */
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  /* Stop text at center */
+  @keyframes slideToCenter {
+    0% {
+      transform: translateX(100%);
+      color: #16a34a;
+    }
+    100% {
+      transform: translateX(0);
+      color: #000;
+    }
+  }
+
+  .slide-stop-center {
+    display: inline-block;
+    animation-name: slideToCenter;
+    animation-duration: 10s;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+
+  /* Accessibility: disable animations if user prefers reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .fade-up,
+    .slide-rl,
+    .slide-loop,
+    .slide-stop-center {
+      animation: none !important;
+    }
+  }
+}

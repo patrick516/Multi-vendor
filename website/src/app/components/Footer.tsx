@@ -1,5 +1,6 @@
 // website/src/app/components/Footer.tsx
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -8,11 +9,15 @@ export default function Footer() {
     <footer className="mt-10 border-t border-slate-100 bg-white/80">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 text-[11px] text-slate-600 md:flex-row md:items-start md:justify-between md:px-6">
         {/* Brand */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-green-600 to-emerald-500 text-[10px] font-bold text-white">
-              TP
-            </div>
+        <div className="space-y-2 text-center md:text-left md:flex-1">
+          <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-2">
+            <Image
+              src="/tp_logo.svg"
+              alt="Trade Point Logo"
+              width={40}
+              height={13}
+              className="h-auto"
+            />
             <div className="flex flex-col leading-tight">
               <span className="text-xs font-semibold text-slate-900">
                 Trade Point Malawi
@@ -22,7 +27,7 @@ export default function Footer() {
               </span>
             </div>
           </div>
-          <div className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2 py-[2px]">
+          <div className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2 py-[2px] justify-center">
             <span className="text-base">🇲🇼</span>
             <span>Proudly Malawian marketplace</span>
           </div>

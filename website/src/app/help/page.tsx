@@ -1,15 +1,15 @@
 // website/src/app/help/page.tsx
 export default function HelpPage() {
   return (
-    <div className="pb-10 space-y-4">
+    <div className="pb-10 space-y-4 text-lg">
       <h1 className="text-2xl font-bold text-text-main">Help &amp; FAQ</h1>
-      <p className="text-sm text-text-muted">
+      <p className="text-lg text-text-muted">
         Common questions about using Trade Point Malawi as a buyer or vendor.
       </p>
 
-      <section className="space-y-3 text-sm leading-relaxed text-text-muted">
+      <section className="space-y-3 text-lg leading-relaxed text-text-muted">
         <div>
-          <h2 className="text-base font-semibold text-text-main">
+          <h2 className="text-lg font-semibold text-text-main">
             How do I buy something?
           </h2>
           <p>
@@ -33,13 +33,16 @@ export default function HelpPage() {
 
         <div>
           <h2 className="text-base font-semibold text-text-main">
-            How is commission handled?
+            How do I pay the subscription fee?
           </h2>
           <p>
-            Vendors set their own base prices. The platform applies a small
-            commission on top, which is tracked in the admin dashboard and
-            visible in the commissions reports. Buyers see the full price and
-            are not charged extra beyond the agreed amount.
+            Vendors pay a monthly subscription to keep their account active.
+            Every subscription lasts for 30 days. On day 28, vendors
+            automatically receive a reminder so they can renew before their
+            account is restricted. If a vendor does not pay by day 30, their
+            account is temporarily blocked until the subscription is renewed.
+            The admin can see all payment history, renewal dates, and
+            outstanding subscriptions directly in the dashboard.
           </p>
         </div>
 

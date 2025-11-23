@@ -73,14 +73,14 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Content */}
       <div className="flex flex-col flex-1 gap-1 px-3 pt-2 pb-3">
         {/* Name */}
-        <p className="text-sm font-semibold text-slate-900 line-clamp-1">
+        <p className="text-lg font-semibold text-slate-900 line-clamp-1">
           {product.name}
         </p>
 
         {/* Price */}
-        <p className="text-xs font-medium text-slate-700">
+        <p className="font-medium text-md text-slate-700">
           MK{" "}
-          <span className="text-sm font-semibold">
+          <span className="text-2xl font-bold">
             {displayPrice.toLocaleString()}
           </span>
         </p>
@@ -89,7 +89,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="flex flex-wrap items-center gap-1 mt-1">
           <span
             className={[
-              "inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-medium",
+              "inline-flex items-center rounded-full px-2 py-[2px] text-lg font-medium",
               outOfStock
                 ? "bg-slate-100 text-slate-500"
                 : "bg-emerald-50 text-emerald-700",
@@ -98,14 +98,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             {outOfStock ? "Out of stock" : "In stock"}
           </span>
           {product.vendor?.name && (
-            <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-[2px] text-[10px] font-medium text-slate-600">
+            <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-[2px] text-lg font-medium text-slate-600">
               {product.vendor.name}
             </span>
           )}
         </div>
 
         {/* Bottom row: category + district */}
-        <div className="mt-2 flex items-center justify-between gap-2 text-[10px]">
+        <div className="flex items-center justify-between gap-2 mt-2 text-lg">
           <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-[2px] font-medium text-emerald-700">
             {categoryLabel}
           </span>

@@ -74,19 +74,19 @@ export default function CategoriesPage() {
   return (
     <div className="pb-10 space-y-4">
       <h1 className="text-2xl font-bold text-text-main">Browse by category</h1>
-      <p className="text-sm text-text-muted">
+      <p className="text-lg text-text-muted">
         Tap a category to see products in that sector. Icons help users quickly
         understand what each category represents – even if they can&apos;t read
         the text.
       </p>
 
       {loading && (
-        <p className="text-sm text-text-muted">Loading categories…</p>
+        <p className="text-md text-text-muted">Loading categories…</p>
       )}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-red-500 text-md">{error}</p>}
 
       {!loading && !error && categories.length === 0 && (
-        <p className="text-sm text-text-muted">
+        <p className="text-md text-text-muted">
           No categories found. Please check back later.
         </p>
       )}
@@ -124,10 +124,10 @@ export default function CategoriesPage() {
 
                 {/* Text */}
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-semibold text-text-main">
+                  <p className="text-lg font-semibold text-text-main">
                     {cat.name}
                   </p>
-                  <p className="text-[11px] text-text-muted">
+                  <p className="text-lg text-text-muted">
                     Tap to browse products in this category.
                   </p>
                 </div>
