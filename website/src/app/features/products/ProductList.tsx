@@ -1,9 +1,9 @@
-// website/src/app/features/products/ProductList.tsx
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation"; // ⬅️ NEW
 import type { Product } from "./types";
-import { fetchJson, API_BASE_URL } from "@/app/utils/fetcher";
+import { fetchJson } from "@/app/utils/fetcher";
 import ProductCard from "./ProductCard";
 
 interface Category {
@@ -20,6 +20,8 @@ interface LatLng {
 const NEARBY_RADIUS_KM = 10; // 10 km radius
 
 export default function ProductList() {
+  const searchParams = useSearchParams(); // ⬅️ NEW
+
   const [districts, setDistricts] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState("");
@@ -34,6 +36,14 @@ export default function ProductList() {
   const [error, setError] = useState<string | null>(null);
 
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
+
+  // ⬅️ NEW: Load category from URL on page load
+  useEffect(() => {
+    const catFromUrl = searchParams.get("categoryId");
+    if (catFromUrl) {
+      setSelectedCategoryId(catFromUrl);
+    }
+  }, [searchParams]);
 
   // Load districts & categories on mount
   useEffect(() => {
@@ -101,7 +111,6 @@ export default function ProductList() {
   // Compute nearby vs other products when allProducts or userLocation changes
   useEffect(() => {
     if (!userLocation) {
-      // No location yet → everything is "other"
       setNearbyProducts([]);
       setOtherProducts(allProducts);
       return;

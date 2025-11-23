@@ -217,12 +217,13 @@ async function markProductSold(req, res) {
 // GET /api/products?district=Blantyre&categoryId=1&search=toyota
 async function getProducts(req, res) {
   try {
-    const { district, categoryId, search } = req.query;
+    const { district, categoryId, search, vendorId } = req.query;
 
     const where = {
       isActive: true,
       ...(district ? { district } : {}),
       ...(categoryId ? { categoryId: Number(categoryId) } : {}),
+      ...(vendorId ? { vendorId: Number(vendorId) } : {}), // ✅ Added here
       ...(search
         ? {
             OR: [

@@ -18,6 +18,7 @@ const statsRoutes = require("./routes/stats");
 const subscriptionRoutes = require("./routes/subscriptions");
 const categoryRoutes = require("./routes/categories");
 const metaRoutes = require("./routes/meta");
+const searchRoutes = require("./routes/search");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -70,6 +71,7 @@ app.use("/api/public", statsRoutes);
 app.use("/api/admin/subscriptions", subscriptionRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/meta", metaRoutes);
+app.use("/api/search", searchRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
