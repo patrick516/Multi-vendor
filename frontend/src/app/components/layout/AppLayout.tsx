@@ -51,6 +51,9 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
   );
   const [loadingUser, setLoadingUser] = useState(true);
 
+  // 🔹 mobile sidebar open/close state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   // Load /users/me on mount and then poll every 60s
   useEffect(() => {
     let isMounted = true;
@@ -255,17 +258,23 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
 
   return (
     <div className="w-screen h-screen overflow-hidden bg-muted text-foreground">
-      <div className="flex w-full h-full ">
-        {/* Sidebar */}
+      <div className="flex w-full h-full">
+        {/* Sidebar (desktop + mobile overlay) */}
         <Sidebar
           items={filteredItems}
           currentPath={location.pathname}
           user={userForLayout}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
 
         {/* Right side (topbar + page) */}
         <div className="flex flex-col flex-1 min-w-0 bg-background">
-          <TopBar currentPath={location.pathname} user={userForLayout} />
+          <TopBar
+            currentPath={location.pathname}
+            user={userForLayout}
+            onToggleSidebar={() => setSidebarOpen((v) => !v)}
+          />
 
           <main className="flex-1 p-4 overflow-y-auto md:p-6">
             <div className="w-full h-full">{children}</div>

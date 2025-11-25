@@ -1,3 +1,4 @@
+// src/app/components/layout/Sidebar.tsx
 import { NavLink, useNavigate } from "react-router-dom";
 
 interface RouteItem {
@@ -15,19 +16,28 @@ interface SidebarProps {
   items: RouteItem[];
   currentPath: string;
   user: UserInfo;
+  isOpen?: boolean; // 🔹 mobile
+  onClose?: () => void; // 🔹 mobile
 }
 
-export function Sidebar({ items, currentPath, user }: SidebarProps) {
+export function Sidebar({
+  items,
+  currentPath,
+  user,
+  isOpen,
+  onClose,
+}: SidebarProps) {
   const navigate = useNavigate();
 
   function handleLogout() {
     localStorage.removeItem("authToken");
     localStorage.removeItem("authUser");
     navigate("/login");
+    if (onClose) onClose();
   }
 
-  return (
-    <aside className="flex flex-col flex-shrink-0 w-56 h-full mt-1 ml-2 text-white rounded-md bg-brand-blue">
+  const content = (
+    <>
       {/* Logo / Brand */}
       <div className="flex items-center gap-2 px-2 py-1 border-b border-white/10">
         <div className="flex items-center justify-center w-full px-2 py-1 border-white/10">
@@ -37,17 +47,10 @@ export function Sidebar({ items, currentPath, user }: SidebarProps) {
             className="object-contain w-auto h-12"
           />
         </div>
-        {/* <div className="leading-tight">
-          <p className="text-sm font-semibold">Trade Point Malawi</p>
-          <p className="text-[11px] text-white/70">{panelLabel}</p>
-        </div> */}
       </div>
 
       {/* User info */}
       <div className="flex items-center gap-3 px-6 py-4 border-b border-white/10">
-        {/* <div className="flex items-center justify-center w-12 h-12 font-bold rounded-full bg-white/90 text-brand-blue">
-          {user.name.charAt(0).toUpperCase()}
-        </div> */}
         <div className="leading-tight">
           <p className="text-md font-semibold text-center truncate max-w-[140px]">
             {user.name}
@@ -72,6 +75,7 @@ export function Sidebar({ items, currentPath, user }: SidebarProps) {
                   ? "bg-white text-brand-blue shadow-sm"
                   : "text-white/80 hover:bg-white/10 hover:text-white",
               ].join(" ")}
+              onClick={onClose}
             >
               {item.label}
             </NavLink>
@@ -92,6 +96,30 @@ export function Sidebar({ items, currentPath, user }: SidebarProps) {
           © {new Date().getFullYear()} Trade Point Malawi
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="flex-col flex-shrink-0 hidden w-56 h-full mt-1 ml-2 text-white rounded-md md:flex bg-brand-blue">
+        {content}
+      </aside>
+
+      {/* Mobile overlay sidebar */}
+      {isOpen && (
+        <div className="fixed inset-0 z-40 flex md:hidden">
+          <div className="flex flex-col w-64 max-w-[80vw] h-full text-white bg-brand-blue rounded-r-md shadow-xl">
+            {content}
+          </div>
+          {/* backdrop */}
+          <div
+            className="flex-1 bg-black/40"
+            onClick={onClose}
+            aria-label="Close sidebar"
+          />
+        </div>
+      )}
+    </>
   );
 }

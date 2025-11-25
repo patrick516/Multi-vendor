@@ -17,6 +17,9 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Legend,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 
 const API_BASE_URL =
@@ -42,7 +45,17 @@ interface VendorChartPoint {
   count: number;
 }
 
+// 👇 Make PiePoint compatible with Recharts ChartDataInput
+interface PiePoint {
+  name: string;
+  value: number;
+  [key: string]: string | number;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function AdminDashboard() {
+  // 👇 keep your dispatch<any>, just silence ESLint on the next line
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dispatch = useDispatch<any>();
 
   const { items: products } = useSelector(selectProducts);
@@ -81,7 +94,9 @@ export default function AdminDashboard() {
         });
 
         if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
+          const body = await res
+            .json()
+            .catch(() => ({} as { message?: string }));
           throw new Error(
             body.message || "Failed to load subscription vendors"
           );
@@ -118,6 +133,7 @@ export default function AdminDashboard() {
           .sort((a, b) => (a.date < b.date ? -1 : 1));
 
         setRevenueChartData(chartPoints);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setSubError(err.message || "Failed to load subscription revenue");
       } finally {
@@ -147,16 +163,54 @@ export default function AdminDashboard() {
     [activeVendors, blockedVendors]
   );
 
+  // Products by Category (pie)
+  const productCategoryPieData: PiePoint[] = useMemo(() => {
+    const map = new Map<string, number>();
+
+    products.forEach((p: any) => {
+      const name = p.category?.name || "Other / Uncategorised";
+      map.set(name, (map.get(name) || 0) + 1);
+    });
+
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [products]);
+
+  // Order status breakdown (pie)
+  const orderStatusPieData: PiePoint[] = useMemo(() => {
+    const map = new Map<string, number>();
+
+    orders.forEach((o: any) => {
+      const status = o.status || "UNKNOWN";
+      map.set(status, (map.get(status) || 0) + 1);
+    });
+
+    return Array.from(map.entries()).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  }, [orders]);
+
+  const CATEGORY_COLORS = [
+    "#22c55e",
+    "#0ea5e9",
+    "#f97316",
+    "#a855f7",
+    "#facc15",
+    "#ef4444",
+  ];
+
+  const STATUS_COLORS: Record<string, string> = {
+    PENDING: "#f97316",
+    PAID: "#22c55e",
+    COMPLETED: "#16a34a",
+    CANCELLED: "#ef4444",
+    UNKNOWN: "#94a3b8",
+  };
+
   return (
     <div className="h-full space-y-6 w-min-h">
-      {/* Header strip */}
-      {/* <div className="w-full px-6 py-4 text-white rounded-lg shadow-sm bg-brand-blue">
-        <h1 className="text-lg font-semibold md:text-xl">Admin Dashboard</h1>
-        <p className="mt-1 text-xs text-white/80">
-          Overview of products, orders, vendors and subscription revenue.
-        </p>
-      </div> */}
-
       {/* Summary cards row */}
       <div className="grid gap-3 md:grid-cols-4">
         <SummaryCard
@@ -181,21 +235,173 @@ export default function AdminDashboard() {
         />
       </div>
 
-      {/* Main panels row */}
+      {/* MIDDLE ROW: PIE CHARTS */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Products by Category (Pie chart) */}
+        <div className="flex flex-col gap-3 p-4 border rounded-md shadow-sm bg-card border-border">
+          <div className="text-center">
+            <h2 className="text-sm font-semibold">Products by Category</h2>
+            <p className="text-md text-muted-foreground">
+              Distribution of all active products across categories.
+            </p>
+          </div>
+
+          <div className="flex-1 min-h-[220px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+            {productCategoryPieData.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                No product data yet.
+              </div>
+            ) : (
+              // Pie on the left, custom vertical legend on the right
+              <div className="flex items-center h-full gap-4">
+                <div className="flex-1 h-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={productCategoryPieData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={70}
+                        labelLine={false}
+                      >
+                        {productCategoryPieData.map((entry, index) => (
+                          <Cell
+                            key={`cat-${entry.name}`}
+                            fill={
+                              CATEGORY_COLORS[index % CATEGORY_COLORS.length]
+                            }
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Custom legend */}
+                <div className="w-[40%] flex flex-col gap-2 text-md">
+                  {productCategoryPieData.map((entry, index) => (
+                    <div
+                      key={`cat-legend-${entry.name}`}
+                      className="flex items-center justify-between px-2 py-1 rounded-sm shadow-sm bg-white/70"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-3 h-3 rounded-sm"
+                          style={{
+                            backgroundColor:
+                              CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+                          }}
+                        />
+                        <span
+                          className="truncate max-w-[120px] text-slate-700"
+                          title={entry.name}
+                        >
+                          {entry.name}
+                        </span>
+                      </div>
+                      <span className="font-semibold text-slate-800">
+                        {entry.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Order Status Overview (Pie chart) */}
+        <div className="flex flex-col gap-3 p-4 border rounded-md shadow-sm bg-card border-border">
+          <div className="text-center">
+            <h2 className="text-sm font-semibold">Order Status Overview</h2>
+            <p className="text-md text-muted-foreground">
+              Breakdown of orders by current status.
+            </p>
+          </div>
+
+          <div className="flex-1 min-h-[220px] rounded-sm bg-muted p-2 text-xs text-muted-foreground">
+            {orderStatusPieData.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                No orders yet.
+              </div>
+            ) : (
+              // Pie on the left, custom vertical legend on the right
+              <div className="flex items-center h-full gap-4 ">
+                <div className="flex-1 h-full ">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={orderStatusPieData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={70}
+                        labelLine={false}
+                      >
+                        {orderStatusPieData.map((entry) => {
+                          const status = entry.name || "UNKNOWN";
+                          const color =
+                            STATUS_COLORS[status] || STATUS_COLORS.UNKNOWN;
+                          return (
+                            <Cell key={`status-${entry.name}`} fill={color} />
+                          );
+                        })}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Custom legend */}
+                <div className="w-[40%] flex  flex-col gap-2 text-md">
+                  {orderStatusPieData.map((entry) => {
+                    const status = entry.name || "UNKNOWN";
+                    const color =
+                      STATUS_COLORS[status] || STATUS_COLORS.UNKNOWN;
+                    return (
+                      <div
+                        key={`status-legend-${entry.name}`}
+                        className="flex items-center justify-between px-2 py-1 rounded-md shadow-sm bg-white/70"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-3 h-3 rounded-sm"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="text-slate-700">{status}</span>
+                        </div>
+                        <span className="font-semibold text-slate-800">
+                          {entry.value}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM ROW: BAR CHARTS */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Subscription revenue panel */}
-        <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm bg-card border-border">
+        <div className="flex flex-col gap-3 p-4 border rounded-md shadow-sm bg-card border-border">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold">
                 Subscription Revenue (Last 30 Days)
               </h2>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-md text-muted-foreground">
                 Total vendor subscription payments recorded in the last month.
               </p>
             </div>
-            <div className="flex gap-2 text-[11px]">
-              <button className="px-2 py-1 rounded-full bg-muted text-muted-foreground">
+            <div className="flex gap-2 text-md">
+              <button className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
                 Last 30 days
               </button>
             </div>
@@ -226,6 +432,7 @@ export default function AdminDashboard() {
                     tickFormatter={(value) => `${value / 1000}k`}
                   />
                   <Tooltip
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     formatter={(value: any) =>
                       `MK ${(value as number).toLocaleString()}`
                     }
@@ -241,7 +448,7 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="flex flex-wrap justify-between items-center text-[11px] text-muted-foreground mt-2 gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-md text-muted-foreground">
             <span>
               Total revenue:{" "}
               <span className="font-semibold text-emerald-700">
@@ -261,13 +468,13 @@ export default function AdminDashboard() {
         </div>
 
         {/* Vendor & Product Overview panel */}
-        <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm bg-card border-border">
+        <div className="flex flex-col gap-3 p-4 border rounded-md shadow-sm bg-card border-border">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold">
                 Vendor & Product Overview
               </h2>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-md text-muted-foreground">
                 Quick view of vendor status and product usage.
               </p>
             </div>
@@ -295,17 +502,17 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-2 text-[11px]">
-            <span className="px-2 py-1 rounded-full bg-primary text-primary-foreground">
+          <div className="flex flex-wrap gap-2 mt-2 text-md">
+            <span className="px-2 py-1 rounded-md bg-primary text-primary-foreground">
               Active vendors: {activeVendors}
             </span>
-            <span className="px-2 py-1 rounded-full bg-secondary text-secondary-foreground">
+            <span className="px-2 py-1 rounded-md bg-secondary text-secondary-foreground">
               Blocked vendors: {blockedVendors}
             </span>
-            <span className="px-2 py-1 rounded-full bg-muted text-muted-foreground">
+            <span className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
               Total users: {totalUsers}
             </span>
-            <span className="px-2 py-1 rounded-full bg-muted text-muted-foreground">
+            <span className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
               Products: {totalProducts}
             </span>
           </div>
