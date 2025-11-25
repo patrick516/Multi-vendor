@@ -1,4 +1,7 @@
-// website/src/app/products/page.tsx
+// website/src/features/app/products/page.tsx
+"use client"; // REQUIRED because ProductList uses useSearchParams
+
+import { Suspense } from "react";
 import ProductList from "@/app/features/products/ProductList";
 
 export default function ProductsPage() {
@@ -12,7 +15,9 @@ export default function ProductsPage() {
         </p>
       </header>
 
-      <ProductList />
+      <Suspense fallback={<div>Loading products…</div>}>
+        <ProductList />
+      </Suspense>
     </div>
   );
 }

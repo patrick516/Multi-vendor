@@ -1,7 +1,4 @@
-// src/app/features/products/ProductCard.tsx
-import React from "react";
 import type { Product } from "./productSlice";
-
 interface ProductCardProps {
   product: Product;
   onSold?: () => void;
@@ -23,13 +20,13 @@ export default function ProductCard({
       : product.price;
 
   return (
-    <div className="border rounded-md bg-card shadow-sm p-3 space-y-2 flex flex-col">
+    <div className="flex flex-col p-3 space-y-2 border rounded-md shadow-sm bg-card">
       {/* Image */}
-      <div className="w-full h-40 mb-2 overflow-hidden rounded-md bg-muted flex items-center justify-center">
+      <div className="flex items-center justify-center w-full h-40 mb-2 overflow-hidden rounded-md bg-muted">
         <img
           src={imgSrc}
           alt={product.name}
-          className="w-full h-full object-cover"
+          className="object-cover w-full h-full"
         />
       </div>
 
@@ -43,7 +40,7 @@ export default function ProductCard({
           </p>
         )}
 
-        <p className="text-sm font-bold mt-1">MK {price.toLocaleString()}</p>
+        <p className="mt-1 text-sm font-bold">MK {price.toLocaleString()}</p>
 
         <p className="text-[11px] text-muted-foreground">
           Qty available: <span className="font-medium">{product.stock}</span>
@@ -76,7 +73,7 @@ export default function ProductCard({
       </div>
 
       {/* Footer actions */}
-      <div className="mt-2 flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 mt-2">
         {onSold && (
           <button
             type="button"

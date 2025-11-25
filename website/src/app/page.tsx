@@ -96,7 +96,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="pb-12 space-y-8">
+    <div className="space-y-8">
       {/* HERO SECTION */}
       <section className="grid gap-8 rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-slate-50 px-4 py-8 md:grid-cols-[minmax(0,2.1fr),minmax(0,1.5fr)] md:px-8 md:py-10">
         {/* Left side: text */}

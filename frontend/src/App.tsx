@@ -1,4 +1,6 @@
 // src/App.tsx
+import type { JSX } from "react"; // 👈 ADDED THIS LINE
+
 import {
   BrowserRouter,
   Routes,

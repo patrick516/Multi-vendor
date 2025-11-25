@@ -1,4 +1,3 @@
-// website/src/app/components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
@@ -177,13 +176,13 @@ export default function Navbar() {
             <Image
               src="/tp_logo.svg"
               alt="Trade Point Logo"
-              width={40}
+              width={20}
               height={13}
               className="h-auto"
             />
 
             <div className="flex flex-col leading-tight">
-              <span className="font-semibold text-md text-slate-900">
+              <span className="text-sm font-semibold text-slate-900">
                 Trade Point Malawi
               </span>
               <span className="text-xs text-slate-500">
