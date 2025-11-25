@@ -1,3 +1,4 @@
+// frontend/src/app/features/subscriptions/SubscriptionPage.tsx
 import { useEffect, useState } from "react";
 
 const API_BASE_URL =
@@ -30,10 +31,17 @@ export default function SubscriptionPage() {
   const [amountInput, setAmountInput] = useState("1000");
   const [savingAmount, setSavingAmount] = useState(false);
 
+  // History modal
   const [historyVendor, setHistoryVendor] = useState<VendorSubRow | null>(null);
   const [historyPayments, setHistoryPayments] = useState<PaymentRow[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
+
+  // Mark paid modal
+  const [payVendor, setPayVendor] = useState<VendorSubRow | null>(null);
+  const [payDate, setPayDate] = useState<string>(""); // YYYY-MM-DD
+  const [nextDueDate, setNextDueDate] = useState<string>(""); // YYYY-MM-DD
+  const [paySaving, setPaySaving] = useState(false);
 
   async function loadVendors() {
     try {
@@ -71,17 +79,52 @@ export default function SubscriptionPage() {
     loadVendors();
   }, []);
 
-  async function handleMarkPaid(vendorId: number) {
-    const vendor = vendors.find((v) => v.id === vendorId);
-    if (!vendor) return;
+  // -----------------------------
+  // Mark Paid modal open helper
+  // -----------------------------
+  function openMarkPaidModal(vendor: VendorSubRow) {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const todayStr = `${yyyy}-${mm}-${dd}`;
 
-    const sure = window.confirm(
-      `Mark ${vendor.name || vendor.email} as PAID for this period?`
-    );
-    if (!sure) return;
+    const next = new Date(today.getTime());
+    next.setDate(next.getDate() + 30);
+    const ny = next.getFullYear();
+    const nm = String(next.getMonth() + 1).padStart(2, "0");
+    const nd = String(next.getDate()).padStart(2, "0");
+    const nextStr = `${ny}-${nm}-${nd}`;
+
+    setPayVendor(vendor);
+    setPayDate(todayStr);
+    setNextDueDate(nextStr);
+    setPaySaving(false);
+  }
+
+  // When payDate changes, auto-suggest nextDueDate = payDate + 30 days (if user hasn't manually changed it)
+  function handlePayDateChange(val: string) {
+    setPayDate(val);
+    if (!val) return;
+    const base = new Date(val);
+    if (isNaN(base.getTime())) return;
+    const next = new Date(base.getTime());
+    next.setDate(next.getDate() + 30);
+    const ny = next.getFullYear();
+    const nm = String(next.getMonth() + 1).padStart(2, "0");
+    const nd = String(next.getDate()).padStart(2, "0");
+    setNextDueDate(`${ny}-${nm}-${nd}`);
+  }
+
+  async function confirmMarkPaid() {
+    if (!payVendor) return;
+    if (!payDate || !nextDueDate) {
+      alert("Please choose both payment date and next due date.");
+      return;
+    }
 
     try {
-      setSavingVendorId(vendorId);
+      setPaySaving(true);
 
       const token = localStorage.getItem("authToken");
       const headers: Record<string, string> = {
@@ -90,10 +133,14 @@ export default function SubscriptionPage() {
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
       const res = await fetch(
-        `${API_BASE_URL}/admin/subscriptions/vendor/${vendorId}/mark-paid`,
+        `${API_BASE_URL}/admin/subscriptions/vendor/${payVendor.id}/mark-paid`,
         {
           method: "POST",
           headers,
+          body: JSON.stringify({
+            paidAt: payDate,
+            nextDue: nextDueDate,
+          }),
         }
       );
 
@@ -103,13 +150,22 @@ export default function SubscriptionPage() {
       }
 
       await res.json();
+      setPayVendor(null);
       await loadVendors();
     } catch (err: any) {
       alert(err.message || "Failed to mark vendor paid");
-      setSavingVendorId(null);
+    } finally {
+      setPaySaving(false);
     }
   }
 
+  function closeMarkPaidModal() {
+    setPayVendor(null);
+  }
+
+  // -----------------------------
+  // Block / Unblock (unchanged)
+  // -----------------------------
   async function handleBlock(vendorId: number) {
     const vendor = vendors.find((v) => v.id === vendorId);
     if (!vendor) return;
@@ -192,6 +248,9 @@ export default function SubscriptionPage() {
     }
   }
 
+  // -----------------------------
+  // Update global amount (unchanged from last fix)
+  // -----------------------------
   async function handleUpdateAmount(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -228,12 +287,15 @@ export default function SubscriptionPage() {
       await res.json();
       await loadVendors();
     } catch (err: any) {
-      setError(err.message || "Failed to update subscription amount");
+      setError(err.message || "Failed to update amount");
     } finally {
       setSavingAmount(false);
     }
   }
 
+  // -----------------------------
+  // History modal
+  // -----------------------------
   async function handleViewHistory(vendor: VendorSubRow) {
     try {
       setHistoryVendor(vendor);
@@ -360,7 +422,7 @@ export default function SubscriptionPage() {
                             : "bg-red-100 text-red-700",
                         ].join(" ")}
                       >
-                        {v.subscriptionActive ? "Active" : "Blocked"}
+                        {v.subscriptionActive ? "ACTIVE" : "BLOCKED"}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-xs">
@@ -380,9 +442,9 @@ export default function SubscriptionPage() {
                       <button
                         className="px-2 py-1 rounded-md bg-emerald-600 text-white text-[11px] hover:bg-emerald-700 disabled:opacity-40"
                         disabled={savingVendorId === v.id}
-                        onClick={() => handleMarkPaid(v.id)}
+                        onClick={() => openMarkPaidModal(v)}
                       >
-                        {savingVendorId === v.id ? "Saving..." : "Mark paid"}
+                        Mark paid
                       </button>
                       {v.subscriptionActive ? (
                         <button
@@ -416,7 +478,71 @@ export default function SubscriptionPage() {
         )}
       </section>
 
-      {/* History Modal */}
+      {/* --- Mark Paid Modal --- */}
+      {payVendor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40">
+          <div className="w-full max-w-md p-4 space-y-3 border shadow-lg rounded-2xl bg-card border-border">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">
+                Mark paid – {payVendor.name || payVendor.email}
+              </h3>
+              <button
+                onClick={closeMarkPaidModal}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground">
+              Choose the actual payment date and when the next subscription will
+              be due. By default, the next due date is 30 days after the payment
+              date.
+            </p>
+
+            <div className="space-y-2 text-[11px]">
+              <div className="space-y-1">
+                <label className="font-medium">Payment date</label>
+                <input
+                  type="date"
+                  value={payDate}
+                  onChange={(e) => handlePayDateChange(e.target.value)}
+                  className="w-full rounded-md border border-border bg-background px-2 py-1 text-[11px]"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-medium">Next due date</label>
+                <input
+                  type="date"
+                  value={nextDueDate}
+                  onChange={(e) => setNextDueDate(e.target.value)}
+                  className="w-full rounded-md border border-border bg-background px-2 py-1 text-[11px]"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={closeMarkPaidModal}
+                className="px-3 py-1.5 rounded-md bg-slate-100 text-[11px] text-slate-700 hover:bg-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmMarkPaid}
+                disabled={paySaving}
+                className="px-4 py-1.5 rounded-md bg-emerald-600 text-[11px] font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {paySaving ? "Saving..." : "Confirm payment"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- History Modal --- */}
       {historyVendor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40">
           <div className="w-full max-w-xl p-4 space-y-3 border shadow-lg rounded-2xl bg-card border-border">

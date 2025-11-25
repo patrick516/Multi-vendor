@@ -20,17 +20,17 @@ function pageTitle(path: string): string {
 
 export function TopBar({ currentPath, user }: TopBarProps) {
   return (
-    <header className="w-full border-b border-border bg-card px-4 py-3 flex items-center justify-between">
-      <h2 className="font-semibold text-base md:text-lg">
+    <header className="relative flex items-center justify-between p-2 mx-4 mt-1 border-b rounded-sm bg-brand-blue border-border">
+      <h2 className="absolute text-base font-semibold transform -translate-x-1/2 left-1/2 md:text-lg">
         {pageTitle(currentPath)}
       </h2>
 
-      <div className="flex items-center gap-3">
-        <div className="hidden sm:flex flex-col items-end leading-tight text-xs">
+      <div className="flex items-center gap-3 ml-auto">
+        <div className="flex-col items-end hidden text-xs leading-tight sm:flex">
           <span className="font-medium text-foreground">{user.name}</span>
           <span className="text-muted-foreground">{user.role}</span>
         </div>
-        <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+        <div className="flex items-center justify-center text-xs font-bold rounded-full h-9 w-9 bg-primary text-primary-foreground">
           {user.name.charAt(0).toUpperCase()}
         </div>
       </div>

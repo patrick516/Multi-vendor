@@ -50,24 +50,31 @@ async function listVendors(req, res) {
     return res.status(500).json({ message: "Failed to fetch vendors" });
   }
 }
-
 // ===========================
-// MARK PAID – now records payment history
+// MARK PAID – with custom dates
 // ===========================
 async function markVendorPaid(req, res) {
   try {
     const vendorId = Number(req.params.vendorId);
+    const { paidAt, nextDue } = req.body || {};
 
-    const now = new Date();
-    const nextDue = new Date();
-    nextDue.setDate(now.getDate() + 30);
+    // Allow admin to choose payment date; default = now
+    const paidDate = paidAt ? new Date(paidAt) : new Date();
 
-    // Update vendor fields
+    // If nextDue passed by admin, use it, otherwise 30 days from paidDate
+    let nextDueDate;
+    if (nextDue) {
+      nextDueDate = new Date(nextDue);
+    } else {
+      nextDueDate = new Date(paidDate.getTime());
+      nextDueDate.setDate(paidDate.getDate() + 30);
+    }
+
     const vendor = await prisma.user.update({
       where: { id: vendorId },
       data: {
-        lastPaymentDate: now,
-        nextPaymentDue: nextDue,
+        lastPaymentDate: paidDate,
+        nextPaymentDue: nextDueDate,
         subscriptionActive: true,
       },
     });
@@ -79,9 +86,9 @@ async function markVendorPaid(req, res) {
       data: {
         vendorId: vendor.id,
         amount,
-        periodStart: now,
-        periodEnd: nextDue,
-        paidAt: now,
+        periodStart: paidDate,
+        periodEnd: nextDueDate,
+        paidAt: paidDate,
       },
     });
 
@@ -90,7 +97,7 @@ async function markVendorPaid(req, res) {
       "Subscription Payment Approved",
       `Hello ${
         vendor.name
-      },\n\nYour subscription payment has been approved.\nYour account is active until: ${nextDue.toDateString()}.\n\nThank you,\n${
+      },\n\nYour subscription payment has been approved.\nYour account is active until: ${nextDueDate.toDateString()}.\n\nThank you,\n${
         process.env.BRAND_NAME || "Trade Point Malawi"
       }`
     );

@@ -30,6 +30,7 @@ async function getMe(req, res) {
 }
 
 // GET /api/users (admin only)
+// GET /api/users (admin only)
 async function getUsers(req, res) {
   try {
     const users = await prisma.user.findMany({
@@ -39,6 +40,8 @@ async function getUsers(req, res) {
         name: true,
         role: true,
         createdAt: true,
+        subscriptionActive: true,
+        mustPay: true,
       },
       orderBy: { createdAt: "desc" },
     });

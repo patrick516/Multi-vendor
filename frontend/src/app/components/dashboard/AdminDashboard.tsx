@@ -150,12 +150,12 @@ export default function AdminDashboard() {
   return (
     <div className="h-full space-y-6 w-min-h">
       {/* Header strip */}
-      <div className="w-full px-6 py-4 text-white rounded-lg shadow-sm bg-brand-blue">
+      {/* <div className="w-full px-6 py-4 text-white rounded-lg shadow-sm bg-brand-blue">
         <h1 className="text-lg font-semibold md:text-xl">Admin Dashboard</h1>
         <p className="mt-1 text-xs text-white/80">
           Overview of products, orders, vendors and subscription revenue.
         </p>
-      </div>
+      </div> */}
 
       {/* Summary cards row */}
       <div className="grid gap-3 md:grid-cols-4">

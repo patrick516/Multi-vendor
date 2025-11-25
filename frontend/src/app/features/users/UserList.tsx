@@ -277,14 +277,14 @@ export default function UserList() {
     );
   }
 
-  // 👑 SUPER_ADMIN VIEW
+  //  SUPER_ADMIN VIEW
   return (
     <div className="space-y-4">
       {/* Header */}
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Users</h2>
-          <p className="text-xs text-muted-foreground">
+          {/* <h2 className="text-lg font-semibold">Users</h2> */}
+          <p className="text-md text-muted-foreground">
             Super admin can view and create users (vendors, admins, customers).
           </p>
         </div>

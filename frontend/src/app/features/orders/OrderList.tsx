@@ -104,7 +104,7 @@ export default function OrderList() {
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Orders</h2>
+          {/* <h2 className="text-lg font-semibold">Orders</h2> */}
           <p className="text-xs text-muted-foreground">
             Track customer orders and vendor sales.
           </p>

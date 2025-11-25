@@ -26,33 +26,30 @@ export function Sidebar({ items, currentPath, user }: SidebarProps) {
     navigate("/login");
   }
 
-  const panelLabel =
-    user.role === "SUPER_ADMIN"
-      ? "Admin Panel"
-      : user.role === "VENDOR"
-      ? "Vendor Panel"
-      : "User Panel";
-
   return (
-    <aside className="flex flex-col flex-shrink-0 w-56 h-full text-white bg-brand-blue">
+    <aside className="flex flex-col flex-shrink-0 w-56 h-full mt-1 ml-2 text-white rounded-md bg-brand-blue">
       {/* Logo / Brand */}
-      <div className="flex items-center gap-2 px-6 py-4 border-b border-white/10">
-        <div className="flex items-center justify-center text-xs font-bold rounded-full h-9 w-9 bg-brand-yellow text-brand-blue">
-          TP
+      <div className="flex items-center gap-2 px-2 py-1 border-b border-white/10">
+        <div className="flex items-center justify-center w-full px-2 py-1 border-white/10">
+          <img
+            src="/icons/tp_logo.svg"
+            alt="Logo"
+            className="object-contain w-auto h-12"
+          />
         </div>
-        <div className="leading-tight">
+        {/* <div className="leading-tight">
           <p className="text-sm font-semibold">Trade Point Malawi</p>
           <p className="text-[11px] text-white/70">{panelLabel}</p>
-        </div>
+        </div> */}
       </div>
 
       {/* User info */}
       <div className="flex items-center gap-3 px-6 py-4 border-b border-white/10">
-        <div className="flex items-center justify-center w-12 h-12 font-bold rounded-full bg-white/90 text-brand-blue">
+        {/* <div className="flex items-center justify-center w-12 h-12 font-bold rounded-full bg-white/90 text-brand-blue">
           {user.name.charAt(0).toUpperCase()}
-        </div>
+        </div> */}
         <div className="leading-tight">
-          <p className="text-sm font-semibold truncate max-w-[140px]">
+          <p className="text-md font-semibold text-center truncate max-w-[140px]">
             {user.name}
           </p>
           <p className="text-[11px] text-white/70 truncate max-w-[140px]">
@@ -62,7 +59,7 @@ export function Sidebar({ items, currentPath, user }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto text-sm">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto text-md">
         {items.map((item) => {
           const isActive = currentPath === item.path;
           return (

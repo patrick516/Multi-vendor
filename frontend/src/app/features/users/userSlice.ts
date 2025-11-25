@@ -11,7 +11,8 @@ export interface User {
   email: string;
   role: "SUPER_ADMIN" | "VENDOR" | "CUSTOMER";
   createdAt?: string;
-  subscriptionActive?: boolean; //
+  subscriptionActive?: boolean;
+  mustPay?: boolean;
 }
 
 interface UsersState {

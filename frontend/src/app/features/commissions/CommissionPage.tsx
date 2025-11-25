@@ -120,8 +120,8 @@ export default function CommissionPage() {
   return (
     <div className="space-y-4">
       <header>
-        <h2 className="text-lg font-semibold">Commissions</h2>
-        <p className="text-xs text-muted-foreground">
+        {/* <h2 className="text-lg font-semibold">Commissions</h2> */}
+        <p className="text-md text-muted-foreground">
           Track commission owed by vendors and mark payments as received.
         </p>
       </header>
