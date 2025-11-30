@@ -1,7 +1,6 @@
-// src/app/features/users/UserList.tsx
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUsers, selectUsers } from "./userSlice";
+import { fetchUsers, selectUsers, type User } from "./userSlice";
 import { Trash } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
@@ -34,6 +33,7 @@ export default function UserList() {
   const dispatch = useDispatch<any>();
   const { items, loading, error } = useSelector(selectUsers);
 
+  // Add user modal state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"SUPER_ADMIN" | "VENDOR" | "CUSTOMER">(
@@ -44,13 +44,30 @@ export default function UserList() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // Messaging state
+  const [messageVendor, setMessageVendor] = useState<User | null>(null);
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
+  const [msgSubject, setMsgSubject] = useState("");
+  const [msgBody, setMsgBody] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sendSuccess, setSendSuccess] = useState<string | null>(null);
+  const [selectedVendorIds, setSelectedVendorIds] = useState<number[]>([]);
+  const [selectAllVendors, setSelectAllVendors] = useState(true);
+
   // 🔐 Get current logged-in user from localStorage
   const authUserJson =
     typeof window !== "undefined" ? localStorage.getItem("authUser") : null;
-  const authUser = authUserJson ? JSON.parse(authUserJson) : null;
+  const authUser: User | null = authUserJson ? JSON.parse(authUserJson) : null;
   const isSuperAdmin = authUser?.role === "SUPER_ADMIN";
 
-  // Only SUPER_ADMIN should fetch all users
+  // Vendor list helper
+  const vendorUsers = useMemo(
+    () => items.filter((u: User) => u.role === "VENDOR"),
+    [items]
+  );
+
+  // Fetch users (admin only)
   useEffect(() => {
     if (isSuperAdmin) {
       dispatch(fetchUsers());
@@ -114,8 +131,12 @@ export default function UserList() {
       }
       resetForm();
       setShowAddModal(false);
-    } catch (err: any) {
-      setSaveError(err.message || "Failed to create user");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setSaveError(err.message);
+      } else {
+        setSaveError("Failed to create user");
+      }
     } finally {
       setSaving(false);
     }
@@ -148,10 +169,98 @@ export default function UserList() {
 
       // Refresh list
       dispatch(fetchUsers());
-    } catch (err: any) {
-      alert(err.message || "Failed to delete user");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert("Failed to delete user");
+      }
     }
   }
+
+  // -------- Messaging helpers --------
+
+  async function sendMessageToVendors(targetVendorIds: number[]) {
+    setSendError(null);
+    setSendSuccess(null);
+
+    if (!msgBody.trim()) {
+      setSendError("Message text is required.");
+      return;
+    }
+
+    try {
+      setSending(true);
+
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("authToken")
+          : null;
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE_URL}/admin/messages/vendors`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          vendorIds: targetVendorIds,
+          subject: msgSubject,
+          message: msgBody,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Failed to send message");
+      }
+
+      const data = await res.json();
+      setSendSuccess(data.message || "Message sent.");
+      setMsgBody("");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setSendError(err.message);
+      } else {
+        setSendError("Failed to send message");
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
+  function openVendorMessageModal(user: any) {
+    setMessageVendor(user);
+    setMsgSubject("Message from Trade Point Malawi admin");
+    setMsgBody("");
+    setSendError(null);
+    setSendSuccess(null);
+  }
+
+  function openBroadcastModal() {
+    setBroadcastOpen(true);
+    setSelectAllVendors(true);
+    setSelectedVendorIds(vendorUsers.map((v: any) => v.id));
+    setMsgSubject("Announcement from Trade Point Malawi admin");
+    setMsgBody("");
+    setSendError(null);
+    setSendSuccess(null);
+  }
+
+  function toggleVendorSelection(id: number) {
+    setSelectAllVendors(false);
+    setSelectedVendorIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
+  useEffect(() => {
+    if (selectAllVendors) {
+      setSelectedVendorIds(vendorUsers.map((v: any) => v.id));
+    }
+  }, [selectAllVendors, vendorUsers]);
 
   // 🧱 TanStack table columns
   const columns = useMemo<ColumnDef<any>[]>(
@@ -212,14 +321,29 @@ export default function UserList() {
         header: "Actions",
         cell: ({ row }) => {
           const user = row.original;
+          const isVendor = user.role === "VENDOR";
+
           return (
-            <button
-              type="button"
-              className="inline-flex items-center rounded-md  px-1 py-0.5 text-[11px] font-medium text-white "
-              onClick={() => handleDeleteUser(user)}
-            >
-              <Trash className="text-gray-500" />
-            </button>
+            <div className="flex items-center gap-2">
+              {isVendor && (
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center text-xs border rounded-md h-7 w-7 border-border hover:bg-muted"
+                  onClick={() => openVendorMessageModal(user)}
+                  title="Message vendor"
+                >
+                  ✉
+                </button>
+              )}
+              <button
+                type="button"
+                className="inline-flex items-center justify-center border rounded-md h-7 w-7 border-destructive text-destructive hover:bg-destructive/10"
+                onClick={() => handleDeleteUser(user)}
+                title="Delete user"
+              >
+                <Trash className="w-3 h-3" />
+              </button>
+            </div>
           );
         },
       },
@@ -283,21 +407,29 @@ export default function UserList() {
       {/* Header */}
       <header className="flex items-center justify-between">
         <div>
-          {/* <h2 className="text-lg font-semibold">Users</h2> */}
           <p className="text-md text-muted-foreground">
             Super admin can view and create users (vendors, admins, customers).
           </p>
         </div>
-        <button
-          type="button"
-          className="px-3 py-2 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-          onClick={() => {
-            resetForm();
-            setShowAddModal(true);
-          }}
-        >
-          + Add user
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="px-3 py-2 text-xs font-semibold text-white rounded-md bg-emerald-600 hover:bg-emerald-700"
+            onClick={openBroadcastModal}
+          >
+            Message vendors
+          </button>
+          <button
+            type="button"
+            className="px-3 py-2 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => {
+              resetForm();
+              setShowAddModal(true);
+            }}
+          >
+            + Add user
+          </button>
+        </div>
       </header>
 
       {/* Add User Modal */}
@@ -473,6 +605,200 @@ export default function UserList() {
             >
               Next
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Single-vendor message modal */}
+      {messageVendor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40">
+          <div className="w-full max-w-md p-4 space-y-3 border rounded-lg shadow-lg bg-card border-border">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">
+                Message vendor:{" "}
+                <span className="font-normal">
+                  {messageVendor.name || messageVendor.email}
+                </span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setMessageVendor(null)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground">
+              This will send an email to{" "}
+              <span className="font-semibold">{messageVendor.email}</span>.
+            </p>
+
+            {sendError && (
+              <p className="text-[11px] text-destructive">{sendError}</p>
+            )}
+            {sendSuccess && (
+              <p className="text-[11px] text-emerald-600">{sendSuccess}</p>
+            )}
+
+            <div className="space-y-2">
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium">Subject</label>
+                <input
+                  className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+                  value={msgSubject}
+                  onChange={(e) => setMsgSubject(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium">Message</label>
+                <textarea
+                  className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+                  rows={4}
+                  value={msgBody}
+                  onChange={(e) => setMsgBody(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setMessageVendor(null)}
+                className="px-3 py-1.5 rounded-md bg-muted text-xs text-muted-foreground hover:bg-muted/80"
+                disabled={sending}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  sendMessageToVendors(messageVendor ? [messageVendor.id] : [])
+                }
+                className="px-4 py-1.5 rounded-md bg-emerald-600 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                disabled={sending}
+              >
+                {sending ? "Sending..." : "Send message"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Broadcast / multi-vendor message modal */}
+      {broadcastOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40">
+          <div className="w-full max-w-lg p-4 space-y-3 border rounded-lg shadow-lg bg-card border-border">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">
+                Message multiple vendors
+              </h3>
+              <button
+                type="button"
+                onClick={() => setBroadcastOpen(false)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground">
+              Choose which vendors to notify, or send to all vendors.
+            </p>
+
+            {sendError && (
+              <p className="text-[11px] text-destructive">{sendError}</p>
+            )}
+            {sendSuccess && (
+              <p className="text-[11px] text-emerald-600">{sendSuccess}</p>
+            )}
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  id="selectAllVendors"
+                  type="checkbox"
+                  checked={selectAllVendors}
+                  onChange={(e) => setSelectAllVendors(e.target.checked)}
+                />
+                <label
+                  htmlFor="selectAllVendors"
+                  className="text-[11px] text-muted-foreground"
+                >
+                  Select all vendors ({vendorUsers.length})
+                </label>
+              </div>
+
+              {!selectAllVendors && (
+                <div className="p-2 space-y-1 overflow-y-auto text-xs border rounded-md max-h-40 border-border bg-background">
+                  {vendorUsers.map((v: any) => (
+                    <label
+                      key={v.id}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedVendorIds.includes(v.id)}
+                        onChange={() => toggleVendorSelection(v.id)}
+                      />
+                      <span>
+                        {v.name || v.email}{" "}
+                        <span className="text-[10px] text-muted-foreground">
+                          ({v.email})
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                  {vendorUsers.length === 0 && (
+                    <p className="text-[11px] text-muted-foreground">
+                      No vendors available.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium">Subject</label>
+                <input
+                  className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+                  value={msgSubject}
+                  onChange={(e) => setMsgSubject(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium">Message</label>
+                <textarea
+                  className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+                  rows={4}
+                  value={msgBody}
+                  onChange={(e) => setMsgBody(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setBroadcastOpen(false)}
+                className="px-3 py-1.5 rounded-md bg-muted text-xs text-muted-foreground hover:bg-muted/80"
+                disabled={sending}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const ids = selectAllVendors
+                    ? vendorUsers.map((v: any) => v.id)
+                    : selectedVendorIds;
+                  sendMessageToVendors(ids);
+                }}
+                className="px-4 py-1.5 rounded-md bg-emerald-600 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                disabled={sending}
+              >
+                {sending ? "Sending..." : "Send message"}
+              </button>
+            </div>
           </div>
         </div>
       )}

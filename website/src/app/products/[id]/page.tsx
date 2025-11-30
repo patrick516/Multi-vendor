@@ -1,4 +1,3 @@
-// website/src/app/products/[id]/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -534,6 +533,7 @@ function BuyNowModal({
         const body = await res.json().catch(() => ({}));
         throw new Error(body.message || "Failed to send buy now request");
       }
+
       saveCustomerInfo(customerName, customerEmail, customerPhone);
 
       setSuccess(true);
@@ -553,7 +553,7 @@ function BuyNowModal({
       <div className="w-full max-w-md p-4 space-y-3 bg-white shadow-lg rounded-xl">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-text-main">
-            Buy now – {product.name}
+            Buy Now – {product.name}
           </h3>
           <button
             onClick={onClose}
@@ -576,8 +576,84 @@ function BuyNowModal({
         )}
 
         <form className="space-y-2" onSubmit={handleSubmit}>
-          {/* name, phone, email, quantity, note fields */}
-          {/* ...same as your current implementation... */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium">Your name *</label>
+            <input
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-soft bg-bg-light"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium">
+              Phone (for call / WhatsApp)
+            </label>
+            <input
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-soft bg-bg-light"
+              value={customerPhone}
+              onChange={(e) => setCustomerPhone(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium">Email (optional)</label>
+            <input
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-soft bg-bg-light"
+              type="email"
+              value={customerEmail}
+              onChange={(e) => setCustomerEmail(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium">
+              Quantity (max {maxQty ?? "∞"})
+            </label>
+            <input
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-soft bg-bg-light"
+              type="number"
+              min={1}
+              max={maxQty}
+              value={quantity}
+              onChange={(e) => setQuantity(Number(e.target.value) || 1)}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium">
+              Note (optional – e.g. delivery location, preferred time)
+            </label>
+            <textarea
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-soft bg-bg-light"
+              rows={3}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md bg-gray-100 px-3 py-1.5 text-xs text-text-muted hover:bg-gray-200"
+              disabled={saving}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-md bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+            >
+              {saving ? "Submitting..." : "Place order"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

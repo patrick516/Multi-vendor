@@ -73,11 +73,11 @@ export default function AddProductForm({
     [categories, categorySearch]
   );
 
-  // Use current location (browser geolocation)
+  // ---- AUTO USE CURRENT LOCATION ON MOUNT ----
   function handleUseCurrentLocation() {
     setLocError(null);
 
-    if (!navigator.geolocation) {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
       setLocError("Geolocation is not supported by this browser.");
       return;
     }
@@ -92,7 +92,9 @@ export default function AddProductForm({
       },
       (err) => {
         setLocLoading(false);
-        setLocError("Unable to get your current location.");
+        setLocError(
+          "Unable to get your current location. Please allow location access in your browser."
+        );
         console.error("Geolocation error:", err);
       },
       {
@@ -102,6 +104,12 @@ export default function AddProductForm({
       }
     );
   }
+
+  useEffect(() => {
+    // Automatically request location when the form/modal opens
+    handleUseCurrentLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load districts & categories from backend
   useEffect(() => {
@@ -190,6 +198,14 @@ export default function AddProductForm({
       return;
     }
 
+    // ---- LOCATION IS NOW REQUIRED ----
+    if (!latitude || !longitude) {
+      setError(
+        "We could not detect your current location. Please allow location access in your browser and try again."
+      );
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -202,9 +218,9 @@ export default function AddProductForm({
       formData.append("area", area);
       formData.append("categoryId", categoryId);
 
-      // OPTIONAL COORDINATES
-      if (latitude) formData.append("latitude", latitude);
-      if (longitude) formData.append("longitude", longitude);
+      // REQUIRED COORDINATES (since we now force them)
+      formData.append("latitude", latitude);
+      formData.append("longitude", longitude);
 
       formData.append("mainImage", mainImage);
       galleryImages.forEach((file) => {
@@ -265,23 +281,23 @@ export default function AddProductForm({
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 md:items-center">
       <div className="mt-6 mb-6 w-full max-w-md rounded-lg bg-card border border-border shadow-lg p-4 space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Add Product</h2>
+          <h2 className="font-semibold text-md">Add Product</h2>
           <button
             onClick={onClose}
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="text-md text-muted-foreground hover:text-foreground"
           >
             ✕
           </button>
         </div>
 
-        <p className="text-[11px] text-muted-foreground">
+        {/* <p className="text-md text-muted-foreground">
           Note: An extra amount will be added on top of your price as admin
           commission. Customers will see the display price, and the difference
           will be paid to admin.
-        </p>
+        </p> */}
 
         {metaError && (
-          <p className="text-[11px] text-destructive">
+          <p className="text-md text-destructive">
             {metaError} — please contact the system admin.
           </p>
         )}
@@ -289,9 +305,9 @@ export default function AddProductForm({
         <form className="pb-2 space-y-3" onSubmit={handleSubmit}>
           {/* BASIC FIELDS */}
           <div className="space-y-1">
-            <label className="text-xs font-medium">Product name</label>
+            <label className="font-medium text-md">Product name</label>
             <input
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 border rounded-md text-md border-border bg-background"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Toyota Corolla 2015"
@@ -299,9 +315,9 @@ export default function AddProductForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium">Your price (base)</label>
+            <label className="font-medium text-md">Your price (base)</label>
             <input
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 border rounded-md text-md border-border bg-background"
               type="number"
               min={0}
               value={basePrice}
@@ -324,9 +340,9 @@ export default function AddProductForm({
 
           {/* LOCATION FIELDS (DISTRICT & AREA) */}
           <div className="space-y-1">
-            <label className="text-xs font-medium">District *</label>
+            <label className="font-medium text-md">District *</label>
             <select
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 border rounded-md text-md border-border bg-background"
               value={district}
               onChange={(e) => setDistrict(e.target.value)}
               disabled={metaLoading}
@@ -341,7 +357,7 @@ export default function AddProductForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium">
+            <label className="font-medium text-md">
               Area / T.A / specific place
             </label>
             <input
@@ -352,48 +368,44 @@ export default function AddProductForm({
             />
           </div>
 
-          {/* LOCATION (COORDINATES) */}
+          {/* LOCATION (COORDINATES) - AUTO & REQUIRED */}
           <div className="space-y-1">
-            <label className="text-xs font-medium">
-              Product location on map (optional)
+            <label className="text-sm font-medium">
+              Product location on map (required)
             </label>
-            <p className="text-[11px] text-muted-foreground">
-              Click &quot;Use my current location&quot; when you are near where
-              the product is located (shop, warehouse, etc.). This helps
-              customers find items that are close to them on the map.
-            </p>
-            <div className="flex items-center gap-2 mt-1">
-              <button
-                type="button"
-                onClick={handleUseCurrentLocation}
-                disabled={locLoading}
-                className="px-3 py-1 rounded-md text-[11px] bg-muted text-muted-foreground hover:bg-muted/80 disabled:opacity-60"
-              >
-                {locLoading
-                  ? "Detecting location..."
-                  : "Use my current location"}
-              </button>
-              {latitude && longitude && (
-                <span className="text-[11px] text-muted-foreground">
-                  Saved:{" "}
+            {/* <p className="text-md text-muted-foreground">
+              We automatically detect your current location when this form
+              opens. This helps customers find items that are close to them on
+              the map.
+            </p> */}
+
+            <div className="mt-1 text-md text-muted-foreground">
+              {locLoading && <span>Detecting your current location...</span>}
+              {!locLoading && latitude && longitude && (
+                <span>
+                  Detected:{" "}
                   <span className="font-mono">
                     {Number(latitude).toFixed(4)},{" "}
                     {Number(longitude).toFixed(4)}
                   </span>
                 </span>
               )}
+              {!locLoading && !latitude && !locError && (
+                <span>Waiting for browser location permission...</span>
+              )}
             </div>
+
             {locError && (
-              <p className="text-[11px] text-destructive mt-1">{locError}</p>
+              <p className="mt-1 text-md text-destructive">{locError}</p>
             )}
           </div>
 
           {/* CATEGORY FIELD - SINGLE INPUT WITH DROPDOWN FILTER */}
           <div className="space-y-1">
-            <label className="text-xs font-medium">Category *</label>
+            <label className="font-medium text-md">Category *</label>
             <div className="relative">
               <input
-                className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background pr-7"
+                className="w-full px-3 py-2 border rounded-md text-md border-border bg-background pr-7"
                 type="text"
                 value={categorySearch}
                 onChange={(e) => {
@@ -408,7 +420,7 @@ export default function AddProductForm({
                 placeholder="Type to search and select category"
                 disabled={metaLoading || !categories.length}
               />
-              <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[10px] text-muted-foreground">
+              <span className="absolute inset-y-0 flex items-center pointer-events-none right-2 text-md text-muted-foreground">
                 ▼
               </span>
 
@@ -435,7 +447,7 @@ export default function AddProductForm({
               )}
 
               {categoryOpen && !filteredCategories.length && (
-                <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-[11px] text-muted-foreground shadow-lg">
+                <div className="absolute z-50 w-full px-3 py-2 mt-1 border rounded-md shadow-lg border-border bg-background text-md text-muted-foreground">
                   No category matches &quot;{categorySearch}&quot;
                 </div>
               )}
@@ -443,9 +455,9 @@ export default function AddProductForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium">Description</label>
+            <label className="font-medium text-md">Description</label>
             <textarea
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 border rounded-md text-md border-border bg-background"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -455,7 +467,7 @@ export default function AddProductForm({
 
           {/* MAIN IMAGE */}
           <div className="space-y-2">
-            <label className="text-xs font-medium">Main image</label>
+            <label className="font-medium text-md">Main image</label>
             <input
               type="file"
               accept="image/*"
@@ -464,9 +476,7 @@ export default function AddProductForm({
             />
             {mainImagePreview && (
               <div className="mt-2">
-                <p className="text-[11px] text-muted-foreground mb-1">
-                  Preview:
-                </p>
+                <p className="mb-1 text-md text-muted-foreground">Preview:</p>
                 <img
                   src={mainImagePreview}
                   alt="Main preview"
@@ -474,14 +484,14 @@ export default function AddProductForm({
                 />
               </div>
             )}
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-md text-muted-foreground">
               This image will be used as the main cover on the public website.
             </p>
           </div>
 
           {/* GALLERY IMAGES */}
           <div className="space-y-2">
-            <label className="text-xs font-medium">Gallery images</label>
+            <label className="font-medium text-md">Gallery images</label>
 
             <input
               ref={galleryInputRef}
@@ -512,26 +522,26 @@ export default function AddProductForm({
               </button>
             </div>
 
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-md text-muted-foreground">
               These will appear as thumbnails below the main image on the
               website. Click the + button to add more images.
             </p>
           </div>
 
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && <p className="text-md text-destructive">{error}</p>}
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1 text-xs rounded-md bg-muted text-muted-foreground hover:bg-muted/80"
+              className="px-3 py-1 rounded-md text-md bg-muted text-muted-foreground hover:bg-muted/80"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={disableSave}
-              className="px-4 py-1 text-xs rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+              className="px-4 py-1 rounded-md text-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             >
               {saving ? "Saving..." : "Save product"}
             </button>

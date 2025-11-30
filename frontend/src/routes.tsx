@@ -4,7 +4,8 @@ import OrderList from "./app/features/orders/OrderList";
 import ProductList from "@/app/features/products/ProductList";
 import UserList from "@/app/features/users/UserList";
 import CommissionPage from "@/app/features/commissions/CommissionPage";
-import SubscriptionPage from "@/app/features/subscriptions/SubscriptionPage"; // 👈 NEW
+import SubscriptionPage from "@/app/features/subscriptions/SubscriptionPage";
+import MessagesPage from "@/app/features/messages/MessagesPage";
 
 export type AppRole = "SUPER_ADMIN" | "VENDOR" | "CUSTOMER";
 
@@ -12,7 +13,7 @@ export interface AppRoute {
   path: string;
   label: string;
   component: React.ComponentType<any>;
-  roles?: AppRole[]; // optional: which roles can see this in the sidebar
+  roles?: AppRole[];
 }
 
 export const routes: AppRoute[] = [
@@ -49,7 +50,14 @@ export const routes: AppRoute[] = [
   {
     path: "/subscriptions",
     label: "Subscriptions",
-    component: SubscriptionPage, // 👈 NEW
-    roles: ["SUPER_ADMIN"], // admin only
+    component: SubscriptionPage,
+    roles: ["SUPER_ADMIN"],
+  },
+
+  {
+    path: "/messages",
+    label: "Messages",
+    component: MessagesPage,
+    roles: ["SUPER_ADMIN"],
   },
 ];

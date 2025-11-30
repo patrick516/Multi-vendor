@@ -1,21 +1,11 @@
-// website/src/app/features/products/MapView.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
-import { Icon } from "leaflet";
 import type { Product } from "./types";
 import { fetchJson } from "@/app/utils/fetcher";
-import { getStoredDistrict } from "@/app/components/DistrictSelector";
-
-const DEFAULT_CENTER: [number, number] = [-13.9626, 33.7741];
-const MAP_CONTAINER_STYLE: React.CSSProperties = {
-  width: "100%",
-  height: "320px",
-  borderRadius: "0.75rem",
-};
 
 interface LatLng {
   lat: number;
@@ -40,61 +30,26 @@ function haversineDistance(a: LatLng, b: LatLng): number {
   return R * d;
 }
 
-const defaultIcon = new Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  shadowSize: [41, 41],
-});
-
-const userIcon = new Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  shadowSize: [41, 41],
-  className: "leaflet-marker-user",
-});
+const MAP_CONTAINER_STYLE: React.CSSProperties = {
+  width: "100%",
+  height: "260px",
+  borderRadius: "0.75rem",
+};
 
 export default function MapView() {
   const searchParams = useSearchParams();
-  const q = searchParams.get("q") || "";
 
-  const [district, setDistrict] = useState<string | null>(null);
+  const district = searchParams.get("district") || "";
+  const categoryId = searchParams.get("categoryId") || "";
+  const search = searchParams.get("search") || "";
+
   const [products, setProducts] = useState<Product[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(
-    null
-  );
+  const [error, setError] = useState<string | null>(null);
 
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
 
-  // Load user's district
-  useEffect(() => {
-    setDistrict(getStoredDistrict());
-  }, []);
-
-  // Listen to district changes from DistrictSelector
-  useEffect(() => {
-    function onDistrictChange(e: any) {
-      const newDistrict = e.detail as string;
-      setDistrict(newDistrict);
-    }
-    window.addEventListener("mv-district-changed", onDistrictChange);
-    return () =>
-      window.removeEventListener("mv-district-changed", onDistrictChange);
-  }, []);
-
-  // Load products for map (district + search)
+  // Load products based on URL filters
   useEffect(() => {
     async function load() {
       try {
@@ -103,18 +58,15 @@ export default function MapView() {
 
         const params = new URLSearchParams();
         if (district) params.set("district", district);
-        if (q) params.set("search", q);
+        if (categoryId) params.set("categoryId", categoryId);
+        if (search.trim()) params.set("search", search.trim());
 
         let path = "/products";
         const query = params.toString();
         if (query) path += `?${query}`;
 
         const data = await fetchJson<Product[]>(path);
-        const withCoords = data.filter(
-          (p) =>
-            typeof p.latitude === "number" && typeof p.longitude === "number"
-        );
-        setProducts(withCoords);
+        setProducts(data);
       } catch (err: any) {
         setError(err.message || "Failed to load products for map");
       } finally {
@@ -123,9 +75,9 @@ export default function MapView() {
     }
 
     load();
-  }, [district, q]);
+  }, [district, categoryId, search]);
 
-  // Ask browser for user's current location
+  // Get user location
   useEffect(() => {
     if (!navigator.geolocation) return;
 
@@ -137,47 +89,89 @@ export default function MapView() {
         });
       },
       () => {
-        // ignore if user denies
+        // ignore errors
       }
     );
   }, []);
 
-  const center: LatLngExpression = useMemo(() => {
-    if (userLocation) return [userLocation.lat, userLocation.lng];
-    if (
-      products.length > 0 &&
-      typeof products[0].latitude === "number" &&
-      typeof products[0].longitude === "number"
-    ) {
-      return [products[0].latitude as number, products[0].longitude as number];
+  // Products with coordinates
+  const productsWithCoords = useMemo(() => {
+    return products.filter(
+      (p) =>
+        typeof p.latitude === "number" &&
+        typeof p.longitude === "number"
+    );
+  }, [products]);
+
+  // Compute distance and decide which to show (<= 5km vs all)
+  const NEARBY_RADIUS_KM = 5;
+
+  const { nearby, others } = useMemo(() => {
+    if (!userLocation) {
+      return { nearby: [] as (Product & { distanceKm: number })[], others: productsWithCoords.map((p) => ({ ...p, distanceKm: NaN })) };
     }
-    return DEFAULT_CENTER;
-  }, [userLocation, products]);
+
+    const withDistance = productsWithCoords.map((p) => {
+      const distanceKm = haversineDistance(userLocation, {
+        lat: p.latitude as number,
+        lng: p.longitude as number,
+      });
+      return { ...p, distanceKm };
+    });
+
+    const close = withDistance.filter((p) => p.distanceKm <= NEARBY_RADIUS_KM);
+    const far = withDistance.filter((p) => p.distanceKm > NEARBY_RADIUS_KM);
+
+    return { nearby: close, others: far };
+  }, [productsWithCoords, userLocation]);
+
+  const markersToShow =
+    userLocation && nearby.length > 0 ? nearby : productsWithCoords;
+
+  const center: LatLngExpression = useMemo(() => {
+    if (userLocation) return [userLocation.lat, userLocation.lng] as LatLngExpression;
+    if (markersToShow.length > 0) {
+      const first = markersToShow[0];
+      return [first.latitude as number, first.longitude as number];
+    }
+    // Default center (Malawi)
+    return [-13.2543, 34.3015];
+  }, [userLocation, markersToShow]);
 
   if (loading) {
     return (
-      <div className="w-full h-[320px] rounded-xl border border-gray-soft bg-gray-soft animate-pulse flex items-center justify-center text-xs text-text-muted">
-        Loading map...
+      <div className="flex h-[260px] w-full items-center justify-center rounded-xl border border-gray-soft bg-gray-soft text-[11px] text-text-muted">
+        Loading map…
       </div>
     );
   }
 
   if (error) {
-    return <p className="text-[11px] text-red-500">{error}</p>;
+    return (
+      <div className="flex h-[260px] w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 text-[11px] text-red-600">
+        {error}
+      </div>
+    );
   }
 
-  if (products.length === 0) {
+  if (productsWithCoords.length === 0) {
     return (
-      <div className="w-full h-[200px] rounded-xl border border-gray-soft bg-gray-soft flex items-center justify-center text-xs text-text-muted">
+      <div className="flex h-[260px] w-full items-center justify-center rounded-xl border border-gray-soft bg-gray-soft text-[11px] text-text-muted">
         No products with map location yet.
       </div>
     );
   }
 
+  const showingNearby = userLocation && nearby.length > 0;
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-[11px] text-text-muted">
-        <span>Products with location on map</span>
+        <span>
+          {showingNearby
+            ? `Products within ${NEARBY_RADIUS_KM} km of you`
+            : "Products with location on map"}
+        </span>
         {district && (
           <span>
             District: <span className="font-semibold">{district}</span>
@@ -198,72 +192,47 @@ export default function MapView() {
 
         {/* User location marker */}
         {userLocation && (
-          <Marker
-            position={[userLocation.lat, userLocation.lng]}
-            icon={userIcon}
-          >
+          <Marker position={[userLocation.lat, userLocation.lng]}>
             <Popup>You are here</Popup>
           </Marker>
         )}
 
         {/* Product markers */}
-        {products.map((product) => {
-          if (
-            typeof product.latitude !== "number" ||
-            typeof product.longitude !== "number"
-          ) {
-            return null;
-          }
-
-          const lat = product.latitude!;
-          const lng = product.longitude!;
-          const pos: LatLng = { lat, lng };
-
-          let distanceText = "Distance unknown";
-          if (userLocation) {
-            const km = haversineDistance(userLocation, pos);
-            distanceText = `${km.toFixed(1)} km from you`;
-          }
-
-          return (
-            <Marker
-              key={product.id}
-              position={[lat, lng]}
-              icon={defaultIcon}
-              eventHandlers={{
-                click: () => setSelectedProductId(product.id),
-              }}
-            >
-              {selectedProductId === product.id && (
-                <Popup>
-                  <div className="space-y-1 text-[11px]">
-                    <p className="font-semibold text-text-main">
-                      {product.name}
-                    </p>
-                    {product.category && (
-                      <p className="text-text-muted">
-                        Category: {product.category.name}
-                      </p>
-                    )}
-                    {product.district && (
-                      <p className="text-text-muted">
-                        Location: {product.district}
-                        {product.area ? `, ${product.area}` : ""}
-                      </p>
-                    )}
-                    <p className="text-text-muted">{distanceText}</p>
-                    {product.displayPrice && (
-                      <p className="font-semibold text-brand-green">
-                        MK {product.displayPrice.toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                </Popup>
-              )}
-            </Marker>
-          );
-        })}
+        {markersToShow.map((p) => (
+          <Marker
+            key={p.id}
+            position={[p.latitude as number, p.longitude as number]}
+          >
+            <Popup>
+              <div className="space-y-1 text-[11px]">
+                <p className="font-semibold">{p.name}</p>
+                {p.district && (
+                  <p className="text-text-muted">
+                    {p.district}
+                    {p.area ? `, ${p.area}` : ""}
+                  </p>
+                )}
+                <p className="font-semibold text-emerald-700">
+                  MK{" "}
+                  {(
+                    p.displayPrice ??
+                    p.price ??
+                    p.basePrice ??
+                    0
+                  ).toLocaleString()}
+                </p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
+
+      {userLocation && nearby.length === 0 && (
+        <p className="text-[11px] text-text-muted">
+          No products within {NEARBY_RADIUS_KM} km of you. Showing all products
+          with map location.
+        </p>
+      )}
     </div>
   );
 }

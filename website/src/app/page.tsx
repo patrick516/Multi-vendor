@@ -21,10 +21,21 @@ export default function HomePage() {
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [search, setSearch] = useState("");
-
   const [topProducts, setTopProducts] = useState<Product[]>([]);
   const [loadingTop, setLoadingTop] = useState(true);
   const [topError, setTopError] = useState<string | null>(null);
+
+  // Category search for filter bar
+  const [categorySearch, setCategorySearch] = useState("");
+  const [categoryOpen, setCategoryOpen] = useState(false);
+
+  const filteredCategories = useMemo(
+    () =>
+      categories.filter((cat) =>
+        cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+      ),
+    [categories, categorySearch]
+  );
 
   // HERO slider index
   const [heroIndex, setHeroIndex] = useState(0);
@@ -101,13 +112,6 @@ export default function HomePage() {
       <section className="grid gap-8 rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-slate-50 px-4 py-8 md:grid-cols-[minmax(0,2.1fr),minmax(0,1.5fr)] md:px-8 md:py-10">
         {/* Left side: text */}
         <div className="space-y-5">
-          {/* <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-medium text-emerald-800">
-            <span className="rounded-full bg-emerald-600 px-2 py-[2px] text-[10px] text-white">
-              NEW
-            </span>
-            <span>Gateway for Malawian trade</span>
-          </div> */}
-
           <div className="space-y-3">
             <h1 className="text-4xl font-bold leading-tight slide-stop-center">
               Gateway to trade reliably in Malawi and beyond
@@ -262,23 +266,86 @@ export default function HomePage() {
             </select>
           </div>
 
-          {/* Category */}
+          {/* Category - searchable dropdown */}
           <div className="space-y-1">
             <label className="text-lg font-medium text-slate-700">
               Category
             </label>
-            <select
-              className="w-full px-3 py-2 bg-white border rounded-md text-md border-slate-200"
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-            >
-              <option value="">All categories</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={String(cat.id)}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <input
+                className="w-full px-3 py-2 pr-8 bg-white border rounded-md text-md border-slate-200"
+                type="text"
+                placeholder="All categories"
+                value={categorySearch}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCategorySearch(value);
+                  setCategoryOpen(true);
+
+                  // If user clears input, reset filter
+                  if (!value.trim()) {
+                    setSelectedCategoryId("");
+                  }
+                }}
+                onFocus={() => setCategoryOpen(true)}
+                onBlur={() => {
+                  // small delay so click can register before closing
+                  setTimeout(() => setCategoryOpen(false), 150);
+                }}
+              />
+
+              {/* Small ▼ icon */}
+              <span className="absolute inset-y-0 flex items-center text-xs pointer-events-none right-2 text-slate-400">
+                ▼
+              </span>
+
+              {/* Dropdown list */}
+              {categoryOpen && (
+                <div className="absolute z-30 w-full mt-1 overflow-auto bg-white border rounded-md shadow-md max-h-56 border-slate-200">
+                  {/* "All categories" option */}
+                  <button
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setSelectedCategoryId("");
+                      setCategorySearch("");
+                      setCategoryOpen(false);
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-md hover:bg-slate-50 ${
+                      !selectedCategoryId ? "bg-slate-50 font-semibold" : ""
+                    }`}
+                  >
+                    All categories
+                  </button>
+
+                  {filteredCategories.length > 0 ? (
+                    filteredCategories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setSelectedCategoryId(String(cat.id));
+                          setCategorySearch(cat.name);
+                          setCategoryOpen(false);
+                        }}
+                        className={`block w-full px-3 py-2 text-left text-md hover:bg-slate-50 ${
+                          String(cat.id) === selectedCategoryId
+                            ? "bg-slate-100 font-semibold"
+                            : ""
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-slate-500">
+                      No category matches “{categorySearch}”
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Search */}

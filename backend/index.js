@@ -19,6 +19,7 @@ const subscriptionRoutes = require("./routes/subscriptions");
 const categoryRoutes = require("./routes/categories");
 const metaRoutes = require("./routes/meta");
 const searchRoutes = require("./routes/search");
+const messageRoutes = require("./routes/messages");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -72,6 +73,7 @@ app.use("/api/admin/subscriptions", subscriptionRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/meta", metaRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/admin/messages", messageRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

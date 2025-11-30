@@ -194,7 +194,7 @@ export default function ProductList() {
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Products</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {isSuperAdmin
               ? "View and manage products across all vendors, including their districts and categories."
               : "View and manage the products you have added, including where they are sold from."}
@@ -210,15 +210,15 @@ export default function ProductList() {
       </header>
 
       {/* Info card */}
-      <section className="p-4 space-y-2 border rounded-lg shadow-sm bg-card border-border">
+      {/* <section className="p-4 space-y-2 border rounded-lg shadow-sm bg-card border-border">
         <h3 className="text-sm font-semibold">How it works</h3>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           When adding a product, select the district where the product is
           available, optionally specify the area, and choose a category. The
           system will use this information on the customer website so buyers can
           search by location and category.
         </p>
-      </section>
+      </section> */}
 
       {/* Filters & table */}
       {loading && (
@@ -231,12 +231,12 @@ export default function ProductList() {
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div className="space-y-1">
               <h3 className="text-sm font-semibold">All Products</h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Use search, category filter, and sorting to quickly find
                 products. Results are grouped by category.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 text-xs">
+            <div className="flex flex-wrap gap-2 text-sm">
               <input
                 type="text"
                 value={searchTerm}
@@ -313,7 +313,7 @@ export default function ProductList() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between pt-2 text-sm text-muted-foreground">
                 <span>
                   Page {safePage} of {totalPages} •{" "}
                   {filteredSortedProducts.length} product
@@ -377,7 +377,7 @@ export default function ProductList() {
               </h3>
               <button
                 onClick={() => setViewProduct(null)}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-md text-muted-foreground hover:text-foreground"
               >
                 ✕
               </button>
@@ -419,7 +419,7 @@ function CategoryGroupRows({
       {/* Category header row */}
       <tr className="bg-slate-50">
         <td
-          className="px-3 py-2 text-xs font-semibold text-slate-700"
+          className="px-3 py-2 font-semibold text-md text-slate-700"
           colSpan={8}
         >
           {categoryName}
@@ -437,38 +437,38 @@ function CategoryGroupRows({
 
         return (
           <tr key={product.id} className="align-top border-t border-border">
-            <td className="px-3 py-2 text-xs font-semibold">{product.name}</td>
-            <td className="px-3 py-2 text-xs text-muted-foreground">
+            <td className="px-3 py-2 font-semibold text-md">{product.name}</td>
+            <td className="px-3 py-2 text-md text-muted-foreground">
               {desc || <span className="text-slate-400">—</span>}
             </td>
-            <td className="px-3 py-2 text-xs font-semibold">
+            <td className="px-3 py-2 font-semibold text-md">
               MK {price.toLocaleString()}
             </td>
-            <td className="px-3 py-2 text-xs">{qty}</td>
-            <td className="px-3 py-2 text-xs">
+            <td className="px-3 py-2 text-md">{qty}</td>
+            <td className="px-3 py-2 text-md">
               {expected > 0 ? `MK ${expected.toLocaleString()}` : "—"}
             </td>
             <td className="px-3 py-2 text-xs">{vendorName}</td>
-            <td className="px-3 py-2 text-[11px] text-muted-foreground">
+            <td className="px-3 py-2 text-md text-muted-foreground">
               {product.district
                 ? `${product.district}${
                     product.area ? `, ${product.area}` : ""
                   }`
                 : "—"}
             </td>
-            <td className="px-3 py-2 text-xs">
+            <td className="px-3 py-2 text-md">
               <div className="flex flex-wrap items-center gap-1">
                 <button
                   type="button"
                   onClick={() => onView(product)}
-                  className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-background px-2 py-1 text-[11px] hover:bg-slate-50"
+                  className="inline-flex items-center gap-1 px-2 py-1 border rounded-md border-slate-200 bg-background text-md hover:bg-slate-50"
                 >
                   View
                 </button>
                 <button
                   type="button"
                   onClick={() => onMarkSold(product)}
-                  className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700"
+                  className="inline-flex items-center gap-1 px-2 py-1 font-semibold text-white rounded-md bg-emerald-600 text-md hover:bg-emerald-700"
                 >
                   Mark as sold
                 </button>
@@ -478,7 +478,7 @@ function CategoryGroupRows({
                   className="inline-flex items-center justify-center p-1 border rounded-md border-slate-200 bg-background text-slate-700 hover:bg-slate-50"
                   aria-label="Edit"
                 >
-                  <EditIcon className="w-3 h-3" />
+                  <EditIcon className="w-5 h-5" />
                 </button>
                 <button
                   type="button"
@@ -486,7 +486,7 @@ function CategoryGroupRows({
                   className="inline-flex items-center justify-center p-1 border rounded-md border-destructive bg-background text-destructive hover:bg-destructive/10"
                   aria-label="Delete"
                 >
-                  <TrashIcon className="w-3 h-3" />
+                  <TrashIcon className="w-5 h-5" />
                 </button>
               </div>
             </td>

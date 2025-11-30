@@ -58,6 +58,7 @@ model User {
 
   cartLeads            CartLead[]
   subscriptionPayments SubscriptionPayment[]
+  messageRecipients    MessageRecipient[]
 }
 
 model SubscriptionSettings {
@@ -183,4 +184,29 @@ model SubscriptionPayment {
   periodEnd   DateTime
   paidAt      DateTime @default(now())
   createdAt   DateTime @default(now())
+}
+
+enum MessageTargetType {
+  SINGLE
+  MULTI
+  ALL
+}
+
+model MessageLog {
+  id         Int               @id @default(autoincrement())
+  subject    String?
+  message    String
+  targetType MessageTargetType @default(SINGLE)
+  createdAt  DateTime          @default(now())
+
+  recipients MessageRecipient[]
+}
+
+model MessageRecipient {
+  id        Int @id @default(autoincrement())
+  messageId Int
+  vendorId  Int
+
+  message MessageLog @relation(fields: [messageId], references: [id])
+  vendor  User       @relation(fields: [vendorId], references: [id])
 }
