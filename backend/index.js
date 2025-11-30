@@ -33,8 +33,10 @@ const PORT = process.env.PORT || 5000;
 // You can set this in Render as e.g.
 // ALLOWED_ORIGINS="http://localhost:5173,http://localhost:3000,https://admin.yourdomain.com,https://yourdomain.com"
 const defaultOrigins = [
-  "http://localhost:5173", // Vite admin (local)
-  "http://localhost:3000", // Next.js website (local)
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://multi-vendor-peach.vercel.ap",
+  "https://multi-vendor-1mzl.vercel.app",
 ];
 
 const envOrigins = (process.env.ALLOWED_ORIGINS || "")
