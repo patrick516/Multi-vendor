@@ -3,6 +3,7 @@
 
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
+import { Icon } from "leaflet"; // 👈 import Icon
 
 const MAP_CONTAINER_STYLE: React.CSSProperties = {
   width: "100%",
@@ -14,6 +15,18 @@ interface LatLng {
   lat: number;
   lng: number;
 }
+
+// Use the same marker icon as LiveMap
+const defaultIcon = new Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  shadowSize: [41, 41],
+});
 
 interface LeafletMapProps {
   center: LatLngExpression | null;
@@ -40,9 +53,16 @@ export default function LeafletMap({ center, userLocation }: LeafletMapProps) {
         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Marker position={center} />
+
+      {/* Product marker */}
+      <Marker position={center} icon={defaultIcon} />
+
+      {/* User location marker (if available) */}
       {userLocation && (
-        <Marker position={[userLocation.lat, userLocation.lng]} />
+        <Marker
+          position={[userLocation.lat, userLocation.lng]}
+          icon={defaultIcon}
+        />
       )}
     </MapContainer>
   );
