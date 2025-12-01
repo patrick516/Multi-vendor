@@ -16,7 +16,7 @@ interface LatLng {
   lng: number;
 }
 
-// Use the same marker icon as LiveMap
+//  the same marker icon as LiveMap
 const defaultIcon = new Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl:
