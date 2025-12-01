@@ -35,7 +35,7 @@ const PORT = process.env.PORT || 5000;
 const defaultOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-  "https://multi-vendor-peach.vercel.ap",
+  "https://multi-vendor-peach.vercel.app",
   "https://multi-vendor-1mzl.vercel.app",
 ];
 

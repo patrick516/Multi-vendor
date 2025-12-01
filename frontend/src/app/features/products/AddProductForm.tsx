@@ -2,7 +2,8 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://tradepoint-backend.onrender.com/api";
 
 interface Category {
   id: number;

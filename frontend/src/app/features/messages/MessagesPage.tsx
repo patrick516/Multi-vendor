@@ -10,7 +10,8 @@ import {
 import { formatDate } from "../../utils/formatDate";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://tradepoint-backend.onrender.com/api";
 
 type TargetType = "SINGLE" | "MULTI" | "ALL";
 
