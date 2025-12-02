@@ -36,12 +36,12 @@ export function Sidebar({
     if (onClose) onClose();
   }
 
-  const roleLabel =
-    user.role === "SUPER_ADMIN"
-      ? "Super Admin"
-      : user.role === "VENDOR"
-      ? "Vendor"
-      : "Customer";
+  // const roleLabel =
+  //   user.role === "SUPER_ADMIN"
+  //     ? "Super Admin"
+  //     : user.role === "VENDOR"
+  //     ? "Vendor"
+  //     : "Customer";
 
   const content = (
     <>
