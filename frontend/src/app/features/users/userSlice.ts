@@ -31,7 +31,7 @@ const initialState: UsersState = {
 export const fetchUsers = createAsyncThunk<User[]>(
   "users/fetchUsers",
   async () => {
-    // 👇 Get token from localStorage
+    //  Get token from localStorage
     const token =
       typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
 
@@ -39,7 +39,7 @@ export const fetchUsers = createAsyncThunk<User[]>(
       "Content-Type": "application/json",
     };
 
-    // 👇 Attach Authorization header if token exists
+    //  Attach Authorization header if token exists
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }

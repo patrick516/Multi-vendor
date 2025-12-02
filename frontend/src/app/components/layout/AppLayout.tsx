@@ -52,7 +52,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
   );
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // 🔹 mobile sidebar open/close state
+  // mobile sidebar open/close state
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Load /users/me on mount and then poll every 60s
@@ -124,8 +124,20 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
 
   if (loadingUser && !currentUser) {
     return (
-      <div className="flex items-center justify-center w-screen h-screen text-sm bg-muted text-muted-foreground">
-        Loading dashboard…
+      <div className="flex items-center justify-center w-screen h-screen bg-muted">
+        <div className="flex items-center gap-3 px-4 py-3 text-sm border rounded-lg shadow-sm bg-card border-border text-muted-foreground">
+          <div className="flex items-center justify-center w-8 h-8 text-xs font-bold text-white rounded-full bg-brand-blue">
+            TP
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              Loading dashboard…
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Please wait while we verify your session.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -157,10 +169,10 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
   if (isVendorBlocked) {
     return (
       <div className="flex flex-col items-center justify-center w-screen h-screen px-4 bg-muted">
-        <div className="w-full max-w-lg p-5 space-y-3 bg-white border border-red-200 shadow-lg rounded-2xl">
+        <div className="w-full max-w-lg p-5 space-y-3 border border-red-200 shadow-lg bg-card rounded-2xl">
           {/* Brand */}
           <div className="flex items-center gap-2 mb-1">
-            <div className="flex items-center justify-center text-xs font-bold text-white rounded-full h-9 w-9 bg-brand-blue">
+            <div className="flex items-center justify-center text-xs font-bold text-white rounded-full w-9 h-9 bg-brand-blue">
               TP
             </div>
             <div className="leading-tight">
@@ -173,7 +185,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
             </div>
           </div>
 
-          <h1 className="text-base font-semibold text-red-700">
+          <h1 className="text-sm font-semibold text-red-700">
             Your vendor account is currently blocked
           </h1>
           <p className="text-[12px] text-slate-700">
@@ -187,7 +199,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
             visible on the marketplace, please pay your subscription fee.
           </p>
 
-          <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px] space-y-1">
+          <div className="mt-2 space-y-1 text-[11px] rounded-lg border border-slate-200 bg-slate-50 p-3">
             <p className="font-semibold text-slate-800">
               Payment details (Malawi):
             </p>
@@ -199,8 +211,8 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
           <p className="text-[11px] text-slate-600">
             After making payment, please contact the system administrator so
             that your subscription can be marked as paid and your account
-            reactivated. Please make sure to include a screenshot of your
-            payment receipt when contacting us.
+            reactivated. Please include a screenshot of your payment receipt
+            when contacting us.
             <br />
             <a
               href="mailto:tradepoint@mail.com"
@@ -230,7 +242,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
                 // allow vendor to refresh state without logging them out
                 window.location.reload();
               }}
-              className="rounded-md border border-slate-200 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
+              className="px-3 py-1.5 text-xs rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
             >
               Refresh
             </button>
@@ -240,7 +252,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
                 localStorage.removeItem("authUser");
                 navigate("/login", { replace: true });
               }}
-              className="rounded-md bg-brand-blue px-4 py-1.5 text-xs font-semibold text-white hover:bg-brand-blue/90"
+              className="px-4 py-1.5 text-xs font-semibold text-white rounded-md bg-brand-blue hover:bg-brand-blue/90"
             >
               Logout
             </button>

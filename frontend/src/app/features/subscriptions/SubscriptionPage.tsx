@@ -1,5 +1,13 @@
 // frontend/src/app/features/subscriptions/SubscriptionPage.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Search,
+  ShieldCheck,
+  ShieldX,
+  Clock,
+  DollarSign,
+  X as XIcon,
+} from "lucide-react";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -31,6 +39,12 @@ export default function SubscriptionPage() {
   const [savingVendorId, setSavingVendorId] = useState<number | null>(null);
   const [amountInput, setAmountInput] = useState("1000");
   const [savingAmount, setSavingAmount] = useState(false);
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "BLOCKED"
+  >("ALL");
 
   // History modal
   const [historyVendor, setHistoryVendor] = useState<VendorSubRow | null>(null);
@@ -80,6 +94,41 @@ export default function SubscriptionPage() {
     loadVendors();
   }, []);
 
+  // ---------- Derived stats & filtered vendors ----------
+
+  const activeCount = useMemo(
+    () => vendors.filter((v) => v.subscriptionActive).length,
+    [vendors]
+  );
+  const blockedCount = useMemo(
+    () => vendors.filter((v) => !v.subscriptionActive).length,
+    [vendors]
+  );
+  const totalMonthlyRevenue = useMemo(
+    () =>
+      vendors.reduce(
+        (sum, v) => sum + (v.subscriptionActive ? v.subscriptionAmount : 0),
+        0
+      ),
+    [vendors]
+  );
+
+  const filteredVendors = useMemo(
+    () =>
+      vendors.filter((v) => {
+        if (statusFilter === "ACTIVE" && !v.subscriptionActive) return false;
+        if (statusFilter === "BLOCKED" && v.subscriptionActive) return false;
+
+        if (!searchTerm.trim()) return true;
+
+        const term = searchTerm.toLowerCase();
+        const name = (v.name || "").toLowerCase();
+        const email = (v.email || "").toLowerCase();
+        return name.includes(term) || email.includes(term);
+      }),
+    [vendors, statusFilter, searchTerm]
+  );
+
   // -----------------------------
   // Mark Paid modal open helper
   // -----------------------------
@@ -103,7 +152,7 @@ export default function SubscriptionPage() {
     setPaySaving(false);
   }
 
-  // When payDate changes, auto-suggest nextDueDate = payDate + 30 days (if user hasn't manually changed it)
+  // When payDate changes, auto-suggest nextDueDate = payDate + 30 days
   function handlePayDateChange(val: string) {
     setPayDate(val);
     if (!val) return;
@@ -165,7 +214,7 @@ export default function SubscriptionPage() {
   }
 
   // -----------------------------
-  // Block / Unblock (unchanged)
+  // Block / Unblock
   // -----------------------------
   async function handleBlock(vendorId: number) {
     const vendor = vendors.find((v) => v.id === vendorId);
@@ -250,7 +299,7 @@ export default function SubscriptionPage() {
   }
 
   // -----------------------------
-  // Update global amount (unchanged from last fix)
+  // Update global amount
   // -----------------------------
   async function handleUpdateAmount(e: React.FormEvent) {
     e.preventDefault();
@@ -336,24 +385,88 @@ export default function SubscriptionPage() {
     setHistoryError(null);
   }
 
+  // --------------------------------
+  // Render
+  // --------------------------------
   return (
-    <div className="space-y-4">
-      <header className="flex items-center justify-between">
+    <div className="space-y-5">
+      {/* Header */}
+      <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-lg font-semibold">Vendor Subscriptions</h2>
-          <p className="text-xs text-muted-foreground">
-            Manage monthly subscription payments and account status for vendors.
+          <p className="text-sm text-muted-foreground">
+            Manage monthly subscription payments, account status, and history
+            for all vendors.
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {vendors.length} vendors • {activeCount} active • {blockedCount}{" "}
+            blocked
           </p>
         </div>
       </header>
 
+      {/* Summary cards */}
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="flex items-center gap-3 p-3 border rounded-lg shadow-sm bg-card border-border">
+          <div className="flex items-center justify-center rounded-full w-9 h-9 bg-emerald-100 text-emerald-700">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Active vendors</p>
+            <p className="text-lg font-semibold">{activeCount}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-3 border rounded-lg shadow-sm bg-card border-border">
+          <div className="flex items-center justify-center text-red-700 bg-red-100 rounded-full w-9 h-9">
+            <ShieldX className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Blocked vendors</p>
+            <p className="text-lg font-semibold">{blockedCount}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-3 border rounded-lg shadow-sm bg-card border-border">
+          <div className="flex items-center justify-center text-blue-700 bg-blue-100 rounded-full w-9 h-9">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">
+              Default monthly fee (MK)
+            </p>
+            <p className="text-lg font-semibold">
+              {Number(amountInput || 0).toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-3 border rounded-lg shadow-sm bg-card border-border">
+          <div className="flex items-center justify-center rounded-full w-9 h-9 bg-amber-100 text-amber-700">
+            <DollarSign className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">
+              Potential monthly revenue
+            </p>
+            <p className="text-lg font-semibold">
+              MK {totalMonthlyRevenue.toLocaleString()}
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Global amount settings */}
       <section className="p-4 space-y-3 border rounded-lg shadow-sm bg-card border-border">
-        <h3 className="text-sm font-semibold">Subscription Fee</h3>
-        <p className="text-[11px] text-muted-foreground">
-          This amount will be used as the monthly fee for all vendors. When you
-          change it, all vendors will be notified by email.
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-semibold">Subscription Fee Settings</h3>
+            <p className="text-xs text-muted-foreground">
+              This amount will be used as the monthly fee for all vendors. When
+              you change it, vendors can be notified by email.
+            </p>
+          </div>
+        </div>
 
         <form
           className="flex flex-wrap items-center gap-2 text-sm"
@@ -374,50 +487,108 @@ export default function SubscriptionPage() {
           >
             {savingAmount ? "Saving..." : "Save amount"}
           </button>
+          {error && (
+            <p className="w-full mt-1 text-xs text-destructive">{error}</p>
+          )}
         </form>
-
-        {error && <p className="text-[11px] text-destructive mt-1">{error}</p>}
       </section>
 
       {/* Vendor list */}
       <section className="p-4 space-y-3 border rounded-lg shadow-sm bg-card border-border">
-        <h3 className="text-sm font-semibold">Vendors</h3>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="text-sm font-semibold">Vendor Subscriptions</h3>
 
-        {loading && (
+          <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+            {/* Search */}
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute w-4 h-4 -translate-y-1/2 text-muted-foreground left-2 top-1/2" />
+              <input
+                className="w-full pl-8 pr-3 py-1.5 text-sm border rounded-md border-border bg-background"
+                placeholder="Search vendor name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {/* Status filter */}
+            <select
+              className="w-full px-3 py-1.5 text-sm border rounded-md border-border bg-background sm:w-40"
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "BLOCKED")
+              }
+            >
+              <option value="ALL">All statuses</option>
+              <option value="ACTIVE">Active only</option>
+              <option value="BLOCKED">Blocked only</option>
+            </select>
+          </div>
+        </div>
+
+        {loading && vendors.length === 0 && (
+          <div className="space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between px-3 py-3 border rounded-md border-border bg-background animate-pulse"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-muted" />
+                  <div className="space-y-2">
+                    <div className="w-32 h-3 rounded bg-muted" />
+                    <div className="w-40 h-3 rounded bg-muted" />
+                  </div>
+                </div>
+                <div className="w-24 h-3 rounded bg-muted" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && filteredVendors.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            Loading vendor subscriptions...
+            {vendors.length === 0
+              ? "No vendors found. Once admin adds vendors, they will appear here."
+              : "No vendors match the current search or filter."}
           </p>
         )}
 
-        {!loading && vendors.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No vendors found. Once admin adds vendors, they will appear here.
-          </p>
-        )}
-
-        {!loading && vendors.length > 0 && (
+        {!loading && filteredVendors.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-muted text-muted-foreground">
+              <thead className="text-xs uppercase bg-muted text-muted-foreground">
                 <tr>
                   <th className="px-3 py-2">Vendor</th>
                   <th className="px-3 py-2">Email</th>
                   <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Last Paid</th>
-                  <th className="px-3 py-2">Next Due</th>
+                  <th className="px-3 py-2">Last paid</th>
+                  <th className="px-3 py-2">Next due</th>
                   <th className="px-3 py-2">Amount</th>
                   <th className="px-3 py-2 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {vendors.map((v) => (
-                  <tr key={v.id} className="border-t border-border">
-                    <td className="px-3 py-2 text-xs">{v.name || v.email}</td>
-                    <td className="px-3 py-2 text-xs">{v.email}</td>
-                    <td className="px-3 py-2 text-xs">
+                {filteredVendors.map((v, idx) => (
+                  <tr
+                    key={v.id}
+                    className={
+                      idx % 2 === 0
+                        ? "border-t border-border bg-background"
+                        : "border-t border-border bg-muted/20"
+                    }
+                  >
+                    <td className="px-3 py-2 text-sm">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{v.name || v.email}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 text-sm text-muted-foreground">
+                      {v.email}
+                    </td>
+                    <td className="px-3 py-2 text-sm">
                       <span
                         className={[
-                          "px-2 py-1 rounded-full text-[10px] uppercase",
+                          "inline-flex items-center px-2 py-1 rounded-full text-[11px] uppercase",
                           v.subscriptionActive
                             ? "bg-emerald-100 text-emerald-800"
                             : "bg-red-100 text-red-700",
@@ -426,50 +597,52 @@ export default function SubscriptionPage() {
                         {v.subscriptionActive ? "ACTIVE" : "BLOCKED"}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-xs">
+                    <td className="px-3 py-2 text-sm">
                       {v.lastPaymentDate
                         ? new Date(v.lastPaymentDate).toLocaleDateString()
                         : "—"}
                     </td>
-                    <td className="px-3 py-2 text-xs">
+                    <td className="px-3 py-2 text-sm">
                       {v.nextPaymentDue
                         ? new Date(v.nextPaymentDue).toLocaleDateString()
                         : "—"}
                     </td>
-                    <td className="px-3 py-2 text-xs">
+                    <td className="px-3 py-2 text-sm">
                       MK {v.subscriptionAmount.toLocaleString()}
                     </td>
-                    <td className="px-3 py-2 space-x-1 text-xs text-right">
-                      <button
-                        className="px-2 py-1 rounded-md bg-emerald-600 text-white text-[11px] hover:bg-emerald-700 disabled:opacity-40"
-                        disabled={savingVendorId === v.id}
-                        onClick={() => openMarkPaidModal(v)}
-                      >
-                        Mark paid
-                      </button>
-                      {v.subscriptionActive ? (
+                    <td className="px-3 py-2 text-xs text-right">
+                      <div className="flex justify-end gap-1">
                         <button
-                          className="px-2 py-1 rounded-md bg-red-600 text-white text-[11px] hover:bg-red-700 disabled:opacity-40"
+                          className="px-2 py-1 rounded-md bg-emerald-600 text-white text-[11px] hover:bg-emerald-700 disabled:opacity-40"
                           disabled={savingVendorId === v.id}
-                          onClick={() => handleBlock(v.id)}
+                          onClick={() => openMarkPaidModal(v)}
                         >
-                          Block
+                          Mark paid
                         </button>
-                      ) : (
+                        {v.subscriptionActive ? (
+                          <button
+                            className="px-2 py-1 rounded-md bg-red-600 text-white text-[11px] hover:bg-red-700 disabled:opacity-40"
+                            disabled={savingVendorId === v.id}
+                            onClick={() => handleBlock(v.id)}
+                          >
+                            Block
+                          </button>
+                        ) : (
+                          <button
+                            className="px-2 py-1 rounded-md bg-blue-600 text-white text-[11px] hover:bg-blue-700 disabled:opacity-40"
+                            disabled={savingVendorId === v.id}
+                            onClick={() => handleUnblock(v.id)}
+                          >
+                            Unblock
+                          </button>
+                        )}
                         <button
-                          className="px-2 py-1 rounded-md bg-blue-600 text-white text-[11px] hover:bg-blue-700 disabled:opacity-40"
-                          disabled={savingVendorId === v.id}
-                          onClick={() => handleUnblock(v.id)}
+                          className="px-2 py-1 rounded-md bg-slate-100 text-[11px] hover:bg-slate-200"
+                          onClick={() => handleViewHistory(v)}
                         >
-                          Unblock
+                          History
                         </button>
-                      )}
-                      <button
-                        className="px-2 py-1 rounded-md bg-slate-100 text-[11px] hover:bg-slate-200"
-                        onClick={() => handleViewHistory(v)}
-                      >
-                        History
-                      </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -485,14 +658,21 @@ export default function SubscriptionPage() {
           <div className="w-full max-w-md p-4 space-y-3 border shadow-lg rounded-2xl bg-card border-border">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold">
-                Mark paid – {payVendor.name || payVendor.email}
+                Mark subscription as paid
               </h3>
               <button
                 onClick={closeMarkPaidModal}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
-                ✕
+                <XIcon className="w-4 h-4" />
               </button>
+            </div>
+
+            <div className="px-3 py-2 text-xs rounded-md bg-muted/40">
+              <p className="font-medium">{payVendor.name || payVendor.email}</p>
+              <p className="text-xs text-muted-foreground">
+                Current fee: MK {payVendor.subscriptionAmount.toLocaleString()}
+              </p>
             </div>
 
             <p className="text-[11px] text-muted-foreground">
@@ -556,16 +736,34 @@ export default function SubscriptionPage() {
                 onClick={closeHistory}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
-                ✕
+                <XIcon className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="text-[11px] text-muted-foreground space-y-1">
+            <div className="rounded-md bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground space-y-1">
               <p>
                 Registered:{" "}
                 {historyVendor.createdAt
                   ? new Date(historyVendor.createdAt).toLocaleDateString()
                   : "—"}
+              </p>
+              <p>
+                Current fee: MK{" "}
+                {historyVendor.subscriptionAmount.toLocaleString()}
+              </p>
+              <p>
+                Status:{" "}
+                <span
+                  className={
+                    historyVendor.subscriptionActive
+                      ? "text-emerald-700"
+                      : "text-red-700"
+                  }
+                >
+                  {historyVendor.subscriptionActive
+                    ? "Active"
+                    : "Blocked / inactive"}
+                </span>
               </p>
             </div>
 
@@ -591,7 +789,7 @@ export default function SubscriptionPage() {
                 <table className="w-full text-left text-[11px]">
                   <thead className="bg-muted text-muted-foreground">
                     <tr>
-                      <th className="px-3 py-2">Paid At</th>
+                      <th className="px-3 py-2">Paid at</th>
                       <th className="px-3 py-2">Amount</th>
                       <th className="px-3 py-2">Period</th>
                     </tr>

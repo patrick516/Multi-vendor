@@ -32,7 +32,8 @@ import {
 } from "recharts";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://tradepoint-backend.onrender.com/api";
 
 interface VendorSubRow {
   id: number;
@@ -88,7 +89,7 @@ export default function AdminDashboard() {
     dispatch(fetchUsers());
   }, [dispatch]);
 
-  // ----- load current auth user from localStorage (for vendor vs admin view) -----
+  // ----- current auth user from localStorage -----
   const authUser: AuthUser | null = useMemo(() => {
     if (typeof window === "undefined") return null;
     const raw = localStorage.getItem("authUser");
@@ -266,7 +267,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="h-full space-y-6 w-min-h">
+    <div className="h-full space-y-6">
       {/* Summary cards row */}
       <div className="grid gap-3 md:grid-cols-4">
         <SummaryCard
@@ -294,10 +295,10 @@ export default function AdminDashboard() {
       {/* MIDDLE ROW: PIE CHARTS */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Products by Category (Pie chart) */}
-        <div className="flex flex-col gap-3 p-4 border rounded-md shadow-sm border-border bg-card">
+        <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
           <div className="text-center">
             <h2 className="text-sm font-semibold">Products by Category</h2>
-            <p className="text-md text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Distribution of {isSuperAdmin ? "all" : "your"} active products
               across categories.
             </p>
@@ -337,11 +338,11 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Custom legend */}
-                <div className="flex w-[40%] flex-col gap-2 text-md">
+                <div className="flex w-[40%] flex-col gap-2 text-xs">
                   {productCategoryPieData.map((entry, index) => (
                     <div
                       key={`cat-legend-${entry.name}`}
-                      className="flex items-center justify-between px-2 py-1 rounded-sm shadow-sm bg-white/70"
+                      className="flex items-center justify-between px-2 py-1 rounded-md shadow-sm bg-white/80"
                     >
                       <div className="flex items-center gap-2">
                         <span
@@ -370,15 +371,15 @@ export default function AdminDashboard() {
         </div>
 
         {/* Order Status Overview (Pie chart) */}
-        <div className="flex flex-col gap-3 p-4 border rounded-md shadow-sm border-border bg-card">
+        <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
           <div className="text-center">
             <h2 className="text-sm font-semibold">Order Status Overview</h2>
-            <p className="text-md text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Breakdown of {isSuperAdmin ? "all" : "your"} orders by status.
             </p>
           </div>
 
-          <div className="flex-1 min-h-[220px] rounded-sm bg-muted p-2 text-xs text-muted-foreground">
+          <div className="flex-1 min-h-[220px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
             {orderStatusPieData.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 No orders yet.
@@ -412,7 +413,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Custom legend */}
-                <div className="flex w-[40%] flex-col gap-2 text-md">
+                <div className="flex w-[40%] flex-col gap-2 text-xs">
                   {orderStatusPieData.map((entry) => {
                     const status = entry.name || "UNKNOWN";
                     const color =
@@ -420,7 +421,7 @@ export default function AdminDashboard() {
                     return (
                       <div
                         key={`status-legend-${entry.name}`}
-                        className="flex items-center justify-between px-2 py-1 rounded-md shadow-sm bg-white/70"
+                        className="flex items-center justify-between px-2 py-1 rounded-md shadow-sm bg-white/80"
                       >
                         <div className="flex items-center gap-2">
                           <span
@@ -445,17 +446,17 @@ export default function AdminDashboard() {
       {/* BOTTOM ROW: BAR CHARTS */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Subscription revenue panel */}
-        <div className="flex flex-col gap-3 p-4 border rounded-md shadow-sm border-border bg-card">
+        <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold">
                 Subscription Revenue (Last 30 Days)
               </h2>
-              <p className="text-md text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Total vendor subscription payments recorded in the last month.
               </p>
             </div>
-            <div className="flex gap-2 text-md">
+            <div className="flex gap-2 text-xs">
               <button className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
                 Last 30 days
               </button>
@@ -500,7 +501,7 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-md text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-xs text-muted-foreground">
             <span>
               Total revenue:{" "}
               <span className="font-semibold text-emerald-700">
@@ -520,13 +521,13 @@ export default function AdminDashboard() {
         </div>
 
         {/* Vendor & Product Overview panel */}
-        <div className="flex flex-col gap-3 p-4 border rounded-md shadow-sm border-border bg-card">
+        <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold">
                 Vendor & Product Overview
               </h2>
-              <p className="text-md text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Quick view of vendor status and product usage.
               </p>
             </div>
@@ -554,7 +555,7 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-2 text-md">
+          <div className="flex flex-wrap gap-2 mt-2 text-xs">
             <span className="px-2 py-1 rounded-md bg-primary text-primary-foreground">
               Active vendors: {activeVendors}
             </span>

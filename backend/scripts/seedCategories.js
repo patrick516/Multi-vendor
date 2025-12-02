@@ -2,13 +2,20 @@
 const prisma = require("../config/prisma");
 
 const categories = [
-  // === FINAL 26 MERGED & CLEANED CATEGORIES ===
+  // === CORE CATEGORIES (updated & expanded) ===
   { name: "Electronics & Media", slug: "electronics-media" },
-  { name: "Mobile Phones", slug: "mobile-phones" },
+
+  // renamed label, same slug so links keep working
+  { name: "Mobile Phones & Electronics", slug: "mobile-phones" },
+
   { name: "Computers & Laptops", slug: "computers-laptops" },
   { name: "Cameras & Photography", slug: "cameras-photography" },
+
   { name: "Home & Living", slug: "home-living" },
   { name: "Furniture", slug: "furniture" },
+
+  // NEW: Household Goods
+  { name: "Household Goods", slug: "household-goods" },
 
   { name: "Grocery & Supermarket", slug: "grocery-supermarket" },
 
@@ -18,7 +25,12 @@ const categories = [
   { name: "Health & Wellness", slug: "health-wellness" },
 
   { name: "Cars, Motorbikes & Machinery", slug: "cars-motorbikes-machinery" },
-  { name: "Spare Parts & Accessories", slug: "spare-parts-accessories" },
+
+  // renamed category to start with "Service"
+  {
+    name: "Service, Spares & Accessories",
+    slug: "service-spares-accessories",
+  },
 
   { name: "Real Estate & Property", slug: "real-estate-property" },
   {
@@ -27,6 +39,10 @@ const categories = [
   },
 
   { name: "Farming & Agriculture", slug: "farming-agriculture" },
+
+  // NEW: Technical & Skills (vocational services)
+  { name: "Technical & Skills", slug: "technical-skills" },
+
   { name: "Vacancies, Jobs & Recruitment", slug: "vacancies-jobs-recruitment" },
 
   { name: "Food & Beverages", slug: "food-beverages" },
@@ -36,6 +52,18 @@ const categories = [
   { name: "Education & Training", slug: "education-training" },
   { name: "Art, Craft & Culture", slug: "art-craft-culture" },
   { name: "Events & Entertainment", slug: "events-entertainment" },
+
+  // NEW: Industries & Factories
+  { name: "Industries & Factories", slug: "industries-factories" },
+
+  // NEW: Clubs & Societies
+  { name: "Clubs & Societies", slug: "clubs-societies" },
+
+  // NEW: Religion
+  { name: "Religion", slug: "religion" },
+
+  // NEW: Legal Practitioners
+  { name: "Legal Practitioners", slug: "legal-practitioners" },
 
   { name: "Transport & Travel", slug: "transport-travel" },
   { name: "Tourism & Accommodation", slug: "tourism-accommodation" },
@@ -51,8 +79,8 @@ async function main() {
 
   for (const cat of categories) {
     await prisma.category.upsert({
-      where: { name: cat.name },
-      update: { slug: cat.slug },
+      where: { slug: cat.slug },
+      update: { name: cat.name },
       create: { name: cat.name, slug: cat.slug },
     });
   }

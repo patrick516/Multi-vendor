@@ -9,8 +9,9 @@ interface Category {
   slug: string;
 }
 const CATEGORY_ICON_MAP: Record<string, string[]> = {
+  // existing
   "electronics-media": ["electronics.svg"],
-  "mobile-phones": ["mobile-phones.svg"],
+  "mobile-phones": ["mobile-phones.svg", "electronics.svg"],
   "computers-laptops": ["electronics.svg"],
   "cameras-photography": ["camera-photograph.svg"],
   "home-living": ["fridge-refrigerator-svgrepo-com.svg", "furniture.svg"],
@@ -24,7 +25,13 @@ const CATEGORY_ICON_MAP: Record<string, string[]> = {
   "sports-fitness": ["sports-fitness.svg", "fitness-movement-svgrepo-com.svg"],
   "health-wellness": ["health-life.svg", "health-life1.svg"],
   "cars-motorbikes-machinery": ["cars-machinery.svg"],
-  "spare-parts-accessories": ["service-parts-accessories.svg"],
+
+  // renamed slug for service category
+  "service-spares-accessories": [
+    "service-parts-accessories.svg",
+    "service-parts-accessories2.svg",
+  ],
+
   "real-estate-property": ["real-estate.svg"],
   "office-equipment-stationery": ["office-equipment-stationery.svg"],
   "farming-agriculture": ["farming.svg", "seeds-inputs.svg"],
@@ -38,6 +45,14 @@ const CATEGORY_ICON_MAP: Record<string, string[]> = {
   "transport-travel": ["transport-travel.svg"],
   "tourism-accommodation": ["hotel-svgrepo-com.svg"],
   "finance-insurance-brokers": ["briefcase-dollar-svgrepo-com.svg"],
+
+  // NEW categories icon mappings
+  "household-goods": ["furniture2.svg", "grocery-super.svg"],
+  "technical-skills": ["construction-engineering.svg", "education.svg"],
+  "industries-factories": ["construction-engineering.svg"],
+  "clubs-societies": ["sports-fitness.svg", "events.svg"],
+  religion: ["styled-svgrepo-com.svg"],
+  "legal-practitioners": ["briefcase-svgrepo-com.svg"],
 
   other: ["shop-cart-svgrepo-com.svg", "shopping-more.svg"],
 };

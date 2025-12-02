@@ -1,8 +1,16 @@
 // src/app/features/orders/OrderList.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOrders, selectOrders, type Order } from "./orderSlice";
 import { formatDate } from "../../utils/formatDate";
+import {
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  PhoneCall,
+  MessageCircle,
+} from "lucide-react";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -37,9 +45,59 @@ export default function OrderList() {
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
+  // Filters & pagination
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "" | "PENDING" | "PAID" | "COMPLETED" | "CANCELLED"
+  >("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
   useEffect(() => {
     dispatch(fetchOrders());
   }, [dispatch]);
+
+  // Derived stats
+  const totalOrders = items.length;
+  const pendingCount = items.filter((o) => o.status === "PENDING").length;
+  const completedCount = items.filter((o) => o.status === "COMPLETED").length;
+
+  // Filter & search
+  const filteredOrders = useMemo(() => {
+    return items.filter((order) => {
+      // status filter
+      if (statusFilter && order.status !== statusFilter) return false;
+
+      // search by id, customer name/email, phone, product name
+      if (!searchTerm.trim()) return true;
+      const term = searchTerm.toLowerCase();
+
+      const idMatch = String(order.id).includes(term);
+      const customerName = order.customer?.name?.toLowerCase() || "";
+      const customerEmail = order.customer?.email?.toLowerCase() || "";
+      const phone = order.customerPhone?.toLowerCase() || "";
+      const firstItemName =
+        order.items?.[0]?.product?.name?.toLowerCase() || "";
+
+      return (
+        idMatch ||
+        customerName.includes(term) ||
+        customerEmail.includes(term) ||
+        phone.includes(term) ||
+        firstItemName.includes(term)
+      );
+    });
+  }, [items, searchTerm, statusFilter]);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
+  const safePage = Math.min(Math.max(currentPage, 1), totalPages);
+
+  const pageOrders = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    const end = start + pageSize;
+    return filteredOrders.slice(start, end);
+  }, [filteredOrders, safePage]);
 
   async function handleMarkSold(order: Order) {
     if (!order.items || order.items.length === 0) {
@@ -103,24 +161,109 @@ export default function OrderList() {
 
   return (
     <div className="space-y-4">
-      <header className="flex items-center justify-between">
+      {/* Header */}
+      <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          {/* <h2 className="text-lg font-semibold">Orders</h2> */}
-          <p className="text-xs text-muted-foreground">
-            Track customer orders and vendor sales.
+          <h2 className="text-lg font-semibold">Orders</h2>
+          <p className="text-sm text-muted-foreground">
+            Track customer orders and vendor sales, and manage status updates.
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {totalOrders} order{totalOrders === 1 ? "" : "s"} • {pendingCount}{" "}
+            pending • {completedCount} completed
           </p>
         </div>
       </header>
 
+      {/* Filters */}
+      <section className="flex flex-wrap gap-3 p-3 text-xs border rounded-lg border-border bg-card">
+        <div className="flex items-center w-full gap-2 text-muted-foreground">
+          <Filter className="w-4 h-4" />
+          <span className="font-medium">Filters</span>
+        </div>
+
+        {/* Search */}
+        <div className="flex-1 min-w-[200px] space-y-1">
+          <label className="font-medium text-muted-foreground">
+            Search orders
+          </label>
+          <div className="relative">
+            <Search className="absolute w-3 h-3 -translate-y-1/2 left-2 top-1/2 text-muted-foreground" />
+            <input
+              className="w-full px-6 py-1 text-xs border rounded-md border-border bg-background"
+              placeholder="Order #, customer, phone, product…"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Status filter */}
+        <div className="space-y-1">
+          <label className="font-medium text-muted-foreground">Status</label>
+          <select
+            className="px-2 py-1 text-xs border rounded-md border-border bg-background"
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(
+                e.target.value as
+                  | ""
+                  | "PENDING"
+                  | "PAID"
+                  | "COMPLETED"
+                  | "CANCELLED"
+              );
+              setCurrentPage(1);
+            }}
+          >
+            <option value="">All</option>
+            <option value="PENDING">Pending</option>
+            <option value="PAID">Paid</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+
+        <div className="flex items-end">
+          <button
+            type="button"
+            className="px-3 py-1 text-xs border rounded-md border-border text-muted-foreground hover:bg-muted"
+            onClick={() => {
+              setSearchTerm("");
+              setStatusFilter("");
+              setCurrentPage(1);
+            }}
+          >
+            Clear filters
+          </button>
+        </div>
+      </section>
+
       {loading && (
-        <p className="text-sm text-muted-foreground">Loading orders...</p>
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between px-3 py-3 border rounded-md border-border bg-card animate-pulse"
+            >
+              <div className="space-y-2">
+                <div className="w-32 h-3 rounded bg-muted" />
+                <div className="w-40 h-3 rounded bg-muted" />
+              </div>
+              <div className="w-24 h-3 rounded bg-muted" />
+            </div>
+          ))}
+        </div>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {!loading && !error && (
         <div className="overflow-hidden border rounded-lg border-border bg-card">
           <table className="w-full text-sm text-left">
-            <thead className="bg-muted text-muted-foreground">
+            <thead className="text-xs uppercase bg-muted text-muted-foreground">
               <tr>
                 <th className="px-3 py-2">Order #</th>
                 <th className="px-3 py-2">Customer</th>
@@ -132,7 +275,7 @@ export default function OrderList() {
               </tr>
             </thead>
             <tbody>
-              {items.map((order: Order) => {
+              {pageOrders.map((order: Order) => {
                 const firstItem =
                   order.items && order.items.length > 0 ? order.items[0] : null;
                 const productName = firstItem?.product?.name || "your order";
@@ -158,70 +301,141 @@ ${order.customerNote || "No note was provided."}
 
                 return (
                   <tr key={order.id} className="border-t border-border">
-                    <td className="px-3 py-2 text-xs">#{order.id}</td>
+                    <td className="px-3 py-2 text-xs font-semibold">
+                      #{order.id}
+                    </td>
                     <td className="px-3 py-2 text-xs">
                       {order.customer?.name || order.customer?.email || "N/A"}
                     </td>
                     <td className="px-3 py-2 text-xs">
-                      <div>{order.customerPhone || "N/A"}</div>
-                      {order.customerNote && (
-                        <div className="text-[10px] text-muted-foreground line-clamp-2">
-                          {order.customerNote}
+                      <div className="flex flex-col">
+                        <span>{order.customerPhone || "N/A"}</span>
+                        {order.customerNote && (
+                          <span className="mt-1 text-[10px] text-muted-foreground line-clamp-2">
+                            {order.customerNote}
+                          </span>
+                        )}
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {order.customerPhone && (
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-[2px] text-[10px] font-medium text-slate-700 hover:bg-slate-200"
+                              onClick={() =>
+                                window.open(
+                                  `tel:${order.customerPhone}`,
+                                  "_self"
+                                )
+                              }
+                            >
+                              <PhoneCall className="w-3 h-3" />
+                              Call
+                            </button>
+                          )}
+                          {whatsappLink && (
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-[2px] text-[10px] font-medium text-emerald-700 hover:bg-emerald-100"
+                              onClick={() =>
+                                window.open(whatsappLink, "_blank")
+                              }
+                            >
+                              <MessageCircle className="w-3 h-3" />
+                              WhatsApp
+                            </button>
+                          )}
                         </div>
-                      )}
-                      {whatsappLink && (
-                        <button
-                          type="button"
-                          className="mt-1 inline-flex items-center rounded-full bg-emerald-50 px-2 py-[2px] text-[10px] font-medium text-emerald-700 hover:bg-emerald-100"
-                          onClick={() => window.open(whatsappLink, "_blank")}
-                        >
-                          WhatsApp chat
-                        </button>
-                      )}
+                      </div>
                     </td>
                     <td className="px-3 py-2 text-xs font-semibold">
                       MK {order.totalAmount.toFixed(2)}
                     </td>
                     <td className="px-3 py-2 text-xs">
-                      <span className="px-2 py-1 rounded-full bg-secondary text-secondary-foreground uppercase text-[10px]">
+                      <span
+                        className={[
+                          "inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase",
+                          order.status === "PENDING"
+                            ? "bg-amber-100 text-amber-800"
+                            : order.status === "PAID"
+                            ? "bg-sky-100 text-sky-800"
+                            : order.status === "COMPLETED"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : order.status === "CANCELLED"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-slate-100 text-slate-700",
+                        ].join(" ")}
+                      >
                         {order.status}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-xs text-muted-foreground">
                       {formatDate(order.createdAt)}
                     </td>
-                    <td className="px-3 py-2 space-x-1 text-xs">
-                      <button
-                        className="px-2 py-1 rounded-md bg-slate-100 text-[11px] hover:bg-slate-200"
-                        onClick={() => setSelectedOrder(order)}
-                      >
-                        View
-                      </button>
-                      {order.status === "PENDING" && (
+                    <td className="px-3 py-2 text-xs">
+                      <div className="flex flex-wrap items-center gap-1">
                         <button
-                          className="px-2 py-1 rounded-md bg-emerald-600 text-white text-[11px] hover:bg-emerald-700"
-                          onClick={() => handleMarkSold(order)}
+                          className="px-2 py-1 text-[11px] rounded-md bg-slate-100 hover:bg-slate-200"
+                          onClick={() => setSelectedOrder(order)}
                         >
-                          Mark as sold
+                          View
                         </button>
-                      )}
+                        {order.status === "PENDING" && (
+                          <button
+                            className="px-2 py-1 text-[11px] font-semibold text-white rounded-md bg-emerald-600 hover:bg-emerald-700"
+                            onClick={() => handleMarkSold(order)}
+                          >
+                            Mark as sold
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
               })}
 
-              {items.length === 0 && (
+              {filteredOrders.length === 0 && (
                 <tr>
                   <td
                     colSpan={7}
                     className="px-3 py-4 text-sm text-center text-muted-foreground"
                   >
-                    No orders yet.
+                    No orders found for the selected filters.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground">
+            <span>
+              Page <span className="font-semibold">{safePage}</span> of{" "}
+              <span className="font-semibold">{totalPages}</span> •{" "}
+              {filteredOrders.length} order
+              {filteredOrders.length === 1 ? "" : "s"}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={safePage <= 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="flex items-center gap-1 px-2 py-1 border rounded-md border-border bg-background disabled:opacity-50 hover:bg-muted"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Previous</span>
+              </button>
+              <button
+                type="button"
+                disabled={safePage >= totalPages}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                className="flex items-center gap-1 px-2 py-1 border rounded-md border-border bg-background disabled:opacity-50 hover:bg-muted"
+              >
+                <span>Next</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -326,7 +540,7 @@ ${order.customerNote || "No note was provided."}
         </div>
 
         {/* Stepper */}
-        <div className="flex items-center justify-between text-[11px] mb-2">
+        <div className="flex items-center justify-between mb-2 text-[11px]">
           {[
             { label: "Placed", step: 1 },
             { label: "Confirmed", step: 2 },
@@ -382,9 +596,10 @@ ${order.customerNote || "No note was provided."}
             {whatsappLink && (
               <button
                 type="button"
-                className="mt-1 inline-flex items-center rounded-full bg-emerald-50 px-2 py-[2px] text-[10px] font-medium text-emerald-700 hover:bg-emerald-100"
+                className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-[2px] text-[10px] font-medium text-emerald-700 hover:bg-emerald-100"
                 onClick={() => window.open(whatsappLink, "_blank")}
               >
+                <MessageCircle className="w-3 h-3" />
                 Open WhatsApp chat
               </button>
             )}
@@ -408,7 +623,7 @@ ${order.customerNote || "No note was provided."}
         </div>
 
         {order.customerNote && (
-          <div className="rounded-md bg-muted px-3 py-2 text-[11px] text-muted-foreground">
+          <div className="px-3 py-2 text-[11px] rounded-md bg-muted text-muted-foreground">
             <span className="font-semibold">Customer note: </span>
             {order.customerNote}
           </div>

@@ -7,7 +7,7 @@ export default function Footer() {
 
   return (
     <footer className="mt-10 border-t border-slate-100 bg-white/80">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 text-[11px] text-slate-600 md:flex-row md:items-start md:justify-between md:px-6">
+      <div className="flex flex-col max-w-6xl gap-6 px-4 py-6 mx-auto text-md text-slate-600 md:flex-row md:items-start md:justify-between md:px-6">
         {/* Brand */}
         <div className="space-y-2 text-center md:text-left md:flex-1">
           <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-2">
@@ -19,10 +19,10 @@ export default function Footer() {
               className="h-auto"
             />
             <div className="flex flex-col leading-tight">
-              <span className="text-xs font-semibold text-slate-900">
+              <span className="font-semibold text-md text-slate-900">
                 Trade Point Malawi
               </span>
-              <span className="text-[11px] text-slate-500">
+              <span className="text-md text-slate-500">
                 Gateway to trade in Malawi
               </span>
             </div>
@@ -31,7 +31,7 @@ export default function Footer() {
             <span className="text-base">🇲🇼</span>
             <span>Proudly Malawian marketplace</span>
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[14px] text-slate-500">
             © {year} Trade Point Malawi. All rights reserved.
           </p>
         </div>
@@ -39,9 +39,7 @@ export default function Footer() {
         {/* Links columns */}
         <div className="grid flex-1 gap-6 md:grid-cols-3">
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold text-slate-900">
-              Marketplace
-            </p>
+            <p className="font-semibold text-md text-slate-900">Marketplace</p>
             <ul className="space-y-1">
               <li>
                 <Link href="/products" className="hover:text-slate-900">
@@ -62,7 +60,7 @@ export default function Footer() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold text-slate-900">Support</p>
+            <p className="font-semibold text-md text-slate-900">Support</p>
             <ul className="space-y-1">
               <li>
                 <Link href="/help" className="hover:text-slate-900">
@@ -76,7 +74,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:support@multivendor.com"
+                  href="mailto:kulinjipatricks@gmail.com"
                   className="hover:text-slate-900"
                 >
                   Email support
@@ -86,7 +84,7 @@ export default function Footer() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold text-slate-900">Legal</p>
+            <p className="font-semibold text-md text-slate-900">Legal</p>
             <ul className="space-y-1">
               <li>
                 <Link href="/terms" className="hover:text-slate-900">
