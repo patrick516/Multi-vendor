@@ -1,3 +1,4 @@
+// backend/controllers/productsController.js
 const prisma = require("../config/prisma");
 const malawiDistricts = require("../constants/malawiDistricts");
 const nodemailer = require("nodemailer");
@@ -5,17 +6,10 @@ const nodemailer = require("nodemailer");
 // We keep these env vars for future flexibility, but they no longer affect price
 const MARKUP_TYPE = process.env.ADMIN_MARKUP_TYPE || "FLAT"; // FLAT | PERCENT
 const MARKUP_VALUE = Number(process.env.ADMIN_MARKUP_VALUE || "0");
-
-// ✅ No top up: displayPrice is exactly the vendor's base price, commission is 0
 function applyMarkup(basePrice) {
   const displayPrice = basePrice;
   const commissionPerUnit = 0;
   return { displayPrice, commissionPerUnit };
-}
-
-function buildFileUrl(req, filename) {
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
-  return `${baseUrl}/uploads/products/${filename}`;
 }
 
 // POST /api/products
@@ -50,21 +44,10 @@ async function createProduct(req, res) {
       return res.status(400).json({ message: "Category is required" });
     }
 
-    // 🔹 NEW: build image URL from uploaded file (mainImage)
-    let mainImageUrl = null;
-    const files = req.files || {};
-
-    if (files.mainImage && files.mainImage.length > 0) {
-      const file = files.mainImage[0];
-      mainImageUrl = buildFileUrl(req, file.filename);
-    }
-
-    let galleryImageUrls = [];
-    if (files.galleryImages && files.galleryImages.length > 0) {
-      galleryImageUrls = files.galleryImages.map((f) =>
-        buildFileUrl(req, f.filename)
-      );
-    }
+    // 🔹 NEW: read Cloudinary URLs from upload middleware
+    const cloudinaryImages = req.cloudinaryImages || {};
+    const mainImageUrl = cloudinaryImages.mainImageUrl || imageUrl || null; // fallback to body.imageUrl if provided
+    const galleryImageUrls = cloudinaryImages.galleryImageUrls || [];
 
     const { displayPrice, commissionPerUnit } = applyMarkup(vendorBasePrice);
 
@@ -76,7 +59,7 @@ async function createProduct(req, res) {
         displayPrice,
         commissionPerUnit,
         stock: stock ? Number(stock) : 1,
-        imageUrl: mainImageUrl || imageUrl || null,
+        imageUrl: mainImageUrl,
         galleryImageUrls,
         categoryId: Number(categoryId),
         district,
