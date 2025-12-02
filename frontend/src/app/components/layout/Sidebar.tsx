@@ -36,12 +36,13 @@ export function Sidebar({
     if (onClose) onClose();
   }
 
-  // const roleLabel =
-  //   user.role === "SUPER_ADMIN"
-  //     ? "Super Admin"
-  //     : user.role === "VENDOR"
-  //     ? "Vendor"
-  //     : "Customer";
+  // Map internal role to a nice label
+  const roleLabel =
+    user.role === "SUPER_ADMIN"
+      ? "Super Admin"
+      : user.role === "VENDOR"
+      ? "Vendor"
+      : "Customer";
 
   const content = (
     <>
@@ -58,16 +59,17 @@ export function Sidebar({
 
       {/* User info */}
       <div className="px-4 py-4 border-b border-white/10">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col items-center gap-1">
           <p className="text-sm font-semibold text-white text-center truncate max-w-[160px]">
             {user.name}
           </p>
           <p className="text-[11px] text-center text-white/70 truncate max-w-[160px]">
             {user.email}
           </p>
-          {/* <span className="inline-flex items-center mt-2 rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-medium uppercase tracking-wide text-white/80">
+          {/* Role badge */}
+          <span className="inline-flex items-center mt-2 rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-medium uppercase tracking-wide text-white/80">
             {roleLabel}
-          </span> */}
+          </span>
         </div>
       </div>
 
