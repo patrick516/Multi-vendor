@@ -220,7 +220,7 @@ export default function HomePage() {
                     <div className="h-12 rounded-lg bg-slate-200" />
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center justify-between mt-5">
                   <button
                     type="button"
                     onClick={handleBrowseClick}
