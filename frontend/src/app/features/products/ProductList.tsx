@@ -5,6 +5,7 @@ import { fetchProducts, selectProducts } from "./productSlice";
 import type { Product } from "./productSlice";
 import ProductCard from "./ProductCard";
 import AddProductForm from "./AddProductForm";
+import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -192,7 +193,7 @@ export default function ProductList() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-lg font-semibold">Products</h2>
           <p className="text-sm text-muted-foreground">
@@ -200,35 +201,41 @@ export default function ProductList() {
               ? "View and manage products across all vendors, including their districts and categories."
               : "View and manage the products you have added, including where they are sold from."}
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {filteredSortedProducts.length} product
+            {filteredSortedProducts.length === 1 ? "" : "s"} found
+          </p>
         </div>
 
         <button
           onClick={() => setShowAddForm(true)}
-          className="px-4 py-2 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+          className="px-4 py-2 text-sm font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
         >
           + Add product
         </button>
       </header>
 
-      {/* Info card */}
-      {/* <section className="p-4 space-y-2 border rounded-lg shadow-sm bg-card border-border">
-        <h3 className="text-sm font-semibold">How it works</h3>
-        <p className="text-sm text-muted-foreground">
-          When adding a product, select the district where the product is
-          available, optionally specify the area, and choose a category. The
-          system will use this information on the customer website so buyers can
-          search by location and category.
-        </p>
-      </section> */}
-
-      {/* Filters & table */}
       {loading && (
-        <p className="text-sm text-muted-foreground">Loading products...</p>
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between px-3 py-3 border rounded-md border-border bg-card animate-pulse"
+            >
+              <div className="space-y-2">
+                <div className="w-40 h-3 rounded bg-muted" />
+                <div className="w-64 h-3 rounded bg-muted" />
+              </div>
+              <div className="w-24 h-3 rounded bg-muted" />
+            </div>
+          ))}
+        </div>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {!loading && !error && (
         <section className="p-4 space-y-3 border rounded-lg shadow-sm bg-card border-border">
+          {/* Filters header */}
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div className="space-y-1">
               <h3 className="text-sm font-semibold">All Products</h3>
@@ -237,32 +244,43 @@ export default function ProductList() {
                 products. Results are grouped by category.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 text-sm">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                placeholder="Search by name, description, category..."
-                className="rounded-md border border-border bg-background px-2 py-1 min-w-[180px]"
-              />
-              <select
-                value={categoryFilter}
-                onChange={(e) => {
-                  setCategoryFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="px-2 py-1 border rounded-md border-border bg-background"
-              >
-                <option value="">All categories</option>
-                {categoryOptions.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              {/* Search */}
+              <div className="relative min-w-[200px]">
+                <Search className="absolute w-4 h-4 -translate-y-1/2 left-2 top-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  placeholder="Search name, description, category..."
+                  className="w-full py-1 border rounded-md border-border bg-background px-7"
+                />
+              </div>
+
+              {/* Category filter */}
+              <div className="flex items-center gap-1">
+                <Filter className="w-4 h-4 text-muted-foreground" />
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => {
+                    setCategoryFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="px-2 py-1 border rounded-md border-border bg-background"
+                >
+                  <option value="">All categories</option>
+                  {categoryOptions.map((c) => (
+                    <option key={c.id} value={String(c.id)}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort */}
               <select
                 value={sortOrder}
                 onChange={(e) =>
@@ -284,7 +302,7 @@ export default function ProductList() {
             <>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-muted text-muted-foreground">
+                  <thead className="text-xs uppercase bg-muted text-muted-foreground">
                     <tr>
                       <th className="px-3 py-2">Name</th>
                       <th className="px-3 py-2">Description</th>
@@ -314,9 +332,10 @@ export default function ProductList() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between pt-2 text-sm text-muted-foreground">
+              <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
                 <span>
-                  Page {safePage} of {totalPages} •{" "}
+                  Page <span className="font-semibold">{safePage}</span> of{" "}
+                  <span className="font-semibold">{totalPages}</span> •{" "}
                   {filteredSortedProducts.length} product
                   {filteredSortedProducts.length === 1 ? "" : "s"}
                 </span>
@@ -325,9 +344,10 @@ export default function ProductList() {
                     type="button"
                     disabled={safePage <= 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="px-2 py-1 border rounded-md border-border bg-background disabled:opacity-50"
+                    className="flex items-center gap-1 px-2 py-1 border rounded-md border-border bg-background disabled:opacity-50 hover:bg-muted"
                   >
-                    Previous
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Previous</span>
                   </button>
                   <button
                     type="button"
@@ -335,9 +355,10 @@ export default function ProductList() {
                     onClick={() =>
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
-                    className="px-2 py-1 border rounded-md border-border bg-background disabled:opacity-50"
+                    className="flex items-center gap-1 px-2 py-1 border rounded-md border-border bg-background disabled:opacity-50 hover:bg-muted"
                   >
-                    Next
+                    <span>Next</span>
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -378,7 +399,7 @@ export default function ProductList() {
               </h3>
               <button
                 onClick={() => setViewProduct(null)}
-                className="text-md text-muted-foreground hover:text-foreground"
+                className="text-xs text-muted-foreground hover:text-foreground"
               >
                 ✕
               </button>
@@ -420,7 +441,7 @@ function CategoryGroupRows({
       {/* Category header row */}
       <tr className="bg-slate-50">
         <td
-          className="px-3 py-2 font-semibold text-md text-slate-700"
+          className="px-3 py-2 text-sm font-semibold text-slate-700"
           colSpan={8}
         >
           {categoryName}
@@ -438,56 +459,56 @@ function CategoryGroupRows({
 
         return (
           <tr key={product.id} className="align-top border-t border-border">
-            <td className="px-3 py-2 font-semibold text-md">{product.name}</td>
-            <td className="px-3 py-2 text-md text-muted-foreground">
+            <td className="px-3 py-2 text-sm font-semibold">{product.name}</td>
+            <td className="px-3 py-2 text-sm text-muted-foreground">
               {desc || <span className="text-slate-400">—</span>}
             </td>
-            <td className="px-3 py-2 font-semibold text-md">
+            <td className="px-3 py-2 text-sm font-semibold">
               MK {price.toLocaleString()}
             </td>
-            <td className="px-3 py-2 text-md">{qty}</td>
-            <td className="px-3 py-2 text-md">
+            <td className="px-3 py-2 text-sm">{qty}</td>
+            <td className="px-3 py-2 text-sm">
               {expected > 0 ? `MK ${expected.toLocaleString()}` : "—"}
             </td>
             <td className="px-3 py-2 text-xs">{vendorName}</td>
-            <td className="px-3 py-2 text-md text-muted-foreground">
+            <td className="px-3 py-2 text-sm text-muted-foreground">
               {product.district
                 ? `${product.district}${
                     product.area ? `, ${product.area}` : ""
                   }`
                 : "—"}
             </td>
-            <td className="px-3 py-2 text-md">
+            <td className="px-3 py-2 text-sm">
               <div className="flex flex-wrap items-center gap-1">
                 <button
                   type="button"
                   onClick={() => onView(product)}
-                  className="inline-flex items-center gap-1 px-2 py-1 border rounded-md border-slate-200 bg-background text-md hover:bg-slate-50"
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs border rounded-md border-slate-200 bg-background hover:bg-slate-50"
                 >
                   View
                 </button>
                 <button
                   type="button"
                   onClick={() => onMarkSold(product)}
-                  className="inline-flex items-center gap-1 px-2 py-1 font-semibold text-white rounded-md bg-emerald-600 text-md hover:bg-emerald-700"
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-white rounded-md bg-emerald-600 hover:bg-emerald-700"
                 >
                   Mark as sold
                 </button>
                 <button
                   type="button"
                   onClick={() => onEdit(product)}
-                  className="inline-flex items-center justify-center p-1 border rounded-md border-slate-200 bg-background text-slate-700 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center p-1 border rounded-md text-slate-700 border-slate-200 bg-background hover:bg-slate-50"
                   aria-label="Edit"
                 >
-                  <EditIcon className="w-5 h-5" />
+                  <EditIcon className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
                   onClick={() => onDelete(product)}
-                  className="inline-flex items-center justify-center p-1 border rounded-md border-destructive bg-background text-destructive hover:bg-destructive/10"
+                  className="inline-flex items-center justify-center p-1 border rounded-md text-destructive border-destructive bg-background hover:bg-destructive/10"
                   aria-label="Delete"
                 >
-                  <TrashIcon className="w-5 h-5" />
+                  <TrashIcon className="w-4 h-4" />
                 </button>
               </div>
             </td>
@@ -646,7 +667,7 @@ function EditProductModal({ product, onClose, onUpdated }: EditModalProps) {
   );
 }
 
-/* Simple inline icons (no extra library) */
+/*  inline icons (no extra library) */
 function EditIcon({ className }: { className?: string }) {
   return (
     <svg
