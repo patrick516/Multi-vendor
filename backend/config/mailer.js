@@ -1,51 +1,120 @@
 // backend/config/mailer.js
-const nodemailer = require("nodemailer");
+const fetch = require("node-fetch");
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS, // Gmail APP password
-  },
-  tls: {
-    minVersion: "TLSv1.2",
-    rejectUnauthorized: false,
-  },
-});
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_SENDER_NAME = process.env.BREVO_SENDER_NAME || "Trade Point Malawi";
+const BREVO_SENDER_EMAIL =
+  process.env.BREVO_SENDER_EMAIL || "no-reply@example.com";
 
-transporter.verify((err, success) => {
-  if (err) {
-    console.error("[MAIL] SMTP connection failed:", err.message || err);
-  } else {
-    console.log("[MAIL] SMTP transporter is ready");
-  }
-});
+if (!BREVO_API_KEY) {
+  console.warn(
+    "[MAIL] BREVO_API_KEY is not set. Emails will be skipped until configured."
+  );
+}
 
 /**
- * Simple wrapper to send an email.
+ * sendMail(options)
+ * options: { to, subject, text, html }
  */
 async function sendMail({ to, subject, text, html }) {
+  if (!BREVO_API_KEY) {
+    console.warn("[MAIL] Skipping email; Brevo is not configured.");
+    return;
+  }
+
+  const payload = {
+    sender: {
+      name: BREVO_SENDER_NAME,
+      email: BREVO_SENDER_EMAIL,
+    },
+    to: [{ email: to }],
+    subject,
+    textContent: text || "",
+    htmlContent: html || (text ? text.replace(/\n/g, "<br/>") : ""),
+  };
+
   try {
-    const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to,
-      subject,
-      text,
-      html,
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": BREVO_API_KEY,
+      },
+      body: JSON.stringify(payload),
     });
-    console.log("[MAIL] Message sent:", info.messageId);
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      console.error(
+        "[MAIL] Brevo API error:",
+        res.status,
+        res.statusText,
+        data
+      );
+      throw new Error(
+        data.message || `Brevo error ${res.status} ${res.statusText}`
+      );
+    }
+
+    console.log("[MAIL] Brevo email sent to:", to, "response:", data);
   } catch (err) {
-    console.error("[MAIL] Failed to send email:", err);
-    throw err;
+    console.error("[MAIL] Failed to send email via Brevo:", err);
   }
 }
 
 module.exports = {
-  transporter,
   sendMail,
 };
+
+// // backend/config/mailer.js
+// const nodemailer = require("nodemailer");
+
+// const transporter = nodemailer.createTransport({
+//   host: process.env.SMTP_HOST || "smtp.gmail.com",
+//   port: Number(process.env.SMTP_PORT || 587),
+//   secure: false,
+//   auth: {
+//     user: process.env.SMTP_USER,
+//     pass: process.env.SMTP_PASS, // Gmail APP password
+//   },
+//   tls: {
+//     minVersion: "TLSv1.2",
+//     rejectUnauthorized: false,
+//   },
+// });
+
+// transporter.verify((err, success) => {
+//   if (err) {
+//     console.error("[MAIL] SMTP connection failed:", err.message || err);
+//   } else {
+//     console.log("[MAIL] SMTP transporter is ready");
+//   }
+// });
+
+// /**
+//  * Simple wrapper to send an email.
+//  */
+// async function sendMail({ to, subject, text, html }) {
+//   try {
+//     const info = await transporter.sendMail({
+//       from: process.env.SMTP_FROM,
+//       to,
+//       subject,
+//       text,
+//       html,
+//     });
+//     console.log("[MAIL] Message sent:", info.messageId);
+//   } catch (err) {
+//     console.error("[MAIL] Failed to send email:", err);
+//     throw err;
+//   }
+// }
+
+// module.exports = {
+//   transporter,
+//   sendMail,
+// };
 
 // // backend/config/mailer.js
 // const { Resend } = require("resend");
