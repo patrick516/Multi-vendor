@@ -39,6 +39,35 @@ export default function HomePage() {
       ),
     [categories, categorySearch]
   );
+  function Spinner() {
+    return (
+      <div className="inline-flex items-center gap-2 text-sm text-slate-500">
+        <span className="w-4 h-4 border-2 rounded-full border-emerald-500 border-t-transparent animate-spin" />
+        <span>Loading top products…</span>
+      </div>
+    );
+  }
+
+  function TopProductsSkeleton() {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex flex-col p-3 bg-white border shadow-sm rounded-2xl border-slate-100 animate-pulse"
+          >
+            <div className="w-full h-36 rounded-xl bg-slate-200" />
+            <div className="w-3/4 h-4 mt-2 rounded bg-slate-200" />
+            <div className="w-1/2 h-6 mt-2 rounded bg-slate-200" />
+            <div className="flex gap-2 mt-3">
+              <span className="w-16 h-5 rounded-full bg-slate-200" />
+              <span className="w-20 h-5 rounded-full bg-slate-200" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   // HERO products (just first 4)
   const heroProducts = useMemo(
@@ -73,22 +102,29 @@ export default function HomePage() {
   // Load top picks – use /public/top-products
   useEffect(() => {
     async function loadTop() {
-      try {
-        setLoadingTop(true);
-        setTopError(null);
+      setLoadingTop(true);
+      setTopError(null);
 
+      try {
         const products = await fetchJson<Product[]>(
           "/public/top-products?limit=10"
         );
         setTopProducts(products);
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          console.error(err.message);
-        } else {
-          console.error("Failed to filter Products", err);
+        console.error(err);
+
+        let message = "Failed to load top products. Please try again.";
+
+        if (err instanceof Error && err.message.includes("NetworkError")) {
+          message = "Unable to reach the server. Please check your connection.";
         }
+
+        setTopError(message);
+      } finally {
+        setLoadingTop(false);
       }
     }
+
     loadTop();
   }, []);
 
@@ -347,7 +383,7 @@ export default function HomePage() {
               <h2 className="text-sm font-semibold text-slate-900">
                 Fine-tune your search
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm text-slate-500">
                 Filter by district, category or keyword – then browse detailed
                 vendor listings.
               </p>
@@ -511,8 +547,12 @@ export default function HomePage() {
           </div>
 
           {loadingTop && (
-            <p className="text-sm text-slate-500">Loading top products…</p>
+            <div className="space-y-2">
+              <Spinner />
+              <TopProductsSkeleton />
+            </div>
           )}
+
           {topError && <p className="text-sm text-red-500">{topError}</p>}
 
           {!loadingTop && !topError && topProducts.length === 0 && (
