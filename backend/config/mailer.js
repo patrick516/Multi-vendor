@@ -2,16 +2,50 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: Number(process.env.SMTP_PORT || 587),
   secure: false,
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    pass: process.env.SMTP_PASS, // Gmail APP password
+  },
+  tls: {
+    minVersion: "TLSv1.2",
+    rejectUnauthorized: false,
   },
 });
 
-module.exports = transporter;
+transporter.verify((err, success) => {
+  if (err) {
+    console.error("[MAIL] SMTP connection failed:", err.message || err);
+  } else {
+    console.log("[MAIL] SMTP transporter is ready");
+  }
+});
+
+/**
+ * Simple wrapper to send an email.
+ */
+async function sendMail({ to, subject, text, html }) {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM,
+      to,
+      subject,
+      text,
+      html,
+    });
+    console.log("[MAIL] Message sent:", info.messageId);
+  } catch (err) {
+    console.error("[MAIL] Failed to send email:", err);
+    throw err;
+  }
+}
+
+module.exports = {
+  transporter,
+  sendMail,
+};
 
 // // backend/config/mailer.js
 // const { Resend } = require("resend");

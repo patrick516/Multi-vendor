@@ -2,23 +2,83 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodeCrypto = require("crypto");
-const nodemailer = require("nodemailer");
 const prisma = require("../config/prisma");
+const { sendMail } = require("../config/mailer");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-// Email transporter (reuse SMTP settings)
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+/**
+ * Helpers
+ */
+function signToken(user) {
+  return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
+}
 
+// Helper: check if the request is coming from a SUPER_ADMIN (via JWT)
+function isRequestFromSuperAdmin(req) {
+  const authHeader = req.headers.authorization || "";
+  if (!authHeader.startsWith("Bearer ")) return false;
+
+  const token = authHeader.slice(7);
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded && decoded.role === "SUPER_ADMIN";
+  } catch {
+    return false;
+  }
+}
+
+// Helper: send welcome email with temporary password & login link (admin-created user)
+async function sendNewUserEmail(user, plainPassword) {
+  try {
+    const baseUrl =
+      (process.env.FRONTEND_BASE_URL &&
+        process.env.FRONTEND_BASE_URL.replace(/\/$/, "")) ||
+      "http://localhost:5173";
+
+    const loginUrl = `${baseUrl}/login`;
+
+    const subject = `Your ${
+      process.env.BRAND_NAME || "Multi Vendor Shop"
+    } account`;
+    const text = `
+Hello ${user.name || user.email},
+
+An administrator has created an account for you on ${
+      process.env.BRAND_NAME || "Multi Vendor Shop"
+    }.
+
+Login details:
+- Portal URL: ${loginUrl}
+- Email: ${user.email}
+- Temporary password: ${plainPassword}
+
+On your first login, you will be prompted to change this password.
+For security, please change it immediately and do not share it with anyone.
+
+Regards,
+${process.env.BRAND_NAME || "Multi Vendor Shop"} Admin
+`.trim();
+
+    await sendMail({
+      to: user.email,
+      subject,
+      text,
+      html: text.replace(/\n/g, "<br/>"),
+    });
+  } catch (err) {
+    console.error("Failed to send new user email:", err);
+    // don't fail registration just because email failed
+  }
+}
+
+/**
+ * Public vendor registration from website
+ * POST /api/auth/vendor-register
+ */
 async function publicVendorRegister(req, res) {
   try {
     const { name, email, phone } = req.body;
@@ -35,7 +95,6 @@ async function publicVendorRegister(req, res) {
       });
     }
 
-    // ✅ Use Node crypto, not global webcrypto
     const tempPassword = nodeCrypto.randomBytes(6).toString("hex"); // 12 chars
     const hashed = await bcrypt.hash(tempPassword, 10);
 
@@ -50,7 +109,6 @@ async function publicVendorRegister(req, res) {
       },
     });
 
-    // Build payment accounts text from env
     const accountsText = [
       process.env.ADMIN_ACCOUNT_TNM && `• ${process.env.ADMIN_ACCOUNT_TNM}`,
       process.env.ADMIN_ACCOUNT_AIRTEL &&
@@ -84,15 +142,15 @@ ${process.env.BRAND_NAME || "Trade Point Malawi"} Admin
 `.trim();
 
     try {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM,
+      await sendMail({
         to: email,
         subject,
         text,
+        html: text.replace(/\n/g, "<br/>"),
       });
     } catch (e) {
       console.error("Failed to send vendor welcome email:", e);
-      // We do not fail the request just because email failed
+      // do not fail the request just because email failed
     }
 
     return res.status(201).json({
@@ -105,85 +163,9 @@ ${process.env.BRAND_NAME || "Trade Point Malawi"} Admin
   }
 }
 
-const vendorTransporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-function signToken(user) {
-  return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
-}
-
-// Helper: check if the request is coming from a SUPER_ADMIN (via JWT)
-function isRequestFromSuperAdmin(req) {
-  const authHeader = req.headers.authorization || "";
-  if (!authHeader.startsWith("Bearer ")) return false;
-
-  const token = authHeader.slice(7);
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    return decoded && decoded.role === "SUPER_ADMIN";
-  } catch {
-    return false;
-  }
-}
-
-// Helper: send welcome email with temporary password & login link
-async function sendNewUserEmail(user, plainPassword) {
-  try {
-    const loginUrl =
-      process.env.FRONTEND_BASE_URL?.replace(/\/$/, "") + "/login" ||
-      "http://localhost:5173/login";
-
-    const subject = `Your ${
-      process.env.BRAND_NAME || "Multi Vendor Shop"
-    } account`;
-    const text = `
-Hello ${user.name || user.email},
-
-An administrator has created an account for you on ${
-      process.env.BRAND_NAME || "Multi Vendor Shop"
-    }.
-
-Login details:
-- Portal URL: ${loginUrl}
-- Email: ${user.email}
-- Temporary password: ${plainPassword}
-
-On your first login, you will be prompted to change this password.
-For security, please change it immediately and do not share it with anyone.
-
-Regards,
-${process.env.BRAND_NAME || "Multi Vendor Shop"} Admin
-`;
-
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to: user.email,
-      subject,
-      text,
-    });
-  } catch (err) {
-    console.error("Failed to send new user email:", err);
-    // don't fail registration just because email failed
-  }
-}
-
-// POST /api/auth/register
-// Rules:
-// - If there are 0 users: create FIRST user as SUPER_ADMIN (no auth needed, mustChangePassword=false)
-// - If there is already at least 1 user:
-//   - Only SUPER_ADMIN (with valid token) may create users
-//   - New users can be VENDOR or CUSTOMER (NOT SUPER_ADMIN)
-//   - New users get mustChangePassword=true and welcome email
-// Admin / system registration: POST /api/auth/register
+/**
+ * Admin / system registration: POST /api/auth/register
+ */
 async function register(req, res) {
   try {
     const { name, email, password } = req.body;
@@ -220,8 +202,7 @@ async function register(req, res) {
         });
       }
 
-      // 🔴 IMPORTANT: For this project, every new user (besides first) is a VENDOR.
-      // We completely ignore any 'role' from the request.
+      // For this project, every new user (besides first) is a VENDOR.
       userRole = "VENDOR";
       mustChangePassword = true;
     }
@@ -259,6 +240,9 @@ async function register(req, res) {
   }
 }
 
+/**
+ * Login
+ */
 async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -278,10 +262,6 @@ async function login(req, res) {
     if (!valid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-
-    // ❌ IMPORTANT: do NOT block login here – we want blocked vendors to log in
-    // and see the subscription banner instead of the dashboard.
-    // We just include subscriptionActive + mustPay in the payload.
 
     const token = signToken(user);
 
@@ -305,7 +285,9 @@ async function login(req, res) {
   }
 }
 
-// below login
+/**
+ * Change password (logged-in)
+ */
 async function changePassword(req, res) {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -354,11 +336,156 @@ async function changePassword(req, res) {
   }
 }
 
+// -----------------------------
+// Forgot Password (request OTP)
+// POST /api/auth/forgot-password
+// body: { email }
+// -----------------------------
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const genericMessage =
+      "If an account with that email exists, we have sent a reset code.";
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      // Avoid leaking existence of account – always respond the same
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return res.json({ message: genericMessage });
+    }
+
+    // Generate 6-digit OTP
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+    const tokenHash = await bcrypt.hash(otp, 10);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+    // Clear old tokens for this email
+    await prisma.passwordResetToken.deleteMany({ where: { email } });
+
+    // Save new token
+    await prisma.passwordResetToken.create({
+      data: {
+        email,
+        tokenHash,
+        expiresAt,
+      },
+    });
+
+    const subject = `${
+      process.env.BRAND_NAME || "Trade Point Malawi"
+    } — Password Reset Code`;
+    const text = `
+Hi ${user.name || email},
+
+You requested a password reset for your account on ${
+      process.env.BRAND_NAME || "Trade Point Malawi"
+    }.
+
+Your one-time reset code is: ${otp}
+
+This code will expire in 15 minutes. If you did not request this, you can ignore this email.
+
+Thanks,
+${process.env.BRAND_NAME || "Trade Point Malawi"} Team
+`.trim();
+
+    await sendMail({
+      to: email,
+      subject,
+      text,
+      html: text.replace(/\n/g, "<br/>"),
+    });
+
+    return res.json({ message: genericMessage });
+  } catch (err) {
+    console.error("forgotPassword error:", err);
+    return res.json({
+      message:
+        "If an account with that email exists, we have sent a reset code.",
+    });
+  }
+}
+
+// -----------------------------
+// Reset Password (using OTP)
+// POST /api/auth/reset-password
+// body: { email, otp, newPassword }
+// -----------------------------
+async function resetPassword(req, res) {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        message: "Email, OTP, and new password are required",
+      });
+    }
+
+    const tokenRecord = await prisma.passwordResetToken.findFirst({
+      where: {
+        email,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!tokenRecord) {
+      return res.status(400).json({
+        message: "Invalid or expired reset code",
+      });
+    }
+
+    const isValid = await bcrypt.compare(otp, tokenRecord.tokenHash);
+    if (!isValid) {
+      return res.status(400).json({
+        message: "Invalid or expired reset code",
+      });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    const user = await prisma.user.update({
+      where: { email },
+      data: {
+        password: hashed,
+        mustChangePassword: false,
+      },
+    });
+
+    await prisma.passwordResetToken.deleteMany({ where: { email } });
+
+    // Optionally log in automatically
+    const token = signToken(user);
+
+    return res.json({
+      message: "Password has been reset successfully.",
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error("resetPassword error:", err);
+    return res.status(500).json({ message: "Failed to reset password" });
+  }
+}
+
 module.exports = {
   register,
   login,
   changePassword,
   publicVendorRegister,
+  forgotPassword,
+  resetPassword,
 };
 
 // backend/controllers/authController.js

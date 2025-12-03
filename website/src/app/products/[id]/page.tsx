@@ -1,3 +1,4 @@
+// website/src/app/features/products/[id]/page.tsx (or ProductDetailPage.tsx)
 "use client";
 
 import { useEffect, useState } from "react";
@@ -102,7 +103,9 @@ export default function ProductDetailPage() {
         });
 
         if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
+          const body = await res
+            .json()
+            .catch(() => ({} as { message?: string }));
           throw new Error(body.message || "Failed to load product");
         }
 
@@ -126,8 +129,12 @@ export default function ProductDetailPage() {
             .slice(0, 4);
           setSimilar(similarProducts);
         }
-      } catch (err: any) {
-        setError(err.message || "Failed to load product");
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message || "Failed to load product");
+        } else {
+          setError("Failed to load product");
+        }
       } finally {
         setLoading(false);
       }
@@ -305,7 +312,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Location + vendor */}
-            <div className="space-y-1 text-[11px] text-text-muted">
+            <div className="space-y-1 text-md text-text-muted">
               <div className="flex items-center gap-2">
                 <span className="text-base">📍</span>
                 <span>
@@ -314,13 +321,15 @@ export default function ProductDetailPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-base text-emerald-600">●</span>
+                <span className="font-semibold text-md text-emerald-600">
+                  ●
+                </span>
                 <span>{vendorName}</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <span
                   className={[
-                    "mt-1 inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-medium",
+                    "mt-1 inline-flex items-center rounded-full px-2 py-[2px] text-md font-medium",
                     outOfStock
                       ? "bg-slate-100 text-slate-500"
                       : "bg-emerald-50 text-emerald-700",
@@ -329,7 +338,7 @@ export default function ProductDetailPage() {
                   {outOfStock ? "Out of stock" : "In stock"}
                 </span>
                 {distanceLabel && (
-                  <span className="mt-1 inline-flex items-center rounded-full bg-emerald-50 px-2 py-[2px] text-[10px] font-medium text-emerald-700">
+                  <span className="mt-1 inline-flex items-center rounded-full bg-emerald-50 px-2 py-[2px] text-md font-medium text-emerald-700">
                     {distanceLabel}
                   </span>
                 )}
@@ -364,19 +373,19 @@ export default function ProductDetailPage() {
         <div className="grid gap-6 md:grid-cols-[minmax(0,1.4fr),minmax(0,0.9fr)]">
           {/* Description */}
           <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-text-main">
+            <h2 className="font-semibold text-md text-text-main">
               Description
             </h2>
-            <p className="text-sm leading-relaxed text-text-muted">
+            <p className="leading-relaxed text-md text-text-muted">
               {product.description ||
                 "No detailed description has been provided for this product yet. Contact the vendor for more information about features, condition, and availability."}
             </p>
 
             <div className="mt-3 space-y-2">
-              <h3 className="text-sm font-semibold text-text-main">
+              <h3 className="font-semibold text-md text-text-main">
                 Product details
               </h3>
-              <ul className="list-disc space-y-1 pl-5 text-[11px] text-text-muted">
+              <ul className="pl-5 space-y-1 list-disc text-md text-text-muted">
                 <li>Category: {categoryLabel}</li>
                 <li>
                   Location: {districtLabel}
@@ -389,18 +398,20 @@ export default function ProductDetailPage() {
 
           {/* Vendor card */}
           <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-text-main">Vendor</h2>
+            <h2 className="font-semibold text-md text-text-main">Vendor</h2>
             <div className="flex items-center justify-between px-3 py-3 border rounded-2xl border-slate-100 bg-slate-50">
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-10 h-10 text-xs font-semibold text-white rounded-full bg-emerald-600">
                   {vendorName.charAt(0).toUpperCase()}
                 </div>
                 <div className="leading-tight">
-                  <p className="text-xs font-semibold text-text-main">
+                  <p className="text-sm font-semibold text-text-main">
                     {vendorName}
                   </p>
-                  <p className="text-[11px] text-text-muted">Verified vendor</p>
-                  <p className="text-[11px] text-text-muted">{districtLabel}</p>
+                  <p className="text-sm text-text-muted">Verified vendor</p>
+                  <p className="font-semibold text-md text-text-muted">
+                    {districtLabel}
+                  </p>
                 </div>
               </div>
               <button
@@ -530,7 +541,7 @@ function BuyNowModal({
       });
 
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
+        const body = await res.json().catch(() => ({} as { message?: string }));
         throw new Error(body.message || "Failed to send buy now request");
       }
 
@@ -541,8 +552,12 @@ function BuyNowModal({
         setSuccess(false);
         onClose();
       }, 1800);
-    } catch (err: any) {
-      setError(err.message || "Failed to send buy now request");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to send buy now request");
+      } else {
+        setError("Failed to send buy now request");
+      }
     } finally {
       setSaving(false);
     }
@@ -714,7 +729,7 @@ function ContactVendorModal({
       });
 
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
+        const body = await res.json().catch(() => ({} as { message?: string }));
         throw new Error(body.message || "Failed to send message");
       }
       saveCustomerInfo(customerName, customerEmail, customerPhone);
@@ -724,8 +739,12 @@ function ContactVendorModal({
         setSuccess(false);
         onClose();
       }, 1800);
-    } catch (err: any) {
-      setError(err.message || "Failed to send message");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to send message");
+      } else {
+        setError("Failed to send message");
+      }
     } finally {
       setSaving(false);
     }

@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Sidebar } from "./Sidebar";
+import Sidebar from "./Sidebar";
 import { TopBar } from "./TopBar";
 import type { AppRoute, AppRole } from "../../../routes";
 
@@ -124,7 +124,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
 
   if (loadingUser && !currentUser) {
     return (
-      <div className="flex items-center justify-center w-screen h-screen bg-muted">
+      <div className="flex items-center justify-center w-screen h-screen bg-muted ">
         <div className="flex items-center gap-3 px-4 py-3 text-sm border rounded-lg shadow-sm bg-card border-border text-muted-foreground">
           <div className="flex items-center justify-center w-8 h-8 text-xs font-bold text-white rounded-full bg-brand-blue">
             TP

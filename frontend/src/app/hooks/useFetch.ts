@@ -32,9 +32,13 @@ export function useFetch<T = unknown>(endpoint: string, options?: RequestInit) {
         if (isMounted) {
           setData(json);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (isMounted) {
-          setError(err.message || "Failed to fetch");
+          if (err instanceof Error) {
+            setError(err.message || "Failed to fetch");
+          } else {
+            setError("Failed to fetch");
+          }
         }
       } finally {
         if (isMounted) {

@@ -1,33 +1,38 @@
-// src/app/components/layout/Sidebar.tsx
+"use client";
+
+import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import type { AppRoute, AppRole } from "../../../routes";
 
-interface RouteItem {
-  path: string;
-  label: string;
-}
-
-interface UserInfo {
+interface SidebarUser {
   name: string;
   email: string;
-  role: string;
+  role: AppRole;
 }
 
 interface SidebarProps {
-  items: RouteItem[];
-  currentPath: string;
-  user: UserInfo;
+  items: AppRoute[]; // filtered sidebar routes
+  currentPath: string; // current location pathname
+  user: SidebarUser; // user info from AppLayout
   isOpen?: boolean; // mobile
   onClose?: () => void; // mobile
 }
 
-export function Sidebar({
+// Allow optional path/to on top of whatever AppRoute already has
+type RouteWithOptionalPath = AppRoute & {
+  path?: string;
+  to?: string;
+};
+
+const Sidebar: React.FC<SidebarProps> = ({
   items,
   currentPath,
   user,
   isOpen,
   onClose,
-}: SidebarProps) {
+}) => {
   const navigate = useNavigate();
+  const role = user.role;
 
   function handleLogout() {
     localStorage.removeItem("authToken");
@@ -35,14 +40,6 @@ export function Sidebar({
     navigate("/login");
     if (onClose) onClose();
   }
-
-  // Map internal role to a nice label
-  const roleLabel =
-    user.role === "SUPER_ADMIN"
-      ? "Super Admin"
-      : user.role === "VENDOR"
-      ? "Vendor"
-      : "Customer";
 
   const content = (
     <>
@@ -57,30 +54,44 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* User info */}
+      {/* User info (avatar + name + email + role) */}
       <div className="px-4 py-4 border-b border-white/10">
-        <div className="flex flex-col items-center gap-1">
-          <p className="text-sm font-semibold text-white text-center truncate max-w-[160px]">
-            {user.name}
-          </p>
-          <p className="text-[11px] text-center text-white/70 truncate max-w-[160px]">
-            {user.email}
-          </p>
-          {/* Role badge */}
-          <span className="inline-flex items-center mt-2 rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-medium uppercase tracking-wide text-white/80">
-            {roleLabel}
-          </span>
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center justify-center w-12 h-12 text-xl font-bold text-white bg-green-400 rounded-full">
+            {user.name?.[0]?.toUpperCase() || "U"}
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm font-semibold text-white truncate max-w-[160px]">
+              {user.name || "User"}
+            </p>
+            <p className="text-[11px] text-white/70 truncate max-w-[160px]">
+              {user.email || ""}
+            </p>
+          </div>
+
+          {role && (
+            <span className="mt-1 rounded-full bg-white/10 px-3 py-0.5 text-[10px] uppercase tracking-wide text-white/80">
+              {role.replace("_", " ")}
+            </span>
+          )}
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto text-sm">
-        {items.map((item) => {
-          const isActive = currentPath === item.path;
+        {items.map((routeItem) => {
+          const item = routeItem as RouteWithOptionalPath;
+
+          // Prefer `path`, fall back to `to`, then "/"
+          const routePath = item.path ?? item.to ?? "/";
+
+          const isActive = currentPath === routePath;
+
           return (
             <NavLink
-              key={item.path}
-              to={item.path}
+              key={routePath}
+              to={routePath}
               className={[
                 "flex items-center rounded-md px-3 py-2 font-medium transition-colors",
                 isActive
@@ -134,4 +145,6 @@ export function Sidebar({
       )}
     </>
   );
-}
+};
+
+export default Sidebar;

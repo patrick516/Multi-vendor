@@ -105,11 +105,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Bottom row: category + district */}
-        <div className="flex items-center justify-between gap-2 mt-2 text-lg">
+        <div className="flex items-center justify-between gap-2 mt-2 text-xs">
           <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-[2px] font-medium text-emerald-700">
             {categoryLabel}
           </span>
-          <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-[2px] font-medium text-slate-600">
+          <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-[2px] font-semibold text-slate-600 text-md">
             {districtLabel}
           </span>
         </div>

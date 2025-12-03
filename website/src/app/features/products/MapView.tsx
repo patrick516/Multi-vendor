@@ -1,9 +1,11 @@
+// website/src/app/features/products/MapView.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { useSearchParams } from "next/navigation";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import type { LatLngExpression } from "leaflet";
+import { Icon, type LatLngExpression } from "leaflet"; // 👈 import Icon
 import type { Product } from "./types";
 import { fetchJson } from "@/app/utils/fetcher";
 
@@ -30,11 +32,23 @@ function haversineDistance(a: LatLng, b: LatLng): number {
   return R * d;
 }
 
-const MAP_CONTAINER_STYLE: React.CSSProperties = {
+const MAP_CONTAINER_STYLE: CSSProperties = {
   width: "100%",
   height: "260px",
   borderRadius: "0.75rem",
 };
+
+// ✅ Use explicit Leaflet marker icon so we don't rely on broken default asset path
+const defaultIcon = new Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  shadowSize: [41, 41],
+});
 
 export default function MapView() {
   const searchParams = useSearchParams();
@@ -67,8 +81,12 @@ export default function MapView() {
 
         const data = await fetchJson<Product[]>(path);
         setProducts(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to load products for map");
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message || "Failed to load products for map");
+        } else {
+          setError("Failed to load products for map");
+        }
       } finally {
         setLoading(false);
       }
@@ -95,20 +113,26 @@ export default function MapView() {
   }, []);
 
   // Products with coordinates
-  const productsWithCoords = useMemo(() => {
-    return products.filter(
-      (p) =>
-        typeof p.latitude === "number" &&
-        typeof p.longitude === "number"
-    );
-  }, [products]);
+  const productsWithCoords = useMemo(
+    () =>
+      products.filter(
+        (p) => typeof p.latitude === "number" && typeof p.longitude === "number"
+      ),
+    [products]
+  );
 
   // Compute distance and decide which to show (<= 5km vs all)
   const NEARBY_RADIUS_KM = 5;
 
-  const { nearby, others } = useMemo(() => {
+  const { nearby } = useMemo(() => {
     if (!userLocation) {
-      return { nearby: [] as (Product & { distanceKm: number })[], others: productsWithCoords.map((p) => ({ ...p, distanceKm: NaN })) };
+      return {
+        nearby: [] as (Product & { distanceKm: number })[],
+        others: productsWithCoords.map((p) => ({
+          ...p,
+          distanceKm: NaN,
+        })),
+      };
     }
 
     const withDistance = productsWithCoords.map((p) => {
@@ -129,7 +153,8 @@ export default function MapView() {
     userLocation && nearby.length > 0 ? nearby : productsWithCoords;
 
   const center: LatLngExpression = useMemo(() => {
-    if (userLocation) return [userLocation.lat, userLocation.lng] as LatLngExpression;
+    if (userLocation)
+      return [userLocation.lat, userLocation.lng] as LatLngExpression;
     if (markersToShow.length > 0) {
       const first = markersToShow[0];
       return [first.latitude as number, first.longitude as number];
@@ -192,7 +217,10 @@ export default function MapView() {
 
         {/* User location marker */}
         {userLocation && (
-          <Marker position={[userLocation.lat, userLocation.lng]}>
+          <Marker
+            position={[userLocation.lat, userLocation.lng]}
+            icon={defaultIcon}
+          >
             <Popup>You are here</Popup>
           </Marker>
         )}
@@ -202,6 +230,7 @@ export default function MapView() {
           <Marker
             key={p.id}
             position={[p.latitude as number, p.longitude as number]}
+            icon={defaultIcon}
           >
             <Popup>
               <div className="space-y-1 text-[11px]">

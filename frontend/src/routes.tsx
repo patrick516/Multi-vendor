@@ -12,7 +12,7 @@ export type AppRole = "SUPER_ADMIN" | "VENDOR" | "CUSTOMER";
 export interface AppRoute {
   path: string;
   label: string;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<Record<string, unknown>>;
   roles?: AppRole[];
 }
 
@@ -39,13 +39,13 @@ export const routes: AppRoute[] = [
     path: "/users",
     label: "Users",
     component: UserList,
-    roles: ["SUPER_ADMIN"], // admin only
+    roles: ["SUPER_ADMIN"],
   },
   {
     path: "/commissions",
     label: "Commissions",
     component: CommissionPage,
-    roles: ["SUPER_ADMIN"], // admin only
+    roles: ["SUPER_ADMIN"],
   },
   {
     path: "/subscriptions",
@@ -53,7 +53,6 @@ export const routes: AppRoute[] = [
     component: SubscriptionPage,
     roles: ["SUPER_ADMIN"],
   },
-
   {
     path: "/messages",
     label: "Messages",

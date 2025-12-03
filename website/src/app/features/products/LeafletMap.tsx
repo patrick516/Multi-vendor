@@ -1,22 +1,11 @@
-// website/src/app/features/products/LeafletMap.tsx
+// src/app/features/products/LeafletMap.tsx
 "use client";
 
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import dynamic from "next/dynamic";
 import type { LatLngExpression } from "leaflet";
-import { Icon } from "leaflet"; // 👈 import Icon
+import { Icon } from "leaflet";
 
-const MAP_CONTAINER_STYLE: React.CSSProperties = {
-  width: "100%",
-  height: "260px",
-  borderRadius: "0.75rem",
-};
-
-interface LatLng {
-  lat: number;
-  lng: number;
-}
-
-//  the same marker icon as LiveMap
+// Define default marker icon
 const defaultIcon = new Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl:
@@ -28,10 +17,35 @@ const defaultIcon = new Icon({
   shadowSize: [41, 41],
 });
 
+interface LatLng {
+  lat: number;
+  lng: number;
+}
+
 interface LeafletMapProps {
   center: LatLngExpression | null;
   userLocation?: LatLng | null;
 }
+
+// Dynamically import react-leaflet components only on client-side
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+
+const MAP_CONTAINER_STYLE: React.CSSProperties = {
+  width: "100%",
+  height: "260px",
+  borderRadius: "0.75rem",
+};
 
 export default function LeafletMap({ center, userLocation }: LeafletMapProps) {
   if (!center) {
@@ -57,7 +71,7 @@ export default function LeafletMap({ center, userLocation }: LeafletMapProps) {
       {/* Product marker */}
       <Marker position={center} icon={defaultIcon} />
 
-      {/* User location marker (if available) */}
+      {/* User location marker */}
       {userLocation && (
         <Marker
           position={[userLocation.lat, userLocation.lng]}

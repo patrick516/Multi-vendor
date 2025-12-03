@@ -15,6 +15,7 @@ import { AppLayout } from "@/app/components/layout/AppLayout";
 import LoginPage from "@/app/features/auth/LoginPage";
 import RegisterPage from "@/app/features/auth/RegisterPage";
 import ChangePasswordPage from "@/app/features/auth/ChangePasswordPage";
+import ForgotPasswordPage from "@/app/features/auth/ForgotPasswordPage";
 
 // Helper to read authUser from localStorage
 function getAuthUser() {
@@ -107,6 +108,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* Everything else must be authenticated */}
         <Route

@@ -1,4 +1,6 @@
 // src/app/features/auth/LoginPage.tsx
+"use client";
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -31,19 +33,18 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.message || "Login failed");
-      }
+      const data = await res.json().catch(() => ({}));
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed");
+      }
 
       // store token + user for later
       if (data.token) localStorage.setItem("authToken", data.token);
-      if (data.user)
+      if (data.user) {
         localStorage.setItem("authUser", JSON.stringify(data.user));
+      }
 
-      // If backend says password must be changed, force that first
       const mustChange = data.user?.mustChangePassword === true;
 
       if (mustChange) {
@@ -102,6 +103,16 @@ export default function LoginPage() {
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
+
+          {/* NEW: Forgot password link */}
+          <div className="mt-2 text-center">
+            <Link
+              to="/forgot-password"
+              className="text-xs text-primary hover:underline"
+            >
+              Forgot your password?
+            </Link>
+          </div>
         </form>
 
         <div className="text-center text-[11px] text-muted-foreground">

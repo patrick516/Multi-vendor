@@ -1,4 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchProducts,
@@ -61,12 +63,25 @@ interface PiePoint {
   [key: string]: string | number;
 }
 
+interface VendorSalesPoint {
+  date: string;
+  amount: number;
+}
+
+interface VendorProductRevenuePoint {
+  name: string;
+  revenue: number;
+}
+
 type Role = "SUPER_ADMIN" | "VENDOR" | "CUSTOMER";
 
 interface AuthUser {
   id: number;
   role: Role;
 }
+
+// Helper type for order items (no `any`)
+type OrderItem = Order["items"] extends Array<infer T> ? T : never;
 
 export default function AdminDashboard() {
   const dispatch = useDispatch<AppDispatch>();
@@ -111,7 +126,7 @@ export default function AdminDashboard() {
   }, []);
 
   const isSuperAdmin = authUser?.role === "SUPER_ADMIN";
-  const currentUserId = authUser?.id;
+  const currentUserId = authUser?.id ?? null;
 
   // ----- visibleProducts: admin sees all, vendor sees own products only -----
   const visibleProducts: Product[] = useMemo(() => {
@@ -119,19 +134,35 @@ export default function AdminDashboard() {
     return products.filter((p) => p.vendorId === currentUserId);
   }, [products, isSuperAdmin, currentUserId]);
 
+  // A set of visible product IDs (for vendor revenue calcs)
+  const visibleProductIds = useMemo(
+    () => new Set(visibleProducts.map((p) => p.id)),
+    [visibleProducts]
+  );
+
   // ----- visibleOrders: admin sees all, vendor sees orders that contain their products -----
   const visibleOrders: Order[] = useMemo(() => {
     if (isSuperAdmin || !currentUserId) return orders;
 
-    const ownProductIds = new Set<number>(visibleProducts.map((p) => p.id));
-
     return orders.filter((order) =>
-      order.items.some((item) => ownProductIds.has(item.productId))
+      order.items.some((item: OrderItem) =>
+        visibleProductIds.has(item.productId)
+      )
     );
-  }, [orders, isSuperAdmin, currentUserId, visibleProducts]);
+  }, [orders, isSuperAdmin, currentUserId, visibleProductIds]);
 
-  // Load subscription revenue from /admin/subscriptions/vendors
+  // ----- Subscription revenue (SUPER ADMIN ONLY) -----
   useEffect(() => {
+    if (!isSuperAdmin) {
+      // For vendors/customers: don't call the API, clear state
+      setSubLoading(false);
+      setSubError(null);
+      setTotalRevenueLast30(0);
+      setPaymentsCountLast30(0);
+      setRevenueChartData([]);
+      return;
+    }
+
     async function loadSubscriptionRevenue() {
       try {
         setSubLoading(true);
@@ -199,7 +230,7 @@ export default function AdminDashboard() {
     }
 
     loadSubscriptionRevenue();
-  }, []);
+  }, [isSuperAdmin]);
 
   // Derived metrics (NOTE: products & orders are role-based)
   const totalProducts = visibleProducts.length;
@@ -249,6 +280,67 @@ export default function AdminDashboard() {
     }));
   }, [visibleOrders]);
 
+  // Vendor-specific revenue over time (for vendors only)
+  const vendorSalesByDate: VendorSalesPoint[] = useMemo(() => {
+    if (!currentUserId || isSuperAdmin) return [];
+    const result: VendorSalesPoint[] = [];
+    const map = new Map<string, number>();
+
+    visibleOrders.forEach((order: Order) => {
+      const createdAt = (order.createdAt as string) || "";
+      const dateKey = createdAt ? createdAt.slice(0, 10) : "";
+      if (!dateKey) return;
+
+      const amountForVendor = (order.items || [])
+        .filter((item: OrderItem) => visibleProductIds.has(item.productId))
+        .reduce(
+          (sum: number, item: OrderItem) =>
+            sum + (item.unitPrice || 0) * (item.quantity || 0),
+          0
+        );
+
+      if (!amountForVendor) return;
+
+      map.set(dateKey, (map.get(dateKey) || 0) + amountForVendor);
+    });
+
+    map.forEach((amount, date) => {
+      result.push({ date, amount });
+    });
+
+    result.sort((a, b) => (a.date < b.date ? -1 : 1));
+    return result;
+  }, [currentUserId, isSuperAdmin, visibleOrders, visibleProductIds]);
+
+  // Vendor-specific revenue per product
+  const vendorProductRevenue: VendorProductRevenuePoint[] = useMemo(() => {
+    if (!currentUserId || isSuperAdmin) return [];
+
+    const revenueByProduct = new Map<number, VendorProductRevenuePoint>();
+    const productMap = new Map<number, Product>();
+    visibleProducts.forEach((p) => productMap.set(p.id, p));
+
+    visibleOrders.forEach((order: Order) => {
+      (order.items || []).forEach((item: OrderItem) => {
+        const product = productMap.get(item.productId);
+        if (!product) return;
+        const amount = (item.unitPrice || 0) * (item.quantity || 0);
+        if (!amount) return;
+
+        const existing = revenueByProduct.get(product.id) || {
+          name: product.name,
+          revenue: 0,
+        };
+        existing.revenue += amount;
+        revenueByProduct.set(product.id, existing);
+      });
+    });
+
+    const arr = Array.from(revenueByProduct.values());
+    arr.sort((a, b) => b.revenue - a.revenue);
+    return arr;
+  }, [currentUserId, isSuperAdmin, visibleOrders, visibleProducts]);
+
   const CATEGORY_COLORS = [
     "#22c55e",
     "#0ea5e9",
@@ -269,30 +361,51 @@ export default function AdminDashboard() {
   return (
     <div className="h-full space-y-6">
       {/* Summary cards row */}
-      <div className="grid gap-3 md:grid-cols-4">
-        <SummaryCard
-          label={isSuperAdmin ? "Total Products" : "My Products"}
-          value={totalProducts}
-          accent="primary"
-        />
-        <SummaryCard
-          label={isSuperAdmin ? "Total Orders" : "My Orders"}
-          value={totalOrders}
-          accent="secondary"
-        />
-        <SummaryCard
-          label="Active Vendors"
-          value={activeVendors}
-          accent="primary"
-        />
-        <SummaryCard
-          label="Blocked Vendors"
-          value={blockedVendors}
-          accent="secondary"
-        />
-      </div>
+      {isSuperAdmin ? (
+        <div className="grid gap-3 md:grid-cols-4">
+          <SummaryCard
+            label="Total Products"
+            value={totalProducts}
+            accent="primary"
+            badgeLabel="All time"
+          />
+          <SummaryCard
+            label="Total Orders"
+            value={totalOrders}
+            accent="secondary"
+            badgeLabel="All time"
+          />
+          <SummaryCard
+            label="Active Vendors"
+            value={activeVendors}
+            accent="primary"
+            badgeLabel="All time"
+          />
+          <SummaryCard
+            label="Blocked Vendors"
+            value={blockedVendors}
+            accent="secondary"
+            badgeLabel="All time"
+          />
+        </div>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          <SummaryCard
+            label="My Products"
+            value={totalProducts}
+            accent="primary"
+            badgeLabel="All time"
+          />
+          <SummaryCard
+            label="My Orders"
+            value={totalOrders}
+            accent="secondary"
+            badgeLabel="All time"
+          />
+        </div>
+      )}
 
-      {/* MIDDLE ROW: PIE CHARTS */}
+      {/* MIDDLE ROW: PIE CHARTS (role-based data, visible to both) */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Products by Category (Pie chart) */}
         <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
@@ -443,134 +556,234 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* BOTTOM ROW: BAR CHARTS */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Subscription revenue panel */}
-        <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold">
-                Subscription Revenue (Last 30 Days)
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Total vendor subscription payments recorded in the last month.
-              </p>
+      {/* BOTTOM ROW */}
+      {isSuperAdmin ? (
+        // ADMIN: subscription revenue + vendor overview
+        <div className="grid gap-4 lg:grid-cols-2">
+          {/* Subscription revenue panel */}
+          <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold">
+                  Subscription Revenue (Last 30 Days)
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Total vendor subscription payments recorded in the last month.
+                </p>
+              </div>
+              <div className="flex gap-2 text-xs">
+                <button className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                  Last 30 days
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2 text-xs">
-              <button className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
-                Last 30 days
-              </button>
+
+            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+              {subLoading && (
+                <div className="flex items-center justify-center h-full">
+                  Loading chart…
+                </div>
+              )}
+              {!subLoading && revenueChartData.length === 0 && (
+                <div className="flex items-center justify-center h-full">
+                  No subscription payments in the last 30 days.
+                </div>
+              )}
+              {!subLoading && revenueChartData.length > 0 && (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueChartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 10 }}
+                      tickMargin={5}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value: number) => `${value / 1000}k`}
+                    />
+                    <Tooltip<number, string>
+                      formatter={(value) => `MK ${value.toLocaleString()}`}
+                    />
+                    <Legend
+                      wrapperStyle={{ fontSize: 10 }}
+                      verticalAlign="top"
+                      height={24}
+                    />
+                    <Bar dataKey="amount" name="Revenue" fill="#16a34a" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-xs text-muted-foreground">
+              <span>
+                Total revenue:{" "}
+                <span className="font-semibold text-emerald-700">
+                  MK {totalRevenueLast30.toLocaleString()}
+                </span>
+              </span>
+              <span>
+                Payments recorded:{" "}
+                <span className="font-semibold text-slate-800">
+                  {paymentsCountLast30}
+                </span>
+              </span>
+              {subError && (
+                <span className="text-[10px] text-destructive">{subError}</span>
+              )}
             </div>
           </div>
 
-          <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
-            {subLoading && (
-              <div className="flex items-center justify-center h-full">
-                Loading chart…
+          {/* Vendor & Product Overview panel */}
+          <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold">
+                  Vendor & Product Overview
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Quick view of vendor status and product usage.
+                </p>
               </div>
-            )}
-            {!subLoading && revenueChartData.length === 0 && (
-              <div className="flex items-center justify-center h-full">
-                No subscription payments in the last 30 days.
-              </div>
-            )}
-            {!subLoading && revenueChartData.length > 0 && (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueChartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 10 }}
-                    tickMargin={5}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10 }}
-                    tickFormatter={(value: number) => `${value / 1000}k`}
-                  />
-                  <Tooltip<number, string>
-                    formatter={(value) => `MK ${value.toLocaleString()}`}
-                  />
-                  <Legend
-                    wrapperStyle={{ fontSize: 10 }}
-                    verticalAlign="top"
-                    height={24}
-                  />
-                  <Bar dataKey="amount" name="Revenue" fill="#16a34a" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
+            </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-xs text-muted-foreground">
-            <span>
-              Total revenue:{" "}
-              <span className="font-semibold text-emerald-700">
-                MK {totalRevenueLast30.toLocaleString()}
+            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+              {vendorChartData.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  No vendor data yet.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={vendorChartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 10 }}
+                      tickMargin={5}
+                    />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Bar dataKey="count" name="Count" fill="#0ea5e9" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-2 text-xs">
+              <span className="px-2 py-1 rounded-md bg-primary text-primary-foreground">
+                Active vendors: {activeVendors}
               </span>
-            </span>
-            <span>
-              Payments recorded:{" "}
-              <span className="font-semibold text-slate-800">
-                {paymentsCountLast30}
+              <span className="px-2 py-1 rounded-md bg-secondary text-secondary-foreground">
+                Blocked vendors: {blockedVendors}
               </span>
-            </span>
-            {subError && (
-              <span className="text-[10px] text-destructive">{subError}</span>
-            )}
+              <span className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                Total users: {totalUsers}
+              </span>
+              <span className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                Products: {totalProducts}
+              </span>
+            </div>
           </div>
         </div>
+      ) : (
+        // VENDOR: revenue charts
+        <div className="grid gap-4 lg:grid-cols-2">
+          {/* My sales over time */}
+          <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold">My Sales Over Time</h2>
+                <p className="text-sm text-muted-foreground">
+                  Revenue from orders containing your products.
+                </p>
+              </div>
+            </div>
 
-        {/* Vendor & Product Overview panel */}
-        <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold">
-                Vendor & Product Overview
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Quick view of vendor status and product usage.
-              </p>
+            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+              {vendorSalesByDate.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  No sales data yet.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={vendorSalesByDate}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 10 }}
+                      tickMargin={5}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value: number) =>
+                        `MK ${(value / 1000).toFixed(1)}k`
+                      }
+                    />
+                    <Tooltip<number, string>
+                      formatter={(value) => `MK ${value.toLocaleString()}`}
+                    />
+                    <Legend
+                      wrapperStyle={{ fontSize: 10 }}
+                      verticalAlign="top"
+                      height={24}
+                    />
+                    <Bar dataKey="amount" name="Revenue" fill="#16a34a" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
-          <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
-            {vendorChartData.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
-                No vendor data yet.
+          {/* Revenue by product */}
+          <div className="flex flex-col gap-3 p-4 border rounded-lg shadow-sm border-border bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold">Revenue by Product</h2>
+                <p className="text-sm text-muted-foreground">
+                  How much each of your products has sold (based on order
+                  lines).
+                </p>
               </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={vendorChartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 10 }}
-                    tickMargin={5}
-                  />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Bar dataKey="count" name="Count" fill="#0ea5e9" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
+            </div>
 
-          <div className="flex flex-wrap gap-2 mt-2 text-xs">
-            <span className="px-2 py-1 rounded-md bg-primary text-primary-foreground">
-              Active vendors: {activeVendors}
-            </span>
-            <span className="px-2 py-1 rounded-md bg-secondary text-secondary-foreground">
-              Blocked vendors: {blockedVendors}
-            </span>
-            <span className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
-              Total users: {totalUsers}
-            </span>
-            <span className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
-              Products: {totalProducts}
-            </span>
+            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+              {vendorProductRevenue.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  No product revenue yet.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={vendorProductRevenue}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 10 }}
+                      tickMargin={5}
+                      interval={0}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value: number) =>
+                        `MK ${(value / 1000).toFixed(1)}k`
+                      }
+                    />
+                    <Tooltip<number, string>
+                      formatter={(value) => `MK ${value.toLocaleString()}`}
+                    />
+                    <Legend
+                      wrapperStyle={{ fontSize: 10 }}
+                      verticalAlign="top"
+                      height={24}
+                    />
+                    <Bar dataKey="revenue" name="Revenue" fill="#0ea5e9" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

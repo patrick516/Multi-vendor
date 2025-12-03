@@ -1,5 +1,6 @@
 // src/app/features/auth/RegisterPage.tsx
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 const API_BASE_URL =
@@ -16,7 +17,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
@@ -44,19 +45,29 @@ export default function RegisterPage() {
       });
 
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
+        const body: { message?: string } = await res
+          .json()
+          .catch(() => ({} as { message?: string }));
         throw new Error(body.message || "Failed to create admin");
       }
 
-      const data = await res.json();
+      const data: {
+        token?: string;
+        user?: { mustChangePassword?: boolean } & Record<string, unknown>;
+      } = await res.json();
+
       if (data.token) localStorage.setItem("authToken", data.token);
       if (data.user)
         localStorage.setItem("authUser", JSON.stringify(data.user));
 
       const mustChange = data.user?.mustChangePassword === true;
       navigate(mustChange ? "/change-password" : "/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Failed to create admin");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to create admin");
+      } else {
+        setError("Failed to create admin");
+      }
     } finally {
       setLoading(false);
     }
