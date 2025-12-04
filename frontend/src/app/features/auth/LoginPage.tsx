@@ -39,7 +39,6 @@ export default function LoginPage() {
         throw new Error(data.message || "Login failed");
       }
 
-      // store token + user for later
       if (data.token) localStorage.setItem("authToken", data.token);
       if (data.user) {
         localStorage.setItem("authUser", JSON.stringify(data.user));
@@ -60,22 +59,36 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center w-full min-h-screen bg-muted">
-      <div className="w-full max-w-md p-6 space-y-5 border rounded-lg shadow-lg bg-card border-border">
+    <div className="flex items-center justify-center w-full min-h-screen px-4 bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white border border-gray-200 shadow-2xl dark:bg-gray-900 rounded-2xl dark:border-gray-700">
+        {/* Logo */}
+        <div className="flex justify-center">
+          <img
+            src="/icons/tp_logo.svg"
+            alt="Multivendor Logo"
+            className="object-contain w-24 h-24" // enlarged nicely
+          />
+        </div>
+
+        {/* Titles */}
         <div className="space-y-1 text-center">
-          <h1 className="text-lg font-semibold text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-800 dark:text-white">
             Multi Vendor Admin Login
           </h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Sign in to manage vendors, products and commissions.
           </p>
         </div>
 
-        <form className="space-y-3" onSubmit={handleSubmit}>
+        {/* ---------------- FORM ---------------- */}
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* Email */}
           <div className="space-y-1">
-            <label className="text-xs font-medium">Email</label>
+            <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              Email
+            </label>
             <input
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -83,10 +96,13 @@ export default function LoginPage() {
             />
           </div>
 
+          {/* Password */}
           <div className="space-y-1">
-            <label className="text-xs font-medium">Password</label>
+            <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              Password
+            </label>
             <input
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -94,18 +110,21 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && (
+            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+          )}
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-4 py-2 mt-2 text-sm font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+            className="w-full px-4 py-2 text-sm font-bold transition-all rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
 
-          {/* NEW: Forgot password link */}
-          <div className="mt-2 text-center">
+          {/* Forgot password */}
+          <div className="mt-1 text-center">
             <Link
               to="/forgot-password"
               className="text-xs text-primary hover:underline"
@@ -115,7 +134,8 @@ export default function LoginPage() {
           </div>
         </form>
 
-        <div className="text-center text-[11px] text-muted-foreground">
+        {/* Register */}
+        <div className="text-xs text-center text-gray-600 dark:text-gray-400">
           First time setting up the system?{" "}
           <Link to="/register" className="text-primary hover:underline">
             Create admin account
