@@ -25,7 +25,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // CORS CONFIG
-const defaultOrigins = ["http://localhost:5173", "http://localhost:3000"];
+const defaultOrigins = [
+  "http://localhost:5173",
+  "https://multi-vendor-1mzl.vercel.app",
+  "https://multi-vendor-peach.vercel.app",
+  "http://localhost:3000",
+];
 
 const envOrigins = (process.env.ALLOWED_ORIGINS || "")
   .split(",")

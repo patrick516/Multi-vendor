@@ -39,15 +39,17 @@ export default function HomePage() {
       ),
     [categories, categorySearch]
   );
+
+  // Small loading spinner
   function Spinner() {
     return (
       <div className="inline-flex items-center gap-2 text-sm text-slate-500">
-        <span className="w-4 h-4 border-2 rounded-full border-emerald-500 border-t-transparent animate-spin" />
-        <span>Loading top products…</span>
+        <span className="w-4 h-4 border-2 rounded-full border-t-transparent animate-spin" />
       </div>
     );
   }
 
+  // Skeleton cards for Top Products grid
   function TopProductsSkeleton() {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -65,6 +67,33 @@ export default function HomePage() {
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  // Shimmer skeleton for the hero product card (right side)
+  function HeroSkeleton() {
+    return (
+      <div className="animate-pulse">
+        <div className="flex items-center justify-center h-40 gap-4 rounded-xl bg-gradient-to-br from-emerald-50 via-sky-50 to-slate-50">
+          <div className="w-24 h-28 rounded-2xl bg-slate-200" />
+          <div className="flex flex-col justify-between flex-1 gap-2 h-28">
+            <div className="w-2/3 h-3 rounded bg-slate-200" />
+            <div className="w-3/4 h-4 rounded bg-slate-200" />
+            <div className="w-1/2 h-6 rounded bg-slate-200" />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-4">
+          <div className="w-20 h-8 rounded-md bg-slate-200" />
+          <div className="w-24 h-10 rounded-lg bg-slate-200" />
+        </div>
+
+        <div className="flex justify-center gap-2 mt-3">
+          <span className="w-5 h-2 rounded-full bg-slate-200" />
+          <span className="w-2 h-2 rounded-full bg-slate-200" />
+          <span className="w-2 h-2 rounded-full bg-slate-200" />
+        </div>
       </div>
     );
   }
@@ -340,34 +369,7 @@ export default function HomePage() {
                   )}
                 </>
               ) : (
-                // Fallback skeleton if no hero product
-                <>
-                  <div className="flex items-center justify-center h-40 gap-4 rounded-xl bg-gradient-to-br from-emerald-50 via-sky-50 to-slate-50">
-                    <div className="w-16 h-28 rounded-2xl bg-slate-200" />
-                    <div className="flex flex-col w-32 gap-2 h-28">
-                      <div className="h-5 rounded-lg bg-slate-200" />
-                      <div className="h-5 rounded-lg bg-slate-200" />
-                      <div className="h-5 rounded-lg bg-slate-200" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between mt-4">
-                    <button
-                      type="button"
-                      onClick={handleBrowseClick}
-                      className="rounded-md bg-emerald-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-emerald-700"
-                    >
-                      Search
-                    </button>
-                    <div className="px-2 py-1 mt-3 text-right rounded-lg bg-emerald-50">
-                      <p className="text-xs font-semibold text-emerald-800">
-                        0
-                      </p>
-                      <p className="text-xs text-emerald-700">
-                        Active listings
-                      </p>
-                    </div>
-                  </div>
-                </>
+                <HeroSkeleton />
               )}
             </div>
           </div>

@@ -1,0 +1,25 @@
+# fly.toml app configuration file generated for backend-morning-glitter-4312 on 2025-12-03T11:13:19+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'backend-morning-glitter-4312'
+primary_region = 'ams'
+
+[build]
+
+[env]
+  PORT = "5000"
+
+[http_service]
+  internal_port = 5000
+  force_https = true
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

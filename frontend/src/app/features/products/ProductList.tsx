@@ -9,7 +9,7 @@ import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://tradepoint-backend.onrender.com/api";
+  "https://backend-morning-glitter-4312.fly.dev/api";
 
 export default function ProductList() {
   const dispatch = useDispatch<any>();

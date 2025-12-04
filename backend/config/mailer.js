@@ -1,5 +1,6 @@
 // backend/config/mailer.js
-const fetch = require("node-fetch");
+
+// Use Node 20's built-in global fetch (no require needed)
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_SENDER_NAME = process.env.BREVO_SENDER_NAME || "Trade Point Malawi";
@@ -39,11 +40,17 @@ async function sendMail({ to, subject, text, html }) {
       headers: {
         "Content-Type": "application/json",
         "api-key": BREVO_API_KEY,
+        accept: "application/json",
       },
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json().catch(() => ({}));
+    let data = {};
+    try {
+      data = await res.json();
+    } catch {
+      // ignore JSON parse errors (e.g. empty body)
+    }
 
     if (!res.ok) {
       console.error(

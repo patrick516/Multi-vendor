@@ -118,6 +118,13 @@ async function publicVendorRegister(req, res) {
       .filter(Boolean)
       .join("\n");
 
+    // NEW: build login URL for vendors
+    const baseUrl =
+      (process.env.FRONTEND_BASE_URL &&
+        process.env.FRONTEND_BASE_URL.replace(/\/$/, "")) ||
+      "http://localhost:5173";
+    const loginUrl = `${baseUrl}/login`;
+
     const subject = "Your Trade Point Malawi vendor account";
     const text = `
 Hello ${name || email},
@@ -125,6 +132,7 @@ Hello ${name || email},
 Your vendor account has been created on Trade Point Malawi.
 
 Login details:
+- Portal URL: ${loginUrl}
 - Email: ${email}
 - Temporary password: ${tempPassword}
 

@@ -1,7 +1,7 @@
 // src/app/utils/fetcher.ts
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://tradepoint-backend.onrender.com/api";
+  "https://backend-morning-glitter-4312.fly.dev/api";
 
 export async function fetchJson<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
