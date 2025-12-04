@@ -71,11 +71,11 @@ export default function SellPage() {
 
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-700">
-              Your name or business name
+            <label className="font-medium text-md text-slate-700">
+              Your name or business names
             </label>
             <input
-              className="w-full px-3 py-2 text-sm bg-white border rounded-md border-slate-200"
+              className="w-full px-3 py-2 bg-white border rounded-md text-md border-slate-200"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Nyasa Traders"
@@ -83,11 +83,11 @@ export default function SellPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-700">
+            <label className="font-medium text-md text-slate-700">
               Email (required)
             </label>
             <input
-              className="w-full px-3 py-2 text-sm bg-white border rounded-md border-slate-200"
+              className="w-full px-3 py-2 bg-white border rounded-md text-md border-slate-200"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -97,11 +97,11 @@ export default function SellPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-700">
+            <label className="font-medium text-md text-slate-700">
               Phone (optional)
             </label>
             <input
-              className="w-full px-3 py-2 text-sm bg-white border rounded-md border-slate-200"
+              className="w-full px-3 py-2 bg-white border rounded-md text-md border-slate-200"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="099x xxx xxx"
