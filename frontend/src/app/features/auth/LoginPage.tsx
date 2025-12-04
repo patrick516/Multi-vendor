@@ -1,8 +1,8 @@
 // src/app/features/auth/LoginPage.tsx
-"use client";
 
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -13,6 +13,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // NEW
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,7 +67,7 @@ export default function LoginPage() {
           <img
             src="/icons/tp_logo.svg"
             alt="Multivendor Logo"
-            className="object-contain w-24 h-24" // enlarged nicely
+            className="object-contain w-24 h-24"
           />
         </div>
 
@@ -87,27 +88,44 @@ export default function LoginPage() {
             <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
               Email
             </label>
-            <input
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@example.com"
-            />
+            <div className="relative">
+              <span className="absolute inset-y-0 flex items-center text-gray-400 left-3 dark:text-gray-500">
+                <Mail size={16} />
+              </span>
+              <input
+                className="w-full py-2 pr-3 text-sm border border-gray-300 rounded-md pl-9 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@example.com"
+              />
+            </div>
           </div>
 
-          {/* Password */}
+          {/* Password with show/hide */}
           <div className="space-y-1">
             <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
               Password
             </label>
-            <input
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
-            />
+            <div className="relative">
+              <span className="absolute inset-y-0 flex items-center text-gray-400 left-3 dark:text-gray-500">
+                <Lock size={16} />
+              </span>
+              <input
+                className="w-full py-2 pr-10 text-sm border border-gray-300 rounded-md pl-9 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 flex items-center text-gray-400 right-3 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
           {error && (
@@ -118,8 +136,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-4 py-2 text-sm font-bold transition-all rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+            className="flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-bold transition-all rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
           >
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {loading ? "Signing in..." : "Sign in"}
           </button>
 
