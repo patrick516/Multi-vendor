@@ -185,21 +185,21 @@ export default function CommissionPage() {
                   <tbody>
                     {vendors.map((row) => (
                       <tr key={row.vendorId} className="border-t border-border">
-                        <td className="px-3 py-2 text-xs">{row.vendorName}</td>
-                        <td className="px-3 py-2 text-xs">
+                        <td className="px-3 py-2 text-sm">{row.vendorName}</td>
+                        <td className="px-3 py-2 text-sm">
                           {row.vendorEmail ?? "N/A"}
                         </td>
-                        <td className="px-3 py-2 text-xs font-semibold">
+                        <td className="px-3 py-2 text-sm font-semibold">
                           MK {row.totalCommission.toLocaleString()}
                         </td>
-                        <td className="px-3 py-2 text-xs text-amber-700">
+                        <td className="px-3 py-2 text-sm text-amber-700">
                           MK {row.pendingCommission.toLocaleString()}
                         </td>
-                        <td className="px-3 py-2 text-xs text-emerald-700">
+                        <td className="px-3 py-2 text-sm text-emerald-700">
                           MK {row.paidCommission.toLocaleString()}
                         </td>
-                        <td className="px-3 py-2 text-xs">{row.salesCount}</td>
-                        <td className="px-3 py-2 text-xs text-right">
+                        <td className="px-3 py-2 text-sm">{row.salesCount}</td>
+                        <td className="px-3 py-2 text-sm text-right">
                           <button
                             className="px-3 py-1 rounded-md text-[11px] bg-emerald-600 text-white disabled:opacity-40 hover:bg-emerald-700"
                             disabled={

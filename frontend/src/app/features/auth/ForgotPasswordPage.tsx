@@ -102,13 +102,13 @@ export default function ForgotPasswordPage() {
         </p>
 
         {message && (
-          <div className="px-3 py-2 mb-3 text-xs rounded-md bg-emerald-50 text-emerald-700">
+          <div className="px-3 py-2 mb-3 text-sm rounded-md bg-emerald-50 text-emerald-700">
             {message}
           </div>
         )}
 
         {error && (
-          <div className="px-3 py-2 mb-3 text-xs text-red-600 rounded-md bg-red-50">
+          <div className="px-3 py-2 mb-3 text-sm text-red-600 rounded-md bg-red-50">
             {error}
           </div>
         )}
@@ -194,7 +194,7 @@ export default function ForgotPasswordPage() {
           <button
             type="button"
             onClick={() => navigate("/login")}
-            className="text-xs text-blue-600 hover:underline"
+            className="text-sm text-blue-600 hover:underline"
           >
             Back to login
           </button>

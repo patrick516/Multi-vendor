@@ -89,7 +89,7 @@ export default function ChangePasswordPage() {
           <h1 className="text-lg font-semibold text-foreground">
             Change your password
           </h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             For security, you must update your temporary password before using
             the system.
           </p>
@@ -97,9 +97,9 @@ export default function ChangePasswordPage() {
 
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="space-y-1">
-            <label className="text-xs font-medium">Current password</label>
+            <label className="font-medium text-md">Current password</label>
             <input
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 border rounded-md text-md border-border bg-background"
               type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
@@ -107,7 +107,7 @@ export default function ChangePasswordPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium">New password</label>
+            <label className="font-medium text-md">New password</label>
             <input
               className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
               type="password"
@@ -117,7 +117,7 @@ export default function ChangePasswordPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium">Confirm new password</label>
+            <label className="font-medium text-md">Confirm new password</label>
             <input
               className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
               type="password"
@@ -126,8 +126,8 @@ export default function ChangePasswordPage() {
             />
           </div>
 
-          {error && <p className="text-xs text-destructive">{error}</p>}
-          {success && <p className="text-xs text-emerald-600">{success}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          {success && <p className="text-sm text-emerald-600">{success}</p>}
 
           <button
             type="submit"

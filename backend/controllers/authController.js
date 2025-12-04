@@ -119,11 +119,16 @@ async function publicVendorRegister(req, res) {
       .join("\n");
 
     // NEW: build login URL for vendors
+
     const baseUrl =
       (process.env.FRONTEND_BASE_URL &&
         process.env.FRONTEND_BASE_URL.replace(/\/$/, "")) ||
-      "http://localhost:5173";
-    const loginUrl = `${baseUrl}/login`;
+      "https://multi-vendor-peach.vercel.app";
+
+    const loginUrl =
+      (process.env.FRONTEND_LOGIN_URL &&
+        process.env.FRONTEND_LOGIN_URL.replace(/\/$/, "")) ||
+      `${baseUrl}/login`;
 
     const subject = "Your Trade Point Malawi vendor account";
     const text = `

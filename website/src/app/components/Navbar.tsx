@@ -335,7 +335,7 @@ export default function Navbar() {
 
           <Link
             href="/sell"
-            className="px-4 py-2 text-xs font-semibold text-white bg-green-600 rounded-full shadow-sm hover:bg-green-700"
+            className="px-4 py-2 text-xs font-semibold text-white bg-green-600 rounded-full shadow-sm hover:text-white"
           >
             Sell on Trade Point
           </Link>
@@ -382,7 +382,7 @@ export default function Navbar() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search products, categories..."
-              className="w-full text-xs bg-transparent outline-none placeholder:text-slate-400"
+              className="w-full bg-transparent outline-none text-md placeholder:text-slate-400"
               onFocus={() => {
                 if (suggestions) setSuggestionsOpen(true);
               }}
@@ -500,7 +500,7 @@ export default function Navbar() {
 
             <Link
               href="/sell"
-              className="px-3 py-2 mt-2 text-xs font-semibold text-center text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700"
+              className="px-3 py-2 mt-2 font-semibold text-center text-white bg-green-600 rounded-md shadow-sm text-md hover:text-white"
               onClick={() => setMobileOpen(false)}
             >
               Sell on Trade Point

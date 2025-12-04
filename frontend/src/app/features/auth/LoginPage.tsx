@@ -85,7 +85,7 @@ export default function LoginPage() {
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Email */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               Email
             </label>
             <div className="relative">
@@ -104,7 +104,7 @@ export default function LoginPage() {
 
           {/* Password with show/hide */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               Password
             </label>
             <div className="relative">
@@ -154,7 +154,7 @@ export default function LoginPage() {
         </form>
 
         {/* Register */}
-        <div className="text-xs text-center text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-center text-gray-600 dark:text-gray-400">
           First time setting up the system?{" "}
           <Link to="/register" className="text-primary hover:underline">
             Create admin account

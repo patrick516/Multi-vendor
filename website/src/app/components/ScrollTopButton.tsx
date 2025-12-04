@@ -23,9 +23,9 @@ export default function ScrollTopButton() {
           behavior: "smooth",
         })
       }
-      className="fixed z-40 px-3 py-2 text-xs text-white rounded-full shadow-lg bottom-5 right-4 bg-brand-green hover:bg-brand-greenLight"
+      className="fixed z-40 px-3 py-2 text-white rounded-full shadow-lg text-md bottom-5 right-4 bg-brand-green hover:bg-brand-greenLight"
     >
-      ↑ Top
+      ↑
     </button>
   );
 }

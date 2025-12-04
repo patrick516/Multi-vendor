@@ -180,7 +180,7 @@ export default function MessagesPage() {
         header: ({ column }) => (
           <button
             type="button"
-            className="inline-flex items-center gap-1 text-xs font-medium tracking-wide uppercase hover:text-foreground"
+            className="inline-flex items-center gap-1 font-medium tracking-wide uppercase text-md hover:text-foreground"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Date
@@ -199,7 +199,7 @@ export default function MessagesPage() {
           const log = row.original;
           if (log.targetType === "ALL") {
             return (
-              <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800">
+              <span className="inline-flex items-center px-3 py-1 font-semibold rounded-full text-md bg-emerald-50 text-emerald-800">
                 All vendors
               </span>
             );
@@ -213,7 +213,7 @@ export default function MessagesPage() {
             );
           }
           return (
-            <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-blue-800 rounded-full bg-blue-50">
+            <span className="inline-flex items-center px-3 py-1 font-semibold text-blue-800 rounded-full text-md bg-blue-50">
               {log.recipients.length} vendors
             </span>
           );
@@ -224,7 +224,7 @@ export default function MessagesPage() {
         header: ({ column }) => (
           <button
             type="button"
-            className="inline-flex items-center gap-1 text-xs font-medium tracking-wide uppercase hover:text-foreground"
+            className="inline-flex items-center gap-1 font-medium tracking-wide uppercase text-md hover:text-foreground"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Subject
@@ -252,16 +252,16 @@ export default function MessagesPage() {
           const log = row.original;
           if (log.targetType === "ALL") {
             return (
-              <span className="text-xs text-muted-foreground">All vendors</span>
+              <span className="text-md text-muted-foreground">All vendors</span>
             );
           }
           if (!log.recipients.length) {
-            return <span className="text-xs text-muted-foreground">—</span>;
+            return <span className="text-md text-muted-foreground">—</span>;
           }
           const first = log.recipients[0];
           const extra = log.recipients.length - 1;
           return (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-md text-muted-foreground">
               {first.name || first.email}
               {extra > 0 && ` (+${extra} more)`}
             </span>
@@ -296,11 +296,11 @@ export default function MessagesPage() {
       <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-lg font-semibold">Message History</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md text-muted-foreground">
             View all messages sent to vendors: broadcasts, targeted updates, and
             individual notifications.
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-md text-muted-foreground">
             {totalMessages} messages • {broadcastCount} broadcasts •{" "}
             {directCount} direct / multi • {last7DaysCount} in last 7 days
           </p>
@@ -314,7 +314,7 @@ export default function MessagesPage() {
             <Mail className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Total messages</p>
+            <p className="text-md text-muted-foreground">Total messages</p>
             <p className="text-lg font-semibold">{totalMessages}</p>
           </div>
         </div>
@@ -324,7 +324,7 @@ export default function MessagesPage() {
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Broadcasts</p>
+            <p className="text-md text-muted-foreground">Broadcasts</p>
             <p className="text-lg font-semibold">{broadcastCount}</p>
           </div>
         </div>
@@ -334,7 +334,7 @@ export default function MessagesPage() {
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Targeted messages</p>
+            <p className="text-md text-muted-foreground">Targeted messages</p>
             <p className="text-lg font-semibold">{directCount}</p>
           </div>
         </div>
@@ -344,14 +344,14 @@ export default function MessagesPage() {
             <Filter className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Last 7 days</p>
+            <p className="text-md text-muted-foreground">Last 7 days</p>
             <p className="text-lg font-semibold">{last7DaysCount}</p>
           </div>
         </div>
       </section>
 
       {/* Filters */}
-      <section className="flex flex-wrap gap-3 p-3 text-xs border rounded-lg border-border bg-card">
+      <section className="flex flex-wrap gap-3 p-3 border rounded-lg text-md border-border bg-card">
         <div className="flex items-center w-full gap-2 text-muted-foreground">
           <Filter className="w-4 h-4" />
           <span className="font-medium">Filters</span>
@@ -362,7 +362,7 @@ export default function MessagesPage() {
           <div className="relative">
             <Search className="absolute w-3 h-3 -translate-y-1/2 left-2 top-1/2 text-muted-foreground" />
             <input
-              className="w-full px-6 py-1 text-xs border rounded-md border-border bg-background"
+              className="w-full px-6 py-1 border rounded-md text-md border-border bg-background"
               placeholder="Search subject…"
               value={subjectFilter}
               onChange={(e) => setSubjectFilter(e.target.value)}
@@ -375,7 +375,7 @@ export default function MessagesPage() {
             Vendor (name or email)
           </label>
           <input
-            className="w-full px-2 py-1 text-xs border rounded-md border-border bg-background"
+            className="w-full px-2 py-1 border rounded-md text-md border-border bg-background"
             placeholder="Type vendor name / email…"
             list="vendors-list"
             value={vendorFilter}
@@ -392,7 +392,7 @@ export default function MessagesPage() {
           <label className="font-medium text-muted-foreground">From</label>
           <input
             type="date"
-            className="px-2 py-1 text-xs border rounded-md border-border bg-background"
+            className="px-2 py-1 border rounded-md text-md border-border bg-background"
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
           />
@@ -402,7 +402,7 @@ export default function MessagesPage() {
           <label className="font-medium text-muted-foreground">To</label>
           <input
             type="date"
-            className="px-2 py-1 text-xs border rounded-md border-border bg-background"
+            className="px-2 py-1 border rounded-md text-md border-border bg-background"
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
           />
@@ -411,7 +411,7 @@ export default function MessagesPage() {
         <div className="flex items-end">
           <button
             type="button"
-            className="px-3 py-1 text-xs border rounded-md border-border text-muted-foreground hover:bg-muted"
+            className="px-3 py-1 border rounded-md text-md border-border text-muted-foreground hover:bg-muted"
             onClick={() => {
               setSubjectFilter("");
               setVendorFilter("");
@@ -446,7 +446,7 @@ export default function MessagesPage() {
       {!loading && !error && (
         <div className="overflow-hidden border rounded-lg border-border bg-card">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs uppercase bg-muted text-muted-foreground">
+            <thead className="uppercase text-md bg-muted text-muted-foreground">
               {table.getHeaderGroups().map((hg) => (
                 <tr key={hg.id}>
                   {hg.headers.map((header) => (
@@ -498,7 +498,7 @@ export default function MessagesPage() {
           </table>
 
           {/* Pagination */}
-          <div className="flex flex-col items-center justify-between gap-2 px-3 py-2 text-xs text-muted-foreground sm:flex-row">
+          <div className="flex flex-col items-center justify-between gap-2 px-3 py-2 text-md text-muted-foreground sm:flex-row">
             <div className="flex items-center gap-1">
               <button
                 type="button"
@@ -550,7 +550,7 @@ export default function MessagesPage() {
             <div className="flex items-center gap-2">
               <span className="hidden sm:inline">Rows per page</span>
               <select
-                className="px-2 py-1 text-xs border rounded-md border-border bg-background"
+                className="px-2 py-1 border rounded-md text-md border-border bg-background"
                 value={table.getState().pagination.pageSize}
                 onChange={(e) => table.setPageSize(Number(e.target.value))}
               >
@@ -574,13 +574,13 @@ export default function MessagesPage() {
               <button
                 type="button"
                 onClick={() => setSelectedLog(null)}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-md text-muted-foreground hover:text-foreground"
               >
                 <XIcon className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="px-3 py-2 space-y-1 text-xs rounded-md bg-muted/40 text-muted-foreground">
+            <div className="px-3 py-2 space-y-1 rounded-md text-md bg-muted/40 text-muted-foreground">
               <div>
                 <span className="font-medium">Date: </span>
                 <span>{formatDate(selectedLog.createdAt)}</span>
@@ -602,14 +602,14 @@ export default function MessagesPage() {
             </div>
 
             <div className="space-y-1">
-              <p className="text-xs font-medium">Message</p>
+              <p className="font-medium text-md">Message</p>
               <div className="p-2 text-sm whitespace-pre-wrap border rounded-md border-border bg-background">
                 {selectedLog.message}
               </div>
             </div>
 
             <div className="space-y-1">
-              <p className="text-xs font-medium">
+              <p className="font-medium text-md">
                 Recipients ({selectedLog.recipients.length}
                 {selectedLog.targetType === "ALL"
                   ? selectedLog.recipients.length === 0
@@ -618,7 +618,7 @@ export default function MessagesPage() {
                   : ""}
                 )
               </p>
-              <div className="p-2 space-y-1 overflow-y-auto text-xs border rounded-md max-h-40 border-border bg-background">
+              <div className="p-2 space-y-1 overflow-y-auto border rounded-md text-md max-h-40 border-border bg-background">
                 {selectedLog.targetType === "ALL" &&
                   selectedLog.recipients.length === 0 && (
                     <p className="text-muted-foreground">

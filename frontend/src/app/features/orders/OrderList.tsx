@@ -14,7 +14,7 @@ import {
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://tradepoint-backend.onrender.com/api";
+  "https://backend-morning-glitter-4312.fly.dev/api";
 
 // WhatsApp link builder with optional prefilled text
 function buildWhatsAppLink(
@@ -168,7 +168,7 @@ export default function OrderList() {
           <p className="text-sm text-muted-foreground">
             Track customer orders and vendor sales, and manage status updates.
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             {totalOrders} order{totalOrders === 1 ? "" : "s"} • {pendingCount}{" "}
             pending • {completedCount} completed
           </p>
@@ -176,7 +176,7 @@ export default function OrderList() {
       </header>
 
       {/* Filters */}
-      <section className="flex flex-wrap gap-3 p-3 text-xs border rounded-lg border-border bg-card">
+      <section className="flex flex-wrap gap-3 p-3 text-sm border rounded-lg border-border bg-card">
         <div className="flex items-center w-full gap-2 text-muted-foreground">
           <Filter className="w-4 h-4" />
           <span className="font-medium">Filters</span>
@@ -190,7 +190,7 @@ export default function OrderList() {
           <div className="relative">
             <Search className="absolute w-3 h-3 -translate-y-1/2 left-2 top-1/2 text-muted-foreground" />
             <input
-              className="w-full px-6 py-1 text-xs border rounded-md border-border bg-background"
+              className="w-full px-6 py-1 text-sm border rounded-md border-border bg-background"
               placeholder="Order #, customer, phone, product…"
               value={searchTerm}
               onChange={(e) => {
@@ -205,7 +205,7 @@ export default function OrderList() {
         <div className="space-y-1">
           <label className="font-medium text-muted-foreground">Status</label>
           <select
-            className="px-2 py-1 text-xs border rounded-md border-border bg-background"
+            className="px-2 py-1 text-sm border rounded-md border-border bg-background"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(
@@ -230,7 +230,7 @@ export default function OrderList() {
         <div className="flex items-end">
           <button
             type="button"
-            className="px-3 py-1 text-xs border rounded-md border-border text-muted-foreground hover:bg-muted"
+            className="px-3 py-1 text-sm border rounded-md border-border text-muted-foreground hover:bg-muted"
             onClick={() => {
               setSearchTerm("");
               setStatusFilter("");
@@ -263,7 +263,7 @@ export default function OrderList() {
       {!loading && !error && (
         <div className="overflow-hidden border rounded-lg border-border bg-card">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs uppercase bg-muted text-muted-foreground">
+            <thead className="text-sm uppercase bg-muted text-muted-foreground">
               <tr>
                 <th className="px-3 py-2">Order #</th>
                 <th className="px-3 py-2">Customer</th>
@@ -301,17 +301,17 @@ ${order.customerNote || "No note was provided."}
 
                 return (
                   <tr key={order.id} className="border-t border-border">
-                    <td className="px-3 py-2 text-xs font-semibold">
+                    <td className="px-3 py-2 text-sm font-semibold">
                       #{order.id}
                     </td>
-                    <td className="px-3 py-2 text-xs">
+                    <td className="px-3 py-2 text-sm">
                       {order.customer?.name || order.customer?.email || "N/A"}
                     </td>
-                    <td className="px-3 py-2 text-xs">
+                    <td className="px-3 py-2 text-sm">
                       <div className="flex flex-col">
                         <span>{order.customerPhone || "N/A"}</span>
                         {order.customerNote && (
-                          <span className="mt-1 text-[10px] text-muted-foreground line-clamp-2">
+                          <span className="mt-1 text-sm text-muted-foreground line-clamp-2">
                             {order.customerNote}
                           </span>
                         )}
@@ -346,10 +346,10 @@ ${order.customerNote || "No note was provided."}
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-2 text-xs font-semibold">
+                    <td className="px-3 py-2 text-sm font-semibold">
                       MK {order.totalAmount.toFixed(2)}
                     </td>
-                    <td className="px-3 py-2 text-xs">
+                    <td className="px-3 py-2 text-sm">
                       <span
                         className={[
                           "inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase",
@@ -367,10 +367,10 @@ ${order.customerNote || "No note was provided."}
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">
+                    <td className="px-3 py-2 text-sm text-muted-foreground">
                       {formatDate(order.createdAt)}
                     </td>
-                    <td className="px-3 py-2 text-xs">
+                    <td className="px-3 py-2 text-sm">
                       <div className="flex flex-wrap items-center gap-1">
                         <button
                           className="px-2 py-1 text-[11px] rounded-md bg-slate-100 hover:bg-slate-200"
@@ -406,7 +406,7 @@ ${order.customerNote || "No note was provided."}
           </table>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground">
+          <div className="flex items-center justify-between px-3 py-2 text-sm text-muted-foreground">
             <span>
               Page <span className="font-semibold">{safePage}</span> of{" "}
               <span className="font-semibold">{totalPages}</span> •{" "}
@@ -533,7 +533,7 @@ ${order.customerNote || "No note was provided."}
           </h3>
           <button
             onClick={onClose}
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="text-sm text-muted-foreground hover:text-foreground"
           >
             ✕
           </button>

@@ -80,7 +80,7 @@ export default function RegisterPage() {
           <h1 className="text-lg font-semibold text-foreground">
             Setup Admin Account
           </h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             This will create the main admin. Vendors will be added later from
             the admin panel.
           </p>
@@ -88,7 +88,7 @@ export default function RegisterPage() {
 
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="space-y-1">
-            <label className="text-xs font-medium">Full name</label>
+            <label className="font-medium text-md">Full name</label>
             <input
               className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
               value={name}
@@ -98,9 +98,9 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium">Email</label>
+            <label className="font-medium text-md">Email</label>
             <input
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 border rounded-md text-md border-border bg-background"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -109,9 +109,9 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium">Password</label>
+            <label className="font-medium text-md">Password</label>
             <input
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 border rounded-md text-md border-border bg-background"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -120,9 +120,9 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium">Confirm password</label>
+            <label className="font-medium text-md">Confirm password</label>
             <input
-              className="w-full px-3 py-2 text-sm border rounded-md border-border bg-background"
+              className="w-full px-3 py-2 border rounded-md text-md border-border bg-background"
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
@@ -130,7 +130,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
           <button
             type="submit"
@@ -141,7 +141,7 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <div className="text-center text-[11px] text-muted-foreground">
+        <div className="text-center text-md text-muted-foreground">
           Already have an admin account?{" "}
           <Link to="/login" className="text-primary hover:underline">
             Go to login

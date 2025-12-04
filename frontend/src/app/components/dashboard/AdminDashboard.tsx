@@ -35,7 +35,7 @@ import {
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://tradepoint-backend.onrender.com/api";
+  "https://backend-morning-glitter-4312.fly.dev/api";
 
 interface VendorSubRow {
   id: number;
@@ -417,7 +417,7 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="flex-1 min-h-[220px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+          <div className="flex-1 min-h-[220px] rounded-md bg-muted p-2 text-sm text-muted-foreground">
             {productCategoryPieData.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 No product data yet.
@@ -451,7 +451,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Custom legend */}
-                <div className="flex w-[40%] flex-col gap-2 text-xs">
+                <div className="flex w-[40%] flex-col gap-2 text-sm">
                   {productCategoryPieData.map((entry, index) => (
                     <div
                       key={`cat-legend-${entry.name}`}
@@ -492,7 +492,7 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="flex-1 min-h-[220px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+          <div className="flex-1 min-h-[220px] rounded-md bg-muted p-2 text-md text-muted-foreground">
             {orderStatusPieData.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 No orders yet.
@@ -526,7 +526,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Custom legend */}
-                <div className="flex w-[40%] flex-col gap-2 text-xs">
+                <div className="flex w-[40%] flex-col gap-2 text-sm">
                   {orderStatusPieData.map((entry) => {
                     const status = entry.name || "UNKNOWN";
                     const color =
@@ -571,14 +571,14 @@ export default function AdminDashboard() {
                   Total vendor subscription payments recorded in the last month.
                 </p>
               </div>
-              <div className="flex gap-2 text-xs">
+              <div className="flex gap-2 text-sm">
                 <button className="px-2 py-1 rounded-md bg-muted text-muted-foreground">
                   Last 30 days
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-sm text-muted-foreground">
               {subLoading && (
                 <div className="flex items-center justify-center h-full">
                   Loading chart…
@@ -616,7 +616,7 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-md text-muted-foreground">
               <span>
                 Total revenue:{" "}
                 <span className="font-semibold text-emerald-700">
@@ -648,7 +648,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-sm text-muted-foreground">
               {vendorChartData.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
                   No vendor data yet.
@@ -670,7 +670,7 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            <div className="flex flex-wrap gap-2 mt-2 text-xs">
+            <div className="flex flex-wrap gap-2 mt-2 text-sm">
               <span className="px-2 py-1 rounded-md bg-primary text-primary-foreground">
                 Active vendors: {activeVendors}
               </span>
@@ -700,7 +700,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-sm text-muted-foreground">
               {vendorSalesByDate.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
                   No sales data yet.
@@ -747,7 +747,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-xs text-muted-foreground">
+            <div className="flex-1 min-h-[180px] rounded-md bg-muted p-2 text-sm text-muted-foreground">
               {vendorProductRevenue.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
                   No product revenue yet.

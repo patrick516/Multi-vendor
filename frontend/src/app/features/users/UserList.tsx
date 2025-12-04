@@ -390,7 +390,7 @@ export default function UserList() {
           </button>
         ),
         cell: (info) => (
-          <span className="inline-flex items-center px-3 py-1 text-xs font-semibold uppercase rounded-full bg-slate-100">
+          <span className="inline-flex items-center px-3 py-1 text-sm font-semibold uppercase rounded-full bg-slate-100">
             {info.getValue() as string}
           </span>
         ),
@@ -422,7 +422,7 @@ export default function UserList() {
 
           return (
             <span
-              className={`inline-flex items-center px-3 py-1 text-xs rounded-full ${
+              className={`inline-flex items-center px-3 py-1 text-sm rounded-full ${
                 active
                   ? "bg-emerald-50 text-emerald-700"
                   : "bg-red-50 text-red-700"
@@ -506,7 +506,7 @@ export default function UserList() {
               </h3>
               <p className="text-sm text-muted-foreground">{authUser?.email}</p>
             </div>
-            <span className="px-2 py-1 text-xs uppercase rounded-full bg-accent text-accent-foreground">
+            <span className="px-2 py-1 text-sm uppercase rounded-full bg-accent text-accent-foreground">
               {authUser?.role || "UNKNOWN"}
             </span>
           </div>
@@ -532,7 +532,7 @@ export default function UserList() {
           <p className="text-sm text-muted-foreground">
             Super admin can view and create users (vendors, admins, customers).
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             Showing {filteredData.length} of {items.length} users •{" "}
             {vendorUsers.length} vendors
           </p>
@@ -728,7 +728,7 @@ export default function UserList() {
       ) : (
         <div className="overflow-hidden border rounded-lg border-border bg-card">
           <table className="w-full text-base text-left">
-            <thead className="text-xs uppercase bg-muted text-muted-foreground">
+            <thead className="text-sm uppercase bg-muted text-muted-foreground">
               {table.getHeaderGroups().map((hg) => (
                 <tr key={hg.id}>
                   {hg.headers.map((header) => (
@@ -782,7 +782,7 @@ export default function UserList() {
           </table>
 
           {/* Pagination */}
-          <div className="flex flex-col items-center justify-between gap-2 px-3 py-2 text-xs text-muted-foreground sm:flex-row sm:text-sm">
+          <div className="flex flex-col items-center justify-between gap-2 px-3 py-2 text-sm text-muted-foreground sm:flex-row sm:text-sm">
             <div className="flex items-center gap-1">
               <button
                 type="button"
@@ -840,7 +840,7 @@ export default function UserList() {
             <div className="flex items-center gap-2">
               <span className="hidden sm:inline">Rows per page</span>
               <select
-                className="px-2 py-1 text-xs border rounded-md border-border bg-background sm:text-sm"
+                className="px-2 py-1 text-sm border rounded-md border-border bg-background sm:text-sm"
                 value={table.getState().pagination.pageSize}
                 onChange={(e) => table.setPageSize(Number(e.target.value))}
               >

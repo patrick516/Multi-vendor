@@ -6,6 +6,7 @@ import LiveSnapshotStats from "./features/home/LiveSnapshotStats";
 import ProductCard from "./features/products/ProductCard";
 import type { Product } from "./features/products/types";
 import { fetchJson } from "./utils/fetcher";
+import ScrollTopButton from "./components/ScrollTopButton";
 
 interface Category {
   id: number;
@@ -185,14 +186,14 @@ export default function HomePage() {
         {/* TOP STRIP */}
         <header className="flex flex-col justify-between gap-4 pb-4 border-b border-emerald-100 sm:flex-row sm:items-center">
           <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
               Trade Point Malawi
             </p>
             <p className="text-sm text-slate-600">
               A trusted marketplace connecting districts, vendors and buyers.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="px-3 py-1 font-medium rounded-full bg-emerald-100 text-emerald-800">
               Verified vendors
             </span>
@@ -226,35 +227,35 @@ export default function HomePage() {
 
               <div className="grid gap-3 text-sm text-slate-600 sm:grid-cols-3">
                 <div className="p-3 shadow-sm rounded-2xl bg-white/80 ring-1 ring-emerald-50">
-                  <p className="text-xs font-semibold tracking-wide uppercase text-emerald-700">
+                  <p className="text-sm font-semibold tracking-wide uppercase text-emerald-700">
                     Vendors
                   </p>
                   <p className="mt-1 text-sm font-semibold text-slate-900">
                     Grow your customer reach
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500">
                     Manage products, enquiries and districts from one dashboard.
                   </p>
                 </div>
                 <div className="p-3 shadow-sm rounded-2xl bg-white/80 ring-1 ring-sky-50">
-                  <p className="text-xs font-semibold tracking-wide uppercase text-sky-700">
+                  <p className="text-sm font-semibold tracking-wide uppercase text-sky-700">
                     Buyers
                   </p>
                   <p className="mt-1 text-sm font-semibold text-slate-900">
                     Search by district & category
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500">
                     Find trusted vendors close to you then reach out directly.
                   </p>
                 </div>
                 <div className="p-3 shadow-sm rounded-2xl bg-white/80 ring-1 ring-amber-50">
-                  <p className="text-xs font-semibold tracking-wide uppercase text-amber-700">
+                  <p className="text-sm font-semibold tracking-wide uppercase text-amber-700">
                     Safe trading
                   </p>
                   <p className="mt-1 text-sm font-semibold text-slate-900">
                     Clear communication
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-sm text-slate-500">
                     Every request is tracked so vendors and buyers stay aligned.
                   </p>
                 </div>
@@ -340,10 +341,10 @@ export default function HomePage() {
                       Search
                     </button>
                     <div className="px-3 py-2 text-right rounded-lg bg-emerald-50">
-                      <p className="text-xs font-semibold text-emerald-800">
+                      <p className="text-sm font-semibold text-emerald-800">
                         {topProducts.length || 0}+
                       </p>
-                      <p className="text-xs text-emerald-700">
+                      <p className="text-sm text-emerald-700">
                         Active listings
                       </p>
                     </div>
@@ -395,7 +396,7 @@ export default function HomePage() {
           <div className="grid items-end gap-3 md:grid-cols-[1fr,1fr,2fr,auto]">
             {/* District */}
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">
+              <label className="text-sm font-medium text-slate-700">
                 District
               </label>
               <select
@@ -414,7 +415,7 @@ export default function HomePage() {
 
             {/* Category - searchable dropdown */}
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">
+              <label className="text-sm font-medium text-slate-700">
                 Category
               </label>
               <div className="relative">
@@ -441,7 +442,7 @@ export default function HomePage() {
                 />
 
                 {/* Small ▼ icon */}
-                <span className="absolute inset-y-0 flex items-center text-xs pointer-events-none right-2 text-slate-400">
+                <span className="absolute inset-y-0 flex items-center text-sm pointer-events-none right-2 text-slate-400">
                   ▼
                 </span>
 
@@ -485,7 +486,7 @@ export default function HomePage() {
                         </button>
                       ))
                     ) : (
-                      <div className="px-3 py-2 text-xs text-slate-500">
+                      <div className="px-3 py-2 text-sm text-slate-500">
                         No category matches “{categorySearch}”
                       </div>
                     )}
@@ -496,7 +497,7 @@ export default function HomePage() {
 
             {/* Search */}
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">
+              <label className="text-sm font-medium text-slate-700">
                 Search
               </label>
               <input
@@ -518,7 +519,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p className="mt-2 text-xs font-montserrat text-slate-500">
+          <p className="mt-2 text-sm font-montserrat text-slate-500">
             Showing popular products across Malawi. Use the filters above to
             narrow down by district and category.
           </p>
@@ -591,7 +592,7 @@ export default function HomePage() {
 
           <div className="grid gap-3 text-sm text-slate-600 md:grid-cols-3">
             <div className="p-3 rounded-xl bg-slate-50">
-              <p className="text-xs font-semibold tracking-wide uppercase text-slate-500">
+              <p className="text-sm font-semibold tracking-wide uppercase text-slate-500">
                 1. Vendors list products
               </p>
               <p className="mt-1">
@@ -600,7 +601,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="p-3 rounded-xl bg-slate-50">
-              <p className="text-xs font-semibold tracking-wide uppercase text-slate-500">
+              <p className="text-sm font-semibold tracking-wide uppercase text-slate-500">
                 2. Buyers search & request
               </p>
               <p className="mt-1">
@@ -609,7 +610,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="p-3 rounded-xl bg-slate-50">
-              <p className="text-xs font-semibold tracking-wide uppercase text-slate-500">
+              <p className="text-sm font-semibold tracking-wide uppercase text-slate-500">
                 3. Trade directly
               </p>
               <p className="mt-1">
@@ -620,6 +621,7 @@ export default function HomePage() {
           </div>
         </section>
       </div>
+      <ScrollTopButton />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import type { AppRoute, AppRole } from "../../../routes";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://tradepoint-backend.onrender.com/api";
+  "https://backend-morning-glitter-4312.fly.dev/api";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -133,7 +133,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
             <p className="text-sm font-medium text-foreground">
               Loading dashboard…
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-md text-muted-foreground">
               Please wait while we verify your session.
             </p>
           </div>
@@ -172,7 +172,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
         <div className="w-full max-w-lg p-5 space-y-3 border border-red-200 shadow-lg bg-card rounded-2xl">
           {/* Brand */}
           <div className="flex items-center gap-2 mb-1">
-            <div className="flex items-center justify-center text-xs font-bold text-white rounded-full w-9 h-9 bg-brand-blue">
+            <div className="flex items-center justify-center text-sm font-bold text-white rounded-full w-9 h-9 bg-brand-blue">
               TP
             </div>
             <div className="leading-tight">
@@ -242,7 +242,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
                 // allow vendor to refresh state without logging them out
                 window.location.reload();
               }}
-              className="px-3 py-1.5 text-xs rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              className="px-3 py-1.5 text-sm rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
             >
               Refresh
             </button>
@@ -252,7 +252,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
                 localStorage.removeItem("authUser");
                 navigate("/login", { replace: true });
               }}
-              className="px-4 py-1.5 text-xs font-semibold text-white rounded-md bg-brand-blue hover:bg-brand-blue/90"
+              className="px-4 py-1.5 text-md font-semibold text-white rounded-md bg-brand-blue hover:bg-brand-blue/90"
             >
               Logout
             </button>
