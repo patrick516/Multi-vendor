@@ -376,10 +376,10 @@ export default function AddProductForm({
             <label className="font-medium text-md">
               Product location on map (required)
             </label>
-            <p className="text-md text-muted-foreground">
+            {/* <p className="text-md text-muted-foreground">
               We automatically detect your current location when this form
               opens. This is used to show items on the live map for customers.
-            </p>
+            </p> */}
 
             <div className="mt-1 text-md text-muted-foreground">
               {locLoading && <span>Detecting your current location…</span>}
