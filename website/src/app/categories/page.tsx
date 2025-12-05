@@ -24,13 +24,10 @@ const CATEGORY_ICON_MAP: Record<string, string[]> = {
   ],
   "sports-fitness": ["sports-fitness.svg", "fitness-movement-svgrepo-com.svg"],
   "health-wellness": ["health-life.svg", "health-life1.svg"],
-  "cars-motorbikes-machinery": ["cars-machinery.svg"],
+  "cars-motorbikes-machinery": ["caterpillar-machine-svgrepo-com.svg"],
 
   // renamed slug for service category
-  "service-spares-accessories": [
-    "service-parts-accessories.svg",
-    "service-parts-accessories2.svg",
-  ],
+  "service-spares-accessories": ["car-rental-svgrepo-com.svg"],
 
   "real-estate-property": ["real-estate.svg"],
   "office-equipment-stationery": ["office-equipment-stationery.svg"],
@@ -47,12 +44,12 @@ const CATEGORY_ICON_MAP: Record<string, string[]> = {
   "finance-insurance-brokers": ["briefcase-dollar-svgrepo-com.svg"],
 
   // NEW categories icon mappings
-  "household-goods": ["furniture2.svg", "grocery-super.svg"],
-  "technical-skills": ["construction-engineering.svg", "education.svg"],
+  "household-goods": ["laundry-basket-svgrepo-com.svg"],
+  "technical-skills": ["service-parts-accessories.svg"],
   "industries-factories": ["construction-engineering.svg"],
   "clubs-societies": ["sports-fitness.svg", "events.svg"],
-  religion: ["styled-svgrepo-com.svg"],
-  "legal-practitioners": ["briefcase-svgrepo-com.svg"],
+  religion: ["church-illustration-4-svgrepo-com.svg"],
+  "legal-practitioners": ["law-auction-svgrepo-com.svg"],
 
   other: ["shop-cart-svgrepo-com.svg", "shopping-more.svg"],
 };
