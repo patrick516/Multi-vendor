@@ -282,13 +282,14 @@ export default function HomePage() {
           </div>
 
           {/* Right side: hero product showcase */}
+          {/* Right side: hero product showcase */}
           <div className="flex items-center justify-center">
             <div className="w-full max-w-sm rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-[0_18px_40px_rgba(15,118,110,0.18)] backdrop-blur">
               {activeHeroProduct ? (
                 <>
-                  <div className="flex items-center justify-center h-40 gap-4 rounded-xl bg-gradient-to-br from-emerald-50 via-sky-50 to-slate-50">
+                  <div className="flex items-center justify-center gap-4 py-3 rounded-xl bg-gradient-to-br from-emerald-50 via-sky-50 to-slate-50">
                     {/* Image */}
-                    <div className="w-24 overflow-hidden h-28 rounded-2xl bg-slate-200">
+                    <div className="w-24 overflow-hidden rounded-2xl bg-slate-200 h-28">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={
@@ -302,7 +303,7 @@ export default function HomePage() {
                     </div>
 
                     {/* Mini info stack */}
-                    <div className="flex flex-col justify-between flex-1 h-28">
+                    <div className="flex flex-col justify-between flex-1 gap-2">
                       <div className="space-y-1">
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
                           Featured this week
@@ -350,7 +351,6 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* Slider dots */}
                   {heroProducts.length > 1 && (
                     <div className="flex justify-center gap-2 mt-3">
                       {heroProducts.map((_, idx) => (
