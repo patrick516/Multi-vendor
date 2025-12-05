@@ -12,7 +12,7 @@ const CATEGORY_ICON_MAP: Record<string, string[]> = {
   "electronics-media": ["electronics.svg"],
   "mobile-phones": ["broadcast-device-electronics-svgrepo-com.svg"],
   "computers-laptops": ["laptop-computer-technology-svgrepo-com.svg"],
-  "cameras-photography": ["camera-photograph.svg"],
+  "cameras-photography": ["picture-in-frame-svgrepo-com.svg"],
   "home-living": ["fridge-refrigerator-svgrepo-com.svg", "furniture.svg"],
   furniture: ["furniture2.svg"],
   "grocery-supermarket": ["groceries-svgrepo-com.svg"],
