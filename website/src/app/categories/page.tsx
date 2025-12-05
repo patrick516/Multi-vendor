@@ -9,45 +9,43 @@ interface Category {
   slug: string;
 }
 const CATEGORY_ICON_MAP: Record<string, string[]> = {
-  // existing
   "electronics-media": ["electronics.svg"],
-  "mobile-phones": ["mobile-phones.svg", "electronics.svg"],
-  "computers-laptops": ["electronics.svg"],
+  "mobile-phones": ["broadcast-device-electronics-svgrepo-com.svg"],
+  "computers-laptops": ["laptop-computer-technology-svgrepo-com.svg"],
   "cameras-photography": ["camera-photograph.svg"],
   "home-living": ["fridge-refrigerator-svgrepo-com.svg", "furniture.svg"],
   furniture: ["furniture2.svg"],
-  "grocery-supermarket": ["grocery-super.svg"],
-  "fashion-style": [
-    "fashion-style.svg",
-    "fashion.svg",
-    "clothes-svgrepo-com.svg",
-  ],
-  "sports-fitness": ["sports-fitness.svg", "fitness-movement-svgrepo-com.svg"],
-  "health-wellness": ["health-life.svg", "health-life1.svg"],
+  "grocery-supermarket": ["groceries-svgrepo-com.svg"],
+  "fashion-style": ["dress-of-vintage-black-design-style-svgrepo-com.svg"],
+  "sports-fitness": ["running-svgrepo-com.svg"],
+  "health-wellness": ["stethoscope-svgrepo-com.svg", "health-life1.svg"],
   "cars-motorbikes-machinery": ["caterpillar-machine-svgrepo-com.svg"],
-
-  // renamed slug for service category
   "service-spares-accessories": ["car-rental-svgrepo-com.svg"],
-
-  "real-estate-property": ["real-estate.svg"],
-  "office-equipment-stationery": ["office-equipment-stationery.svg"],
-  "farming-agriculture": ["farming.svg", "seeds-inputs.svg"],
+  "real-estate-property": ["house-svgrepo-com.svg"],
+  "office-equipment-stationery": ["desk-computer-svgrepo-com.svg"],
+  "farming-agriculture": ["vegetables-salad-svgrepo-com.svg"],
   "vacancies-jobs-recruitment": ["jobs.svg"],
-  "food-beverages": ["foods-beverages.svg", "food-and-drink-svgrepo-com.svg"],
-  "construction-engineering": ["construction-engineering.svg"],
-  "courier-freight": ["cart-2-svgrepo-com.svg"],
+  "food-beverages": ["drink-soft-drink-svgrepo-com.svg"],
+  "construction-engineering": [
+    "construction-worker-worker-work-construction-svgrepo-com.svg",
+    "cranes-worker-svgrepo-com.svg",
+  ],
+  "courier-freight": ["delivery-svgrepo-com.svg"],
   "education-training": ["education-training.svg"],
-  "art-craft-culture": ["styled-svgrepo-com.svg"],
-  "events-entertainment": ["events.svg"],
-  "transport-travel": ["transport-travel.svg"],
-  "tourism-accommodation": ["hotel-svgrepo-com.svg"],
-  "finance-insurance-brokers": ["briefcase-dollar-svgrepo-com.svg"],
-
-  // NEW categories icon mappings
+  "art-craft-culture": [
+    "paint-palette-art-svgrepo-com.svg",
+    "theater-masks-svgrepo-com.svg",
+  ],
+  "events-entertainment": ["ballon-birthday-carnival-svgrepo-com.svg"],
+  "transport-travel": ["car-transport-svgrepo-com.svg"],
+  "tourism-accommodation": ["summer-svgrepo-com.svg"],
+  "finance-insurance-brokers": ["bank-payment-svgrepo-com.svg"],
   "household-goods": ["laundry-basket-svgrepo-com.svg"],
   "technical-skills": ["service-parts-accessories.svg"],
-  "industries-factories": ["construction-engineering.svg"],
-  "clubs-societies": ["sports-fitness.svg", "events.svg"],
+  "industries-factories": [
+    "smog-factory-building-contamination-svgrepo-com.svg",
+  ],
+  "clubs-societies": ["group-of-workers-svgrepo-com.svg"],
   religion: ["church-illustration-4-svgrepo-com.svg"],
   "legal-practitioners": ["law-auction-svgrepo-com.svg"],
 
