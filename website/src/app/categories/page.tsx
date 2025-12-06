@@ -9,12 +9,14 @@ interface Category {
   slug: string;
 }
 const CATEGORY_ICON_MAP: Record<string, string[]> = {
-  "electronics-media": ["electronics.svg"],
+  "electronics-media": ["cellphone-svgrepo-com.svg"],
   "mobile-phones": ["broadcast-device-electronics-svgrepo-com.svg"],
-  "computers-laptops": ["laptop-computer-technology-svgrepo-com.svg"],
-  "cameras-photography": ["picture-in-frame-svgrepo-com.svg"],
+  "computers-laptops": [
+    "computer-and-monitor-hand-drawn-tools-svgrepo-com.svg",
+  ],
+  "cameras-photography": ["photograph-frame-svgrepo-com.svg"],
   "home-living": ["fridge-refrigerator-svgrepo-com.svg", "furniture.svg"],
-  furniture: ["furniture2.svg"],
+  furniture: ["furniture-home-furniture-design-interior-svgrepo-com.svg"],
   "grocery-supermarket": ["groceries-svgrepo-com.svg"],
   "fashion-style": ["dress-of-vintage-black-design-style-svgrepo-com.svg"],
   "sports-fitness": ["running-svgrepo-com.svg"],
