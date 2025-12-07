@@ -22,8 +22,8 @@ const CATEGORY_ICON_MAP: Record<string, string[]> = {
   "sports-fitness": ["running-svgrepo-com.svg"],
   "health-wellness": ["stethoscope-svgrepo-com.svg"],
   "cars-motorbikes-machinery": ["caterpillar-machine-svgrepo-com.svg"],
-  "service-spares-accessories": ["car-rental-svgrepo-com.svg"],
-  "real-estate-property": ["house-svgrepo-com.svg"],
+  "service-spares-accessories": ["tow-truck-svgrepo-com.svg"],
+  "real-estate-property": ["home-1-svgrepo-com.svg"],
   "office-equipment-stationery": ["desk-computer-svgrepo-com.svg"],
   "farming-agriculture": ["vegetables-salad-svgrepo-com.svg"],
   "vacancies-jobs-recruitment": ["jobs.svg"],
@@ -48,8 +48,8 @@ const CATEGORY_ICON_MAP: Record<string, string[]> = {
     "smog-factory-building-contamination-svgrepo-com.svg",
   ],
   "clubs-societies": ["group-of-workers-svgrepo-com.svg"],
-  religion: ["church-illustration-4-svgrepo-com.svg"],
-  "legal-practitioners": ["law-auction-svgrepo-com.svg"],
+  religion: ["church-line-svgrepo-com.svg"],
+  "legal-practitioners": ["legal-hammer-svgrepo-com.svg"],
 
   other: ["shop-cart-svgrepo-com.svg", "shopping-more.svg"],
 };
