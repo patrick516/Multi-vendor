@@ -79,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto text-sm">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto text-md">
         {items.map((routeItem) => {
           const item = routeItem as RouteWithOptionalPath;
 
