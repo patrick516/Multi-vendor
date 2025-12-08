@@ -1,5 +1,4 @@
-// src/app/features/messages/MessagesPage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
   flexRender,
@@ -19,6 +18,7 @@ import {
   ChevronsRight,
   ArrowUpDown,
   X as XIcon,
+  Trash,
 } from "lucide-react";
 import { formatDate } from "../../utils/formatDate";
 
@@ -111,6 +111,58 @@ export default function MessagesPage() {
 
     loadHistory();
   }, []);
+
+  const handleDeleteMessage = useCallback(
+    async (log: MessageLog) => {
+      if (
+        !window.confirm(
+          `Delete this message?\n\nSubject: ${log.subject || "(no subject)"}`
+        )
+      ) {
+        return;
+      }
+
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("authToken")
+            : null;
+
+        if (!token) {
+          alert("You are not logged in.");
+          return;
+        }
+
+        const headers: Record<string, string> = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        const res = await fetch(`${API_BASE_URL}/admin/messages/${log.id}`, {
+          method: "DELETE",
+          headers,
+        });
+
+        const body = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(body.message || "Failed to delete message");
+        }
+
+        setLogs((prev) => prev.filter((m) => m.id !== log.id));
+
+        if (selectedLog && selectedLog.id === log.id) {
+          setSelectedLog(null);
+        }
+      } catch (err) {
+        if (err instanceof Error) {
+          alert(err.message);
+        } else {
+          alert("Failed to delete message");
+        }
+      }
+    },
+    [selectedLog] // keep only what the function depends on
+  );
 
   // Unique vendor names/emails for filter dropdown
   const vendorOptions = useMemo(() => {
@@ -268,8 +320,28 @@ export default function MessagesPage() {
           );
         },
       },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const log = row.original;
+          return (
+            <button
+              type="button"
+              className="inline-flex items-center justify-center w-8 h-8 text-sm border rounded-md border-destructive text-destructive hover:bg-destructive/10"
+              onClick={(e) => {
+                e.stopPropagation(); // don't open modal when deleting
+                handleDeleteMessage(log);
+              }}
+              title="Delete message"
+            >
+              <Trash className="w-4 h-4" />
+            </button>
+          );
+        },
+      },
     ],
-    []
+    [handleDeleteMessage]
   );
 
   const table = useReactTable({
@@ -425,6 +497,7 @@ export default function MessagesPage() {
       </section>
 
       {loading && filteredLogs.length === 0 && (
+        // ... skeleton (unchanged) ...
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <div
