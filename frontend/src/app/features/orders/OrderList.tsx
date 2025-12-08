@@ -11,6 +11,7 @@ import {
   PhoneCall,
   MessageCircle,
 } from "lucide-react";
+import type { AppDispatch } from "../../context/AppProvider";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -40,7 +41,7 @@ function buildWhatsAppLink(
 }
 
 export default function OrderList() {
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
   const { items, loading, error } = useSelector(selectOrders);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -68,7 +69,6 @@ export default function OrderList() {
       // status filter
       if (statusFilter && order.status !== statusFilter) return false;
 
-      // search by id, customer name/email, phone, product name
       if (!searchTerm.trim()) return true;
       const term = searchTerm.toLowerCase();
 
@@ -79,12 +79,24 @@ export default function OrderList() {
       const firstItemName =
         order.items?.[0]?.product?.name?.toLowerCase() || "";
 
+      // vendor names for search
+      const vendorNames =
+        order.vendorsSummary?.toLowerCase() ||
+        Array.from(
+          new Set(
+            order.items
+              .map((item) => item.product?.vendor?.name?.toLowerCase() || "")
+              .filter(Boolean)
+          )
+        ).join(", ");
+
       return (
         idMatch ||
         customerName.includes(term) ||
         customerEmail.includes(term) ||
         phone.includes(term) ||
-        firstItemName.includes(term)
+        firstItemName.includes(term) ||
+        vendorNames.includes(term)
       );
     });
   }, [items, searchTerm, statusFilter]);
@@ -154,8 +166,12 @@ export default function OrderList() {
 
       // Refresh orders
       dispatch(fetchOrders());
-    } catch (err: any) {
-      alert(err.message || "Failed to mark order as sold");
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert("Failed to mark order as sold");
+      }
     }
   }
 
@@ -191,7 +207,7 @@ export default function OrderList() {
             <Search className="absolute w-3 h-3 -translate-y-1/2 left-2 top-1/2 text-muted-foreground" />
             <input
               className="w-full px-6 py-1 text-sm border rounded-md border-border bg-background"
-              placeholder="Order #, customer, phone, product…"
+              placeholder="Order #, customer, phone, product, vendor…"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -268,6 +284,8 @@ export default function OrderList() {
                 <th className="px-3 py-2">Order #</th>
                 <th className="px-3 py-2">Customer</th>
                 <th className="px-3 py-2">Contact</th>
+                <th className="px-3 py-2">Vendors</th>
+                <th className="px-3 py-2">Items</th>
                 <th className="px-3 py-2">Total</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Created</th>
@@ -275,11 +293,29 @@ export default function OrderList() {
               </tr>
             </thead>
             <tbody>
-              {pageOrders.map((order: Order) => {
+              {pageOrders.map((order) => {
                 const firstItem =
                   order.items && order.items.length > 0 ? order.items[0] : null;
                 const productName = firstItem?.product?.name || "your order";
-                const quantity = firstItem?.quantity || 1;
+                const quantityFirst = firstItem?.quantity || 1;
+
+                const totalQuantity =
+                  order.totalQuantity ??
+                  order.items.reduce(
+                    (sum, item) => sum + (item.quantity || 0),
+                    0
+                  );
+
+                const vendorsSummary =
+                  order.vendorsSummary ||
+                  Array.from(
+                    new Set(
+                      order.items
+                        .map((item) => item.product?.vendor?.name)
+                        .filter(Boolean) as string[]
+                    )
+                  ).join(", ") ||
+                  "—";
 
                 const waMessage = `
 Hello ${order.customer?.name || order.customer?.email || "there"},
@@ -287,7 +323,7 @@ Hello ${order.customer?.name || order.customer?.email || "there"},
 I'm contacting you about your order #${order.id} on Trade Point Malawi.
 
 Product: ${productName}
-Quantity: ${quantity}
+Quantity: ${quantityFirst}
 Total amount: MK ${order.totalAmount.toFixed(2)}
 
 Your note:
@@ -346,6 +382,10 @@ ${order.customerNote || "No note was provided."}
                         </div>
                       </div>
                     </td>
+                    <td className="px-3 py-2 text-sm">{vendorsSummary}</td>
+                    <td className="px-3 py-2 text-sm">
+                      {totalQuantity} item{totalQuantity === 1 ? "" : "s"}
+                    </td>
                     <td className="px-3 py-2 text-sm font-semibold">
                       MK {order.totalAmount.toFixed(2)}
                     </td>
@@ -395,7 +435,7 @@ ${order.customerNote || "No note was provided."}
               {filteredOrders.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={9}
                     className="px-3 py-4 text-sm text-center text-muted-foreground"
                   >
                     No orders found for the selected filters.
@@ -458,7 +498,7 @@ function OrderDetailModal({
   order: Order;
   onClose: () => void;
 }) {
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
 
   // Map status to step progress
   function getStepStatus(stepIndex: number): "done" | "current" | "pending" {
@@ -505,8 +545,12 @@ function OrderDetailModal({
       await res.json();
       dispatch(fetchOrders());
       onClose();
-    } catch (err: any) {
-      alert(err.message || "Failed to update order status");
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(err.message || "Failed to update order status");
+      } else {
+        alert("Failed to update order status");
+      }
     }
   }
 

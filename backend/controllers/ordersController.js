@@ -3,6 +3,7 @@ const prisma = require("../config/prisma");
 const { createCartRequest } = require("./cartController");
 
 // GET /api/orders
+// GET /api/orders
 async function getOrders(req, res) {
   try {
     let where = {};
@@ -12,19 +13,52 @@ async function getOrders(req, res) {
     } else if (req.user.role === "VENDOR") {
       where = { items: { some: { product: { vendorId: req.user.id } } } };
     }
+    // SUPER_ADMIN or others: see all orders
 
     const orders = await prisma.order.findMany({
       where,
       include: {
-        customer: { select: { id: true, name: true, email: true } },
+        customer: {
+          // only fields that actually exist on User
+          select: { id: true, name: true, email: true },
+        },
         items: {
-          include: { product: true },
+          include: {
+            product: {
+              include: {
+                vendor: {
+                  // same here: safe fields only
+                  select: { id: true, name: true, email: true },
+                },
+              },
+            },
+          },
         },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    res.json(orders);
+    // Add helper fields for UI
+    const enriched = orders.map((order) => {
+      const totalQuantity = order.items.reduce(
+        (sum, item) => sum + (item.quantity || 0),
+        0
+      );
+
+      const vendorNames = Array.from(
+        new Set(
+          order.items.map((item) => item.product?.vendor?.name).filter(Boolean)
+        )
+      );
+
+      return {
+        ...order,
+        totalQuantity,
+        vendorsSummary: vendorNames.join(", "),
+      };
+    });
+
+    res.json(enriched);
   } catch (err) {
     console.error("getOrders error:", err);
     res.status(500).json({ message: "Failed to fetch orders" });

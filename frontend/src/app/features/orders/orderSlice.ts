@@ -6,15 +6,32 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "https://backend-morning-glitter-4312.fly.dev/api";
 
+export interface OrderVendor {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+}
+
+export interface OrderProduct {
+  id: number;
+  name: string;
+  vendor?: OrderVendor;
+}
+
 export interface OrderItem {
   id: number;
   productId: number;
   quantity: number;
   unitPrice: number;
-  product?: {
-    id: number;
-    name: string;
-  };
+  product?: OrderProduct;
+}
+
+export interface OrderCustomer {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
 }
 
 export interface Order {
@@ -22,15 +39,15 @@ export interface Order {
   totalAmount: number;
   status: string;
   createdAt: string;
-  customer?: {
-    id: number;
-    name: string;
-    email: string;
-  };
+  customer?: OrderCustomer;
   items: OrderItem[];
 
   customerPhone?: string | null;
   customerNote?: string | null;
+
+  // Optional extras from backend
+  totalQuantity?: number;
+  vendorsSummary?: string;
 }
 
 interface OrdersState {
@@ -84,7 +101,7 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload as Order[];
+        state.items = action.payload;
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;
