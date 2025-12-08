@@ -9,6 +9,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ArrowUpDown,
+  KeyRound,
 } from "lucide-react";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
@@ -19,13 +20,14 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { formatDate } from "../../utils/formatDate";
+import type { AppDispatch } from "../../context/AppProvider";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "https://backend-morning-glitter-4312.fly.dev/api";
 
 // Helper for subscription label
-function getSubscriptionLabel(user: any): string {
+function getSubscriptionLabel(user: User): string {
   if (!user.subscriptionActive) return "Inactive";
 
   if (user.lastPaymentDate) {
@@ -39,7 +41,7 @@ function getSubscriptionLabel(user: any): string {
   return "Active";
 }
 
-function getInitials(user: any): string {
+function getInitials(user: User): string {
   const name = user.name || "";
   if (name.trim()) {
     const parts = name.trim().split(" ");
@@ -58,7 +60,7 @@ function getInitials(user: any): string {
 }
 
 export default function UserList() {
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
   const { items, loading, error } = useSelector(selectUsers);
 
   // Add user modal state
@@ -108,7 +110,7 @@ export default function UserList() {
   // Filtered data for table
   const filteredData = useMemo(
     () =>
-      items.filter((user: any) => {
+      items.filter((user: User) => {
         if (roleFilter !== "ALL" && user.role !== roleFilter) return false;
 
         if (subscriptionFilter === "ACTIVE" && !user.subscriptionActive)
@@ -202,7 +204,7 @@ export default function UserList() {
     }
   }
 
-  async function handleDeleteUser(user: any) {
+  async function handleDeleteUser(user: User) {
     if (!window.confirm(`Delete user "${user.name || user.email}"?`)) return;
 
     try {
@@ -234,6 +236,64 @@ export default function UserList() {
         alert(err.message);
       } else {
         alert("Failed to delete user");
+      }
+    }
+  }
+
+  // --- NEW: Admin reset temp password ---
+  async function handleAdminResetPassword(user: User) {
+    if (
+      !window.confirm(
+        `Generate a new temporary password for "${user.name || user.email}"?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("authToken")
+          : null;
+
+      if (!token) {
+        throw new Error("You are not logged in.");
+      }
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      const res = await fetch(
+        `${API_BASE_URL}/users/${user.id}/reset-password`,
+        {
+          method: "POST",
+          headers,
+        }
+      );
+
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(body.message || "Failed to reset user password");
+      }
+
+      const temp = body.temporaryPassword as string | undefined;
+
+      // Show temp password once so admin can share by phone/WhatsApp
+      if (temp) {
+        alert(
+          `Temporary password for ${user.email}:\n\n${temp}\n\nAsk them to log in and change it immediately.`
+        );
+      } else {
+        alert(body.message || "Temporary password generated.");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert("Failed to reset user password");
       }
     }
   }
@@ -291,7 +351,7 @@ export default function UserList() {
     }
   }
 
-  function openVendorMessageModal(user: any) {
+  function openVendorMessageModal(user: User) {
     setMessageVendor(user);
     setMsgSubject("Message from Trade Point Malawi admin");
     setMsgBody("");
@@ -302,7 +362,7 @@ export default function UserList() {
   function openBroadcastModal() {
     setBroadcastOpen(true);
     setSelectAllVendors(true);
-    setSelectedVendorIds(vendorUsers.map((v: any) => v.id));
+    setSelectedVendorIds(vendorUsers.map((v: User) => v.id));
     setMsgSubject("Announcement from Trade Point Malawi admin");
     setMsgBody("");
     setSendError(null);
@@ -318,12 +378,12 @@ export default function UserList() {
 
   useEffect(() => {
     if (selectAllVendors) {
-      setSelectedVendorIds(vendorUsers.map((v: any) => v.id));
+      setSelectedVendorIds(vendorUsers.map((v: User) => v.id));
     }
   }, [selectAllVendors, vendorUsers]);
 
   // 🧱 TanStack table columns
-  const columns = useMemo<ColumnDef<any>[]>(
+  const columns = useMemo<ColumnDef<User>[]>(
     () => [
       {
         id: "avatar",
@@ -354,7 +414,7 @@ export default function UserList() {
         cell: (info) => (
           <div className="flex flex-col">
             <span className="text-base font-medium">
-              {info.getValue() as string}
+              {(info.getValue() as string) || "—"}
             </span>
           </div>
         ),
@@ -451,6 +511,15 @@ export default function UserList() {
                   ✉
                 </button>
               )}
+              {/* NEW: Reset temp password */}
+              <button
+                type="button"
+                className="inline-flex items-center justify-center w-8 h-8 text-sm border rounded-md border-border text-sky-700 hover:bg-sky-50"
+                onClick={() => handleAdminResetPassword(user)}
+                title="Reset password (generate temp password)"
+              >
+                <KeyRound className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 className="inline-flex items-center justify-center w-8 h-8 border rounded-md border-destructive text-destructive hover:bg-destructive/10"
@@ -464,7 +533,7 @@ export default function UserList() {
         },
       },
     ],
-    []
+    [] // columns don't depend on outside state
   );
 
   const table = useReactTable({
@@ -977,7 +1046,7 @@ export default function UserList() {
 
               {!selectAllVendors && (
                 <div className="p-2 space-y-1 overflow-y-auto text-sm border rounded-md max-h-40 border-border bg-background">
-                  {vendorUsers.map((v: any) => (
+                  {vendorUsers.map((v: User) => (
                     <label
                       key={v.id}
                       className="flex items-center gap-2 cursor-pointer"
@@ -1035,7 +1104,7 @@ export default function UserList() {
                 type="button"
                 onClick={() => {
                   const ids = selectAllVendors
-                    ? vendorUsers.map((v: any) => v.id)
+                    ? vendorUsers.map((v: User) => v.id)
                     : selectedVendorIds;
                   sendMessageToVendors(ids);
                 }}

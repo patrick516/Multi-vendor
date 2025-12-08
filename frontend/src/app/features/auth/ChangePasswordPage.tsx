@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "https://backend-morning-glitter-4312.fly.dev/api";
+
 export default function ChangePasswordPage() {
   const navigate = useNavigate();
 
@@ -55,12 +56,11 @@ export default function ChangePasswordPage() {
         }),
       });
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.message || "Failed to change password");
-      }
+      const data = await res.json().catch(() => ({}));
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to change password");
+      }
 
       // update authUser in localStorage so mustChangePassword becomes false
       if (data.user) {
@@ -75,8 +75,12 @@ export default function ChangePasswordPage() {
       setTimeout(() => {
         navigate("/dashboard");
       }, 1200);
-    } catch (err: any) {
-      setError(err.message || "Failed to change password");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to change password");
+      }
     } finally {
       setLoading(false);
     }

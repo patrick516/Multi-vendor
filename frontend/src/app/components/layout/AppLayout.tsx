@@ -22,6 +22,7 @@ interface CurrentUser {
   role: AppRole;
   subscriptionActive?: boolean;
   mustPay?: boolean;
+  mustChangePassword?: boolean;
 }
 
 // Helper to read authUser from localStorage
@@ -63,7 +64,11 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
       try {
         const token = localStorage.getItem("authToken");
         if (!token) {
-          if (isMounted) navigate("/login", { replace: true });
+          if (isMounted) {
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("authUser");
+            navigate("/login", { replace: true });
+          }
           return;
         }
 
@@ -95,6 +100,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
           role: me.role as AppRole,
           subscriptionActive: me.subscriptionActive,
           mustPay: me.mustPay,
+          mustChangePassword: me.mustChangePassword ?? false,
         };
 
         if (isMounted) {
@@ -122,7 +128,32 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
     };
   }, [navigate]);
 
-  if (loadingUser && !currentUser) {
+  // 🔒 HARD GUARD: enforce login + force change-password if required
+  useEffect(() => {
+    if (loadingUser) return;
+
+    const authUser = getAuthUser();
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+
+    // Not logged in at all
+    if (!token || !authUser) {
+      if (location.pathname !== "/login") {
+        navigate("/login", { replace: true });
+      }
+      return;
+    }
+
+    // Must change password: always send to /change-password
+    if (
+      authUser.mustChangePassword &&
+      location.pathname !== "/change-password"
+    ) {
+      navigate("/change-password", { replace: true });
+    }
+  }, [loadingUser, location.pathname, navigate]);
+
+  if (loadingUser && !currentUser && typeof window !== "undefined") {
     return (
       <div className="flex items-center justify-center w-screen h-screen bg-muted ">
         <div className="flex items-center gap-3 px-4 py-3 text-sm border rounded-lg shadow-sm bg-card border-border text-muted-foreground">
@@ -150,6 +181,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
       role: "CUSTOMER",
       subscriptionActive: true,
       mustPay: false,
+      mustChangePassword: false,
     };
 
   const isSuperAdmin = safeUser.role === "SUPER_ADMIN";
@@ -165,8 +197,8 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
     return item.roles.includes(safeUser.role as AppRole);
   });
 
-  // HARD GATE: If vendor is blocked, show only subscription banner, no dashboard
-  if (isVendorBlocked) {
+  // HARD GATE FOR BLOCKED VENDORS (but only if they are not in must-change-password flow)
+  if (isVendorBlocked && !safeUser.mustChangePassword) {
     return (
       <div className="flex flex-col items-center justify-center w-screen h-screen px-4 bg-muted">
         <div className="w-full max-w-lg p-5 space-y-3 border border-red-200 shadow-lg bg-card rounded-2xl">

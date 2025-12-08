@@ -106,6 +106,7 @@ async function publicVendorRegister(req, res) {
         role: "VENDOR",
         mustPay: true,
         subscriptionActive: false,
+        subscriptionActive: false,
       },
     });
 
@@ -289,6 +290,7 @@ async function login(req, res) {
         lastPaymentDate: user.lastPaymentDate,
         nextPaymentDue: user.nextPaymentDue,
         subscriptionAmount: user.subscriptionAmount,
+        mustChangePassword: user.mustChangePassword,
       },
       token,
     });

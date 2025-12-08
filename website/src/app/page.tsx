@@ -44,8 +44,9 @@ export default function HomePage() {
   // Small loading spinner
   function Spinner() {
     return (
-      <div className="inline-flex items-center gap-2 text-sm text-slate-500">
-        <span className="w-4 h-4 border-2 rounded-full border-t-transparent animate-spin" />
+      <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-slate-500">
+        <span className="w-4 h-4 border-2 rounded-full border-emerald-500/40 border-t-transparent animate-spin" />
+        <span>Loading…</span>
       </div>
     );
   }
@@ -57,14 +58,14 @@ export default function HomePage() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="flex flex-col p-3 bg-white border shadow-sm rounded-2xl border-slate-100 animate-pulse"
+            className="flex flex-col p-3 border shadow-sm bg-white/90 border-slate-100 rounded-2xl animate-pulse"
           >
-            <div className="w-full h-36 rounded-xl bg-slate-200" />
-            <div className="w-3/4 h-4 mt-2 rounded bg-slate-200" />
-            <div className="w-1/2 h-6 mt-2 rounded bg-slate-200" />
-            <div className="flex gap-2 mt-3">
-              <span className="w-16 h-5 rounded-full bg-slate-200" />
-              <span className="w-20 h-5 rounded-full bg-slate-200" />
+            <div className="w-full h-40 rounded-xl bg-slate-100" />
+            <div className="w-3/4 h-4 mt-3 rounded bg-slate-100" />
+            <div className="w-1/2 h-4 mt-2 rounded bg-slate-100" />
+            <div className="flex gap-2 mt-4">
+              <span className="w-16 h-5 rounded-full bg-slate-100" />
+              <span className="w-20 h-5 rounded-full bg-slate-100" />
             </div>
           </div>
         ))}
@@ -76,24 +77,24 @@ export default function HomePage() {
   function HeroSkeleton() {
     return (
       <div className="animate-pulse">
-        <div className="flex items-center justify-center h-40 gap-4 rounded-xl bg-gradient-to-br from-emerald-50 via-sky-50 to-slate-50">
-          <div className="w-24 h-28 rounded-2xl bg-slate-200" />
+        <div className="flex items-center justify-center gap-4 h-44 rounded-2xl bg-gradient-to-br from-emerald-50 via-sky-50 to-slate-50">
+          <div className="w-24 h-28 rounded-2xl bg-slate-100" />
           <div className="flex flex-col justify-between flex-1 gap-2 h-28">
-            <div className="w-2/3 h-3 rounded bg-slate-200" />
-            <div className="w-3/4 h-4 rounded bg-slate-200" />
-            <div className="w-1/2 h-6 rounded bg-slate-200" />
+            <div className="w-2/3 h-3 rounded bg-slate-100" />
+            <div className="w-3/4 h-4 rounded bg-slate-100" />
+            <div className="w-1/2 h-6 rounded bg-slate-100" />
           </div>
         </div>
 
         <div className="flex items-center justify-between mt-4">
-          <div className="w-20 h-8 rounded-md bg-slate-200" />
-          <div className="w-24 h-10 rounded-lg bg-slate-200" />
+          <div className="w-24 rounded-md h-9 bg-slate-100" />
+          <div className="h-10 rounded-lg w-28 bg-slate-100" />
         </div>
 
         <div className="flex justify-center gap-2 mt-3">
-          <span className="w-5 h-2 rounded-full bg-slate-200" />
-          <span className="w-2 h-2 rounded-full bg-slate-200" />
-          <span className="w-2 h-2 rounded-full bg-slate-200" />
+          <span className="w-5 h-2 rounded-full bg-slate-100" />
+          <span className="w-2 h-2 rounded-full bg-slate-100" />
+          <span className="w-2 h-2 rounded-full bg-slate-100" />
         </div>
       </div>
     );
@@ -181,115 +182,136 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-6 bg-gradient-to-b from-emerald-50 via-white to-slate-50 md:px-8 md:py-10">
-      <div className="max-w-6xl mx-auto space-y-10">
+    <div className="min-h-screen bg-slate-50/80">
+      {/* subtle top gradient / glow */}
+      <div className="fixed inset-x-0 top-0 z-0 h-64 pointer-events-none bg-gradient-to-b from-emerald-100/60 via-slate-50 to-transparent" />
+
+      <div className="relative z-10 max-w-6xl px-4 py-8 mx-auto space-y-10 md:px-6 lg:px-0 md:py-12">
         {/* TOP STRIP */}
-        <header className="flex flex-col justify-between gap-4 pb-4 border-b border-emerald-100 sm:flex-row sm:items-center">
+        <header className="flex flex-col justify-between gap-4 pb-4 border-b border-slate-200/70 sm:flex-row sm:items-center">
           <div className="space-y-1">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
+            <div className="inline-flex items-center gap-2 px-2 py-1 text-[11px] font-semibold tracking-[0.22em] uppercase rounded-full bg-emerald-50 text-emerald-700">
+              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
               Trade Point Malawi
-            </p>
-            <p className="text-sm text-slate-600">
-              A trusted marketplace connecting districts, vendors and buyers.
-            </p>
+            </div>
+            <h2 className="text-sm font-medium text-slate-700 sm:text-base">
+              Gateway to trade remotely and reliably across all districts.
+            </h2>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="px-3 py-1 font-medium rounded-full bg-emerald-100 text-emerald-800">
+
+          <div className="flex flex-wrap items-center justify-start gap-2 text-xs sm:text-sm">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
               Verified vendors
             </span>
-            <span className="px-3 py-1 font-medium rounded-full bg-sky-100 text-sky-800">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-sky-100 text-sky-800">
+              <span className="w-2 h-2 rounded-full bg-sky-500" />
               Location-based search
             </span>
-            <span className="px-3 py-1 font-medium rounded-full bg-amber-50 text-amber-800">
-              Made for Malawi
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-50 text-amber-800">
+              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              Built for Malawi
             </span>
           </div>
         </header>
 
         {/* HERO SECTION */}
-        <section className="grid gap-8 rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-slate-50 px-4 py-8 shadow-[0_20px_60px_rgba(15,118,110,0.10)] ring-1 ring-emerald-100 md:grid-cols-[minmax(0,2.1fr),minmax(0,1.5fr)] md:px-8 md:py-10">
+        <section className="grid gap-10 rounded-3xl bg-white/90 px-4 py-8 shadow-[0_24px_70px_rgba(15,23,42,0.14)] ring-1 ring-slate-100 md:grid-cols-[minmax(0,2.1fr),minmax(0,1.5fr)] md:px-8 md:py-10">
           {/* Left side: text */}
-          <div className="flex flex-col justify-between gap-6">
-            <div className="space-y-4">
-              <h1 className="text-4xl font-bold leading-tight tracking-tight text-slate-900 md:text-5xl slide-stop-center">
-                Gateway to trade reliably in{" "}
+          <div className="flex flex-col justify-between gap-8">
+            <div className="space-y-5">
+              <h1 className="text-4xl font-bold leading-tight tracking-tight text-slate-900 md:text-5xl">
+                Gateway to trade{" "}
                 <span className="text-transparent bg-gradient-to-r from-emerald-600 to-sky-500 bg-clip-text">
-                  Malawi and beyond
-                </span>
+                  reliably in Malawi
+                </span>{" "}
+                and beyond.
               </h1>
 
-              <p className="max-w-xl text-lg font-montserrat text-slate-600">
+              <p className="max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">
                 Trade Point Malawi connects buyers and vendors across all
-                districts. Verified vendors, location-based search, and
-                transparent communication – all in one platform built for
-                Malawi.
+                districts. Discover verified vendors, compare offers and start
+                conversations – all from one simple marketplace.
               </p>
 
+              {/* Three value props */}
               <div className="grid gap-3 text-sm text-slate-600 sm:grid-cols-3">
-                <div className="p-3 shadow-sm rounded-2xl bg-white/80 ring-1 ring-emerald-50">
-                  <p className="text-sm font-semibold tracking-wide uppercase text-emerald-700">
+                <div className="p-3 space-y-1 rounded-2xl bg-slate-50/80 ring-1 ring-slate-100">
+                  <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-emerald-700">
                     Vendors
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
-                    Grow your customer reach
+                  <p className="text-sm font-semibold text-slate-900">
+                    Grow your reach
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Manage products, enquiries and districts from one dashboard.
+                  <p className="text-xs text-slate-500">
+                    Manage products, districts and enquiries on one dashboard.
                   </p>
                 </div>
-                <div className="p-3 shadow-sm rounded-2xl bg-white/80 ring-1 ring-sky-50">
-                  <p className="text-sm font-semibold tracking-wide uppercase text-sky-700">
+                <div className="p-3 space-y-1 rounded-2xl bg-slate-50/80 ring-1 ring-slate-100">
+                  <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-sky-700">
                     Buyers
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
-                    Search by district & category
+                  <p className="text-sm font-semibold text-slate-900">
+                    Search smarter
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Find trusted vendors close to you then reach out directly.
+                  <p className="text-xs text-slate-500">
+                    Filter by district & category to find trusted vendors near
+                    you.
                   </p>
                 </div>
-                <div className="p-3 shadow-sm rounded-2xl bg-white/80 ring-1 ring-amber-50">
-                  <p className="text-sm font-semibold tracking-wide uppercase text-amber-700">
+                <div className="p-3 space-y-1 rounded-2xl bg-slate-50/80 ring-1 ring-slate-100">
+                  <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-amber-700">
                     Safe trading
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-slate-900">
                     Clear communication
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Every request is tracked so vendors and buyers stay aligned.
+                  <p className="text-xs text-slate-500">
+                    Every enquiry is tracked so both sides stay aligned.
                   </p>
                 </div>
               </div>
+
+              {/* Simple launch / trust strip */}
+              <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-slate-500 sm:text-sm">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Early access · New marketplace
+                </span>
+                <span>
+                  Built for SMEs, farmers, traders and service providers.
+                </span>
+              </div>
             </div>
 
+            {/* Primary actions */}
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={handleBrowseClick}
-                className="rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_15px_35px_rgba(22,163,74,0.45)] transition hover:bg-green-700"
+                className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_18px_35px_rgba(22,163,74,0.45)] transition hover:bg-emerald-700"
               >
-                Browse products
+                Browse marketplace
               </button>
               <button
                 onClick={() => {
                   const el = document.getElementById("how-it-works");
                   el?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
               >
-                How it works
+                Learn how it works
               </button>
             </div>
           </div>
 
           {/* Right side: hero product showcase */}
-          {/* Right side: hero product showcase */}
           <div className="flex items-center justify-center">
-            <div className="w-full max-w-sm rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-[0_18px_40px_rgba(15,118,110,0.18)] backdrop-blur">
+            <div className="w-full max-w-sm rounded-3xl border border-emerald-100 bg-gradient-to-b from-emerald-50/60 via-white to-slate-50/90 p-4 shadow-[0_22px_50px_rgba(16,185,129,0.25)] backdrop-blur">
               {activeHeroProduct ? (
                 <>
-                  <div className="flex items-center justify-center gap-4 py-3 rounded-xl bg-gradient-to-br from-emerald-50 via-sky-50 to-slate-50">
+                  <div className="flex items-center justify-center gap-4 py-3 rounded-2xl bg-white/80 ring-1 ring-emerald-50">
                     {/* Image */}
-                    <div className="w-24 overflow-hidden rounded-2xl bg-slate-200 h-28">
+                    <div className="w-24 overflow-hidden h-28 rounded-2xl bg-slate-100">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={
@@ -305,13 +327,14 @@ export default function HomePage() {
                     {/* Mini info stack */}
                     <div className="flex flex-col justify-between flex-1 gap-2">
                       <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                        <p className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                           Featured this week
                         </p>
-                        <p className="text-xl font-semibold line-clamp-2 text-slate-900">
+                        <p className="text-sm font-semibold line-clamp-2 text-slate-900">
                           {activeHeroProduct.name}
                         </p>
-                        <p className="text-2xl font-semibold text-emerald-700">
+                        <p className="text-xl font-semibold text-emerald-700">
                           MK{" "}
                           {(
                             activeHeroProduct.displayPrice ??
@@ -326,7 +349,7 @@ export default function HomePage() {
                         onClick={() =>
                           router.push(`/products/${activeHeroProduct.id}`)
                         }
-                        className="mt-2 self-start rounded-md bg-green-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-green-700"
+                        className="mt-2 self-start rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700"
                       >
                         View product
                       </button>
@@ -337,22 +360,22 @@ export default function HomePage() {
                     <button
                       type="button"
                       onClick={handleBrowseClick}
-                      className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700"
+                      className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-black"
                     >
-                      Search
+                      <span>Search marketplace</span>
                     </button>
-                    <div className="px-3 py-2 text-right rounded-lg bg-emerald-50">
+                    <div className="px-3 py-2 text-right rounded-lg bg-emerald-50/80 ring-1 ring-emerald-100">
                       <p className="text-sm font-semibold text-emerald-800">
                         {topProducts.length || 0}+
                       </p>
-                      <p className="text-sm text-emerald-700">
+                      <p className="text-[11px] text-emerald-700">
                         Active listings
                       </p>
                     </div>
                   </div>
 
                   {heroProducts.length > 1 && (
-                    <div className="flex justify-center gap-2 mt-3">
+                    <div className="flex justify-center gap-2 mt-4">
                       {heroProducts.map((_, idx) => (
                         <button
                           key={idx}
@@ -379,28 +402,33 @@ export default function HomePage() {
         {/* FILTER BAR */}
         <section
           id="filter-bar"
-          className="px-4 py-4 bg-white shadow-sm rounded-2xl ring-1 ring-slate-100"
+          className="px-4 py-5 shadow-sm bg-white/95 rounded-2xl ring-1 ring-slate-100"
         >
-          <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">
+              <h2 className="text-sm font-semibold text-slate-900 sm:text-base">
                 Fine-tune your search
               </h2>
-              <p className="text-sm text-slate-500">
-                Filter by district, category or keyword – then browse detailed
+              <p className="text-xs text-slate-500 sm:text-sm">
+                Filter by district, category or keyword – then explore detailed
                 vendor listings.
               </p>
             </div>
+
+            <div className="hidden text-xs text-slate-500 sm:inline-flex sm:items-center sm:gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>Search is free – you contact vendors directly.</span>
+            </div>
           </div>
 
-          <div className="grid items-end gap-3 md:grid-cols-[1fr,1fr,2fr,auto]">
+          <div className="grid items-end gap-3 md:grid-cols-[1.1fr,1.3fr,2.1fr,auto]">
             {/* District */}
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
-                District
+              <label className="flex items-center gap-1 text-xs font-medium text-slate-700 sm:text-sm">
+                <span>District</span>
               </label>
               <select
-                className="w-full px-3 py-2 text-sm bg-white border rounded-md border-slate-200"
+                className="w-full px-3 py-2 text-xs bg-white border shadow-sm rounded-xl border-slate-200 text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 sm:text-sm"
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}
               >
@@ -415,12 +443,12 @@ export default function HomePage() {
 
             {/* Category - searchable dropdown */}
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
-                Category
+              <label className="flex items-center gap-1 text-xs font-medium text-slate-700 sm:text-sm">
+                <span>Category</span>
               </label>
               <div className="relative">
                 <input
-                  className="w-full px-3 py-2 pr-8 text-sm bg-white border rounded-md border-slate-200"
+                  className="w-full px-3 py-2 text-xs bg-white border shadow-sm pr-9 rounded-xl border-slate-200 text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 sm:text-sm"
                   type="text"
                   placeholder="All categories"
                   value={categorySearch}
@@ -429,26 +457,24 @@ export default function HomePage() {
                     setCategorySearch(value);
                     setCategoryOpen(true);
 
-                    // If user clears input, reset filter
                     if (!value.trim()) {
                       setSelectedCategoryId("");
                     }
                   }}
                   onFocus={() => setCategoryOpen(true)}
                   onBlur={() => {
-                    // small delay so click can register before closing
                     setTimeout(() => setCategoryOpen(false), 150);
                   }}
                 />
 
                 {/* Small ▼ icon */}
-                <span className="absolute inset-y-0 flex items-center text-sm pointer-events-none right-2 text-slate-400">
+                <span className="absolute inset-y-0 flex items-center text-xs pointer-events-none right-2 text-slate-400">
                   ▼
                 </span>
 
                 {/* Dropdown list */}
                 {categoryOpen && (
-                  <div className="absolute z-30 w-full mt-1 overflow-auto bg-white border rounded-md shadow-md max-h-56 border-slate-200">
+                  <div className="absolute z-30 w-full mt-1 overflow-auto bg-white border shadow-lg rounded-xl max-h-56 border-slate-200">
                     {/* "All categories" option */}
                     <button
                       type="button"
@@ -458,7 +484,7 @@ export default function HomePage() {
                         setCategorySearch("");
                         setCategoryOpen(false);
                       }}
-                      className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
+                      className={`block w-full px-3 py-2 text-left text-xs sm:text-sm hover:bg-slate-50 ${
                         !selectedCategoryId ? "bg-slate-50 font-semibold" : ""
                       }`}
                     >
@@ -476,7 +502,7 @@ export default function HomePage() {
                             setCategorySearch(cat.name);
                             setCategoryOpen(false);
                           }}
-                          className={`block w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
+                          className={`block w-full px-3 py-2 text-left text-xs sm:text-sm hover:bg-slate-50 ${
                             String(cat.id) === selectedCategoryId
                               ? "bg-slate-100 font-semibold"
                               : ""
@@ -486,7 +512,7 @@ export default function HomePage() {
                         </button>
                       ))
                     ) : (
-                      <div className="px-3 py-2 text-sm text-slate-500">
+                      <div className="px-3 py-2 text-xs text-slate-500 sm:text-sm">
                         No category matches “{categorySearch}”
                       </div>
                     )}
@@ -497,69 +523,76 @@ export default function HomePage() {
 
             {/* Search */}
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
-                Search
+              <label className="flex items-center gap-1 text-xs font-medium text-slate-700 sm:text-sm">
+                <span>Search</span>
               </label>
-              <input
-                className="w-full px-3 py-2 text-sm bg-white border rounded-md border-slate-200"
-                placeholder='e.g. "maize", "tractor", "laptop"...'
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  className="w-full px-3 py-2 text-xs bg-white border shadow-sm pl-9 rounded-xl border-slate-200 text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 sm:text-sm"
+                  placeholder='e.g. "maize", "tractor", "laptop"...'
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <span className="absolute inset-y-0 flex items-center left-3 text-slate-400">
+                  🔍
+                </span>
+              </div>
             </div>
 
             {/* Button */}
             <div className="flex items-end">
               <button
                 onClick={handleBrowseClick}
-                className="w-full rounded-md bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700"
+                className="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 sm:text-sm"
               >
                 Search
               </button>
             </div>
           </div>
 
-          <p className="mt-2 text-sm font-montserrat text-slate-500">
+          <p className="mt-3 text-xs text-slate-500 sm:text-sm">
             Showing popular products across Malawi. Use the filters above to
             narrow down by district and category.
           </p>
         </section>
 
         {/* LIVE SNAPSHOT */}
-        <section className="px-4 py-4 shadow-sm rounded-2xl bg-white/80 ring-1 ring-slate-100">
+        <section className="px-4 py-5 shadow-sm bg-white/95 rounded-2xl ring-1 ring-slate-100">
           <LiveSnapshotStats />
         </section>
 
         {/* TOP PICKS SECTION */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
                 Top picks this week
               </h2>
-              <p className="text-sm text-slate-600">
+              <p className="text-xs text-slate-600 sm:text-sm">
                 A snapshot of products from active vendors around Malawi.
               </p>
             </div>
             <button
               onClick={() => router.push("/products")}
-              className="text-sm font-medium text-green-700 hover:text-green-800"
+              className="text-xs font-medium text-emerald-700 hover:text-emerald-800 sm:text-sm"
             >
-              View all products
+              View all products →
             </button>
           </div>
 
           {loadingTop && (
-            <div className="space-y-2">
+            <div className="space-y-4">
               <Spinner />
               <TopProductsSkeleton />
             </div>
           )}
 
-          {topError && <p className="text-sm text-red-500">{topError}</p>}
+          {topError && (
+            <p className="text-xs text-red-500 sm:text-sm">{topError}</p>
+          )}
 
           {!loadingTop && !topError && topProducts.length === 0 && (
-            <p className="text-sm text-slate-600">
+            <p className="text-xs text-slate-600 sm:text-sm">
               No products found yet. Once vendors start listing, they will
               appear here.
             </p>
@@ -577,50 +610,66 @@ export default function HomePage() {
         {/* How it works */}
         <section
           id="how-it-works"
-          className="px-4 py-5 mt-2 space-y-4 bg-white shadow-sm rounded-2xl ring-1 ring-slate-100"
+          className="px-4 py-6 mt-2 space-y-5 shadow-sm bg-white/95 rounded-2xl ring-1 ring-slate-100"
         >
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">
-              How Trade Point Malawi works
-            </h2>
-            <p className="text-sm text-slate-600">
-              Vendors manage their listings from a secure panel. Buyers browse
-              by district and category, send requests, and vendors contact them
-              to complete the trade.
-            </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
+                How Trade Point Malawi works
+              </h2>
+              <p className="text-xs text-slate-600 sm:text-sm">
+                Vendors manage their listings from a secure panel. Buyers browse
+                by district and category, send requests, and vendors contact
+                them to complete the trade.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] rounded-full bg-slate-50 text-slate-500">
+              ⚡ Simple 3-step flow – no payment is processed on the platform
+              (yet).
+            </span>
           </div>
 
-          <div className="grid gap-3 text-sm text-slate-600 md:grid-cols-3">
-            <div className="p-3 rounded-xl bg-slate-50">
-              <p className="text-sm font-semibold tracking-wide uppercase text-slate-500">
-                1. Vendors list products
+          <div className="grid gap-4 text-xs text-slate-600 md:grid-cols-3 sm:text-sm">
+            <div className="relative p-4 rounded-xl bg-slate-50/90 ring-1 ring-slate-100">
+              <span className="absolute flex items-center justify-center w-8 h-8 text-sm font-semibold text-white rounded-full -top-3 -left-3 bg-emerald-600">
+                1
+              </span>
+              <p className="text-xs font-semibold tracking-[0.12em] uppercase text-slate-500 sm:text-[11px]">
+                Vendors list products
               </p>
-              <p className="mt-1">
-                Vendors upload product details, prices and districts from their
-                dashboard.
+              <p className="mt-2">
+                Vendors upload product details, images, prices and districts
+                from their dashboard.
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-slate-50">
-              <p className="text-sm font-semibold tracking-wide uppercase text-slate-500">
-                2. Buyers search & request
+            <div className="relative p-4 rounded-xl bg-slate-50/90 ring-1 ring-slate-100">
+              <span className="absolute flex items-center justify-center w-8 h-8 text-sm font-semibold text-white rounded-full -top-3 -left-3 bg-sky-600">
+                2
+              </span>
+              <p className="text-xs font-semibold tracking-[0.12em] uppercase text-slate-500 sm:text-[11px]">
+                Buyers search & request
               </p>
-              <p className="mt-1">
+              <p className="mt-2">
                 Buyers filter by district and category, then send enquiries to
-                the vendors they choose.
+                vendors they choose.
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-slate-50">
-              <p className="text-sm font-semibold tracking-wide uppercase text-slate-500">
-                3. Trade directly
+            <div className="relative p-4 rounded-xl bg-slate-50/90 ring-1 ring-slate-100">
+              <span className="absolute flex items-center justify-center w-8 h-8 text-sm font-semibold text-white rounded-full -top-3 -left-3 bg-amber-500">
+                3
+              </span>
+              <p className="text-xs font-semibold tracking-[0.12em] uppercase text-slate-500 sm:text-[11px]">
+                Trade directly
               </p>
-              <p className="mt-1">
+              <p className="mt-2">
                 Vendors follow up with buyers to agree on payment and delivery
-                details offline or via their preferred channels.
+                details via phone, WhatsApp or their own channels.
               </p>
             </div>
           </div>
         </section>
       </div>
+
       <ScrollTopButton />
     </div>
   );
