@@ -7,6 +7,7 @@ import ProductCard from "./features/products/ProductCard";
 import type { Product } from "./features/products/types";
 import { fetchJson } from "./utils/fetcher";
 import ScrollTopButton from "./components/ScrollTopButton";
+import Link from "next/link";
 
 interface Category {
   id: number;
@@ -212,6 +213,14 @@ export default function HomePage() {
               <span className="w-2 h-2 rounded-full bg-amber-400" />
               Built for Malawi
             </span>
+            <div className="md:hidden">
+              <Link
+                href="/sell"
+                className="px-4 py-2 text-xs font-semibold text-white bg-green-600 rounded-full shadow-sm hover:text-white"
+              >
+                Sell on Trade Point
+              </Link>
+            </div>
           </div>
         </header>
 
