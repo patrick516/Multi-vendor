@@ -15,12 +15,12 @@ import type { AppDispatch } from "../../context/AppProvider";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 // WhatsApp link builder with optional prefilled text
 function buildWhatsAppLink(
   phone?: string | null,
-  text?: string | null
+  text?: string | null,
 ): string | null {
   if (!phone) return null;
 
@@ -86,8 +86,8 @@ export default function OrderList() {
           new Set(
             order.items
               .map((item) => item.product?.vendor?.name?.toLowerCase() || "")
-              .filter(Boolean)
-          )
+              .filter(Boolean),
+          ),
         ).join(", ");
 
       return (
@@ -144,7 +144,7 @@ export default function OrderList() {
           method: "POST",
           headers,
           body: JSON.stringify({ quantity: qty }),
-        }
+        },
       );
 
       if (!res1.ok) {
@@ -230,7 +230,7 @@ export default function OrderList() {
                   | "PENDING"
                   | "PAID"
                   | "COMPLETED"
-                  | "CANCELLED"
+                  | "CANCELLED",
               );
               setCurrentPage(1);
             }}
@@ -303,7 +303,7 @@ export default function OrderList() {
                   order.totalQuantity ??
                   order.items.reduce(
                     (sum, item) => sum + (item.quantity || 0),
-                    0
+                    0,
                   );
 
                 const vendorsSummary =
@@ -312,8 +312,8 @@ export default function OrderList() {
                     new Set(
                       order.items
                         .map((item) => item.product?.vendor?.name)
-                        .filter(Boolean) as string[]
-                    )
+                        .filter(Boolean) as string[],
+                    ),
                   ).join(", ") ||
                   "—";
 
@@ -332,7 +332,7 @@ ${order.customerNote || "No note was provided."}
 
                 const whatsappLink = buildWhatsAppLink(
                   order.customerPhone,
-                  waMessage
+                  waMessage,
                 );
 
                 return (
@@ -359,7 +359,7 @@ ${order.customerNote || "No note was provided."}
                               onClick={() =>
                                 window.open(
                                   `tel:${order.customerPhone}`,
-                                  "_self"
+                                  "_self",
                                 )
                               }
                             >
@@ -396,12 +396,12 @@ ${order.customerNote || "No note was provided."}
                           order.status === "PENDING"
                             ? "bg-amber-100 text-amber-800"
                             : order.status === "PAID"
-                            ? "bg-sky-100 text-sky-800"
-                            : order.status === "COMPLETED"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : order.status === "CANCELLED"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-slate-100 text-slate-700",
+                              ? "bg-sky-100 text-sky-800"
+                              : order.status === "COMPLETED"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : order.status === "CANCELLED"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-slate-100 text-slate-700",
                         ].join(" ")}
                       >
                         {order.status}
@@ -507,10 +507,10 @@ function OrderDetailModal({
       status === "PENDING"
         ? 1
         : status === "PAID"
-        ? 2
-        : status === "COMPLETED"
-        ? 3
-        : 1;
+          ? 2
+          : status === "COMPLETED"
+            ? 3
+            : 1;
 
     if (stepIndex < orderLevel) return "done";
     if (stepIndex === orderLevel) return "current";
@@ -518,7 +518,7 @@ function OrderDetailModal({
   }
 
   async function updateStatus(
-    newStatus: "PENDING" | "PAID" | "COMPLETED" | "CANCELLED"
+    newStatus: "PENDING" | "PAID" | "COMPLETED" | "CANCELLED",
   ) {
     try {
       const token =
@@ -602,8 +602,8 @@ ${order.customerNote || "No note was provided."}
                       status === "done"
                         ? "bg-emerald-600 text-white"
                         : status === "current"
-                        ? "bg-emerald-100 text-emerald-700 border border-emerald-400"
-                        : "bg-muted text-muted-foreground border border-border",
+                          ? "bg-emerald-100 text-emerald-700 border border-emerald-400"
+                          : "bg-muted text-muted-foreground border border-border",
                     ].join(" ")}
                   >
                     {step}

@@ -1,6 +1,6 @@
 // backend/controllers/messageController.js
 const prisma = require("../config/prisma");
-const transporter = require("../config/transporter"); // we'll create this in step 3
+const transporter = require("../config/transporter");
 const { BRAND_NAME } = process.env;
 
 // Utility: ensure we only allow SUPER_ADMIN to use these
@@ -16,11 +16,6 @@ function assertAdmin(req) {
 /**
  * POST /api/admin/messages/vendors
  * Body: { vendorIds?: number[], subject?: string, message: string }
- *
- * - If vendorIds is empty or missing → send to all vendors.
- * - Otherwise send to the given vendor IDs.
- * - Logs a MessageLog + MessageRecipient rows.
- * - Sends email to each vendor (best-effort; failures logged, but request still succeeds).
  */
 async function sendVendorMessage(req, res) {
   try {
@@ -32,7 +27,7 @@ async function sendVendorMessage(req, res) {
       return res.status(400).json({ message: "Message body is required." });
     }
 
-    // Normalize vendor IDs from body
+    // Normalize vendor IDs
     let ids = Array.isArray(vendorIds)
       ? vendorIds.map((v) => Number(v)).filter((v) => !Number.isNaN(v))
       : [];
@@ -114,7 +109,6 @@ async function sendVendorMessage(req, res) {
         });
       } catch (e) {
         console.error("Failed to send message to vendor:", v.email, e.message);
-        // We do NOT fail the whole request if one email fails
       }
     }
 
@@ -182,7 +176,44 @@ async function getMessageHistory(req, res) {
   }
 }
 
+/**
+ * DELETE /api/admin/messages/:id
+ * Deletes a message log and its recipient records.
+ */
+async function deleteMessage(req, res) {
+  try {
+    assertAdmin(req);
+
+    const id = Number(req.params.id);
+    if (!id || Number.isNaN(id)) {
+      return res.status(400).json({ message: "Invalid message id" });
+    }
+
+    const existing = await prisma.messageLog.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    // Delete recipients first (to satisfy FK constraints)
+    await prisma.messageRecipient.deleteMany({
+      where: { messageId: id },
+    });
+
+    await prisma.messageLog.delete({
+      where: { id },
+    });
+
+    return res.json({ message: "Message deleted successfully." });
+  } catch (err) {
+    console.error("deleteMessage error:", err);
+    return res.status(err.status || 500).json({
+      message: err.message || "Failed to delete message",
+    });
+  }
+}
+
 module.exports = {
   sendVendorMessage,
   getMessageHistory,
+  deleteMessage,
 };

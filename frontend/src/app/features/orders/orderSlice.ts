@@ -4,7 +4,7 @@ import type { RootState } from "../../context/AppProvider";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 export interface OrderVendor {
   id: number;
@@ -86,7 +86,7 @@ export const fetchOrders = createAsyncThunk<Order[]>(
     }
 
     return (await res.json()) as Order[];
-  }
+  },
 );
 
 const ordersSlice = createSlice({

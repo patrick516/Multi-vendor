@@ -3,7 +3,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 interface Category {
   id: number;
@@ -57,21 +57,21 @@ export default function AddProductForm({
   // Previews
   const mainImagePreview = useMemo(
     () => (mainImage ? URL.createObjectURL(mainImage) : null),
-    [mainImage]
+    [mainImage],
   );
 
   const galleryPreviews = useMemo(
     () => galleryImages.map((file) => URL.createObjectURL(file)),
-    [galleryImages]
+    [galleryImages],
   );
 
   // Filtered categories based on what's typed
   const filteredCategories = useMemo(
     () =>
       categories.filter((c) =>
-        c.name.toLowerCase().includes(categorySearch.toLowerCase())
+        c.name.toLowerCase().includes(categorySearch.toLowerCase()),
       ),
-    [categories, categorySearch]
+    [categories, categorySearch],
   );
 
   // ---- AUTO USE CURRENT LOCATION ON MOUNT ----
@@ -94,7 +94,7 @@ export default function AddProductForm({
       (err) => {
         setLocLoading(false);
         setLocError(
-          "Unable to get your current location. Please allow location access in your browser."
+          "Unable to get your current location. Please allow location access in your browser.",
         );
         console.error("Geolocation error:", err);
       },
@@ -102,7 +102,7 @@ export default function AddProductForm({
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0,
-      }
+      },
     );
   }
 
@@ -135,13 +135,13 @@ export default function AddProductForm({
         if (!dRes.ok) {
           const body = await dRes.json().catch(() => ({}));
           throw new Error(
-            body.message || "Failed to load districts from backend"
+            body.message || "Failed to load districts from backend",
           );
         }
         if (!cRes.ok) {
           const body = await cRes.json().catch(() => ({}));
           throw new Error(
-            body.message || "Failed to load categories from backend"
+            body.message || "Failed to load categories from backend",
           );
         }
 
@@ -202,7 +202,7 @@ export default function AddProductForm({
     // ---- LOCATION IS NOW REQUIRED ----
     if (!latitude || !longitude) {
       setError(
-        "We could not detect your current location. Please allow location access in your browser and try again."
+        "We could not detect your current location. Please allow location access in your browser and try again.",
       );
       return;
     }

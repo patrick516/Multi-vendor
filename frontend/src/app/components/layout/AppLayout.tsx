@@ -8,7 +8,7 @@ import type { AppRoute, AppRole } from "../../../routes";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -49,7 +49,7 @@ export function AppLayout({ children, sidebarItems }: AppLayoutProps) {
   const navigate = useNavigate();
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(
-    getAuthUser()
+    getAuthUser(),
   );
   const [loadingUser, setLoadingUser] = useState(true);
 

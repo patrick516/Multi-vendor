@@ -4,7 +4,7 @@ import type { RootState } from "../../context/AppProvider";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 export interface User {
   id: number;
@@ -14,6 +14,8 @@ export interface User {
   createdAt?: string;
   subscriptionActive?: boolean;
   mustPay?: boolean;
+  lastPaymentDate?: string;
+  nextPaymentDue?: string;
 }
 
 interface UsersState {
@@ -54,7 +56,7 @@ export const fetchUsers = createAsyncThunk<User[]>(
     }
 
     return (await res.json()) as User[];
-  }
+  },
 );
 
 const usersSlice = createSlice({

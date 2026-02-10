@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ export default function RegisterPage() {
       if (!res.ok) {
         const body: { message?: string } = await res
           .json()
-          .catch(() => ({} as { message?: string }));
+          .catch(() => ({}) as { message?: string });
         throw new Error(body.message || "Failed to create admin");
       }
 

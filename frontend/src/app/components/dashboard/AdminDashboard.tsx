@@ -35,7 +35,7 @@ import {
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 interface VendorSubRow {
   id: number;
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
   const [totalRevenueLast30, setTotalRevenueLast30] = useState(0);
   const [paymentsCountLast30, setPaymentsCountLast30] = useState(0);
   const [revenueChartData, setRevenueChartData] = useState<RevenueChartPoint[]>(
-    []
+    [],
   );
 
   useEffect(() => {
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
   // A set of visible product IDs (for vendor revenue calcs)
   const visibleProductIds = useMemo(
     () => new Set(visibleProducts.map((p) => p.id)),
-    [visibleProducts]
+    [visibleProducts],
   );
 
   // ----- visibleOrders: admin sees all, vendor sees orders that contain their products -----
@@ -146,8 +146,8 @@ export default function AdminDashboard() {
 
     return orders.filter((order) =>
       order.items.some((item: OrderItem) =>
-        visibleProductIds.has(item.productId)
-      )
+        visibleProductIds.has(item.productId),
+      ),
     );
   }, [orders, isSuperAdmin, currentUserId, visibleProductIds]);
 
@@ -183,7 +183,7 @@ export default function AdminDashboard() {
             message?: string;
           };
           throw new Error(
-            body.message || "Failed to load subscription vendors"
+            body.message || "Failed to load subscription vendors",
           );
         }
 
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
   const totalVendors = users.filter((u: User) => u.role === "VENDOR").length;
 
   const activeVendors = users.filter(
-    (u: User) => u.role === "VENDOR" && u.subscriptionActive !== false
+    (u: User) => u.role === "VENDOR" && u.subscriptionActive !== false,
   ).length;
   const blockedVendors = totalVendors - activeVendors;
 
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
       { name: "Active vendors", count: activeVendors },
       { name: "Blocked vendors", count: blockedVendors },
     ],
-    [activeVendors, blockedVendors]
+    [activeVendors, blockedVendors],
   );
 
   // Products by Category (pie) – role-based via visibleProducts
@@ -296,7 +296,7 @@ export default function AdminDashboard() {
         .reduce(
           (sum: number, item: OrderItem) =>
             sum + (item.unitPrice || 0) * (item.quantity || 0),
-          0
+          0,
         );
 
       if (!amountForVendor) return;

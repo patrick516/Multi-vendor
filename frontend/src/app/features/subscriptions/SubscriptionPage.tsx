@@ -11,7 +11,7 @@ import {
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 interface VendorSubRow {
   id: number;
@@ -98,19 +98,19 @@ export default function SubscriptionPage() {
 
   const activeCount = useMemo(
     () => vendors.filter((v) => v.subscriptionActive).length,
-    [vendors]
+    [vendors],
   );
   const blockedCount = useMemo(
     () => vendors.filter((v) => !v.subscriptionActive).length,
-    [vendors]
+    [vendors],
   );
   const totalMonthlyRevenue = useMemo(
     () =>
       vendors.reduce(
         (sum, v) => sum + (v.subscriptionActive ? v.subscriptionAmount : 0),
-        0
+        0,
       ),
-    [vendors]
+    [vendors],
   );
 
   const filteredVendors = useMemo(
@@ -126,7 +126,7 @@ export default function SubscriptionPage() {
         const email = (v.email || "").toLowerCase();
         return name.includes(term) || email.includes(term);
       }),
-    [vendors, statusFilter, searchTerm]
+    [vendors, statusFilter, searchTerm],
   );
 
   // -----------------------------
@@ -191,7 +191,7 @@ export default function SubscriptionPage() {
             paidAt: payDate,
             nextDue: nextDueDate,
           }),
-        }
+        },
       );
 
       if (!res.ok) {
@@ -223,7 +223,7 @@ export default function SubscriptionPage() {
     const sure = window.confirm(
       `Block ${
         vendor.name || vendor.email
-      }? They will not be able to login, and their products will be hidden.`
+      }? They will not be able to login, and their products will be hidden.`,
     );
     if (!sure) return;
 
@@ -241,7 +241,7 @@ export default function SubscriptionPage() {
         {
           method: "POST",
           headers,
-        }
+        },
       );
 
       if (!res.ok) {
@@ -264,7 +264,7 @@ export default function SubscriptionPage() {
     const sure = window.confirm(
       `Unblock ${
         vendor.name || vendor.email
-      }? They will be able to login and their products will be visible.`
+      }? They will be able to login and their products will be visible.`,
     );
     if (!sure) return;
 
@@ -282,7 +282,7 @@ export default function SubscriptionPage() {
         {
           method: "POST",
           headers,
-        }
+        },
       );
 
       if (!res.ok) {
@@ -326,7 +326,7 @@ export default function SubscriptionPage() {
           method: "POST",
           headers,
           body: JSON.stringify({ amount }),
-        }
+        },
       );
 
       if (!res.ok) {
@@ -359,13 +359,13 @@ export default function SubscriptionPage() {
 
       const res = await fetch(
         `${API_BASE_URL}/admin/subscriptions/vendor/${vendor.id}/payments`,
-        { headers }
+        { headers },
       );
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(
-          body.message || "Failed to load vendor payment history"
+          body.message || "Failed to load vendor payment history",
         );
       }
 

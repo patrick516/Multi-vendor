@@ -6,7 +6,7 @@ import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 export default function LoginPage() {
   const navigate = useNavigate();

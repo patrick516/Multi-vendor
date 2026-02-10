@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 interface VendorRow {
   vendorId: number;
@@ -74,7 +74,7 @@ export default function CommissionPage() {
     if (!vendor || vendor.pendingCommission <= 0) return;
 
     const sure = window.confirm(
-      `Mark all pending commissions for "${vendor.vendorName}" as PAID?`
+      `Mark all pending commissions for "${vendor.vendorName}" as PAID?`,
     );
     if (!sure) return;
 
@@ -98,7 +98,7 @@ export default function CommissionPage() {
         {
           method: "POST",
           headers,
-        }
+        },
       );
 
       if (!res.ok) {
@@ -211,8 +211,8 @@ export default function CommissionPage() {
                             {row.pendingCommission <= 0
                               ? "No pending"
                               : savingVendorId === row.vendorId
-                              ? "Saving..."
-                              : "Mark pending as paid"}
+                                ? "Saving..."
+                                : "Mark pending as paid"}
                           </button>
                         </td>
                       </tr>

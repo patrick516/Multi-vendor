@@ -24,7 +24,7 @@ import type { AppDispatch } from "../../context/AppProvider";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 // Helper for subscription label
 function getSubscriptionLabel(user: User): string {
@@ -67,7 +67,7 @@ export default function UserList() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"SUPER_ADMIN" | "VENDOR" | "CUSTOMER">(
-    "VENDOR"
+    "VENDOR",
   );
   const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
@@ -104,7 +104,7 @@ export default function UserList() {
   // Vendor list helper (for messaging)
   const vendorUsers = useMemo(
     () => items.filter((u: User) => u.role === "VENDOR"),
-    [items]
+    [items],
   );
 
   // Filtered data for table
@@ -126,7 +126,7 @@ export default function UserList() {
 
         return name.includes(term) || email.includes(term);
       }),
-    [items, roleFilter, subscriptionFilter, searchTerm]
+    [items, roleFilter, subscriptionFilter, searchTerm],
   );
 
   // Fetch users (admin only)
@@ -244,7 +244,7 @@ export default function UserList() {
   async function handleAdminResetPassword(user: User) {
     if (
       !window.confirm(
-        `Generate a new temporary password for "${user.name || user.email}"?`
+        `Generate a new temporary password for "${user.name || user.email}"?`,
       )
     ) {
       return;
@@ -270,7 +270,7 @@ export default function UserList() {
         {
           method: "POST",
           headers,
-        }
+        },
       );
 
       const body = await res.json().catch(() => ({}));
@@ -284,7 +284,7 @@ export default function UserList() {
       // Show temp password once so admin can share by phone/WhatsApp
       if (temp) {
         alert(
-          `Temporary password for ${user.email}:\n\n${temp}\n\nAsk them to log in and change it immediately.`
+          `Temporary password for ${user.email}:\n\n${temp}\n\nAsk them to log in and change it immediately.`,
         );
       } else {
         alert(body.message || "Temporary password generated.");
@@ -372,7 +372,7 @@ export default function UserList() {
   function toggleVendorSelection(id: number) {
     setSelectAllVendors(false);
     setSelectedVendorIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   }
 
@@ -533,7 +533,7 @@ export default function UserList() {
         },
       },
     ],
-    [] // columns don't depend on outside state
+    [], // columns don't depend on outside state
   );
 
   const table = useReactTable({
@@ -624,7 +624,7 @@ export default function UserList() {
             value={roleFilter}
             onChange={(e) =>
               setRoleFilter(
-                e.target.value as "ALL" | "SUPER_ADMIN" | "VENDOR" | "CUSTOMER"
+                e.target.value as "ALL" | "SUPER_ADMIN" | "VENDOR" | "CUSTOMER",
               )
             }
           >
@@ -640,7 +640,7 @@ export default function UserList() {
             value={subscriptionFilter}
             onChange={(e) =>
               setSubscriptionFilter(
-                e.target.value as "ALL" | "ACTIVE" | "INACTIVE"
+                e.target.value as "ALL" | "ACTIVE" | "INACTIVE",
               )
             }
           >
@@ -724,7 +724,7 @@ export default function UserList() {
                   value={role}
                   onChange={(e) =>
                     setRole(
-                      e.target.value as "SUPER_ADMIN" | "VENDOR" | "CUSTOMER"
+                      e.target.value as "SUPER_ADMIN" | "VENDOR" | "CUSTOMER",
                     )
                   }
                 >
@@ -809,7 +809,7 @@ export default function UserList() {
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </th>
                   ))}
@@ -831,7 +831,7 @@ export default function UserList() {
                       <td key={cell.id} className="px-3 py-2 align-middle">
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </td>
                     ))}

@@ -191,8 +191,8 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="hidden items-center gap-1 rounded-full bg-slate-50 px-2 py-[2px] text-[11px] text-slate-600 sm:flex">
-            <span className="text-base">🇲🇼</span>
+          <div className="hidden items-center gap-1 rounded-full bg-slate-50 px-2 py-[2px] text-[12px] text-slate-600 sm:flex">
+            <span className="text-md">🇲🇼</span>
             <span>Proudly Malawian</span>
           </div>
 

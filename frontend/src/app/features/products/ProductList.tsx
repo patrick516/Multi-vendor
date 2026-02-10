@@ -9,7 +9,7 @@ import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://backend-morning-glitter-4312.fly.dev/api";
+  "https://tradepoint-backend.onrender.com/api";
 
 export default function ProductList() {
   const dispatch = useDispatch<any>();
@@ -54,7 +54,7 @@ export default function ProductList() {
       }
     });
     return Array.from(map.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
+      a.name.localeCompare(b.name),
     );
   }, [visibleProducts]);
 
@@ -81,7 +81,7 @@ export default function ProductList() {
   // Filter + sort
   const filteredSortedProducts = useMemo(() => {
     const filtered = visibleProducts.filter(
-      (p) => matchesSearch(p) && matchesCategory(p)
+      (p) => matchesSearch(p) && matchesCategory(p),
     );
 
     const sorted = [...filtered].sort((a, b) => {
@@ -96,7 +96,7 @@ export default function ProductList() {
   // Pagination
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredSortedProducts.length / pageSize)
+    Math.ceil(filteredSortedProducts.length / pageSize),
   );
   const safePage = Math.min(Math.max(currentPage, 1), totalPages);
 
@@ -149,7 +149,7 @@ export default function ProductList() {
   async function handleMarkSold(product: Product) {
     const qtyStr = window.prompt(
       `Enter quantity sold for "${product.name}"`,
-      "1"
+      "1",
     );
     if (!qtyStr) return;
     const qty = Number(qtyStr);
@@ -175,7 +175,7 @@ export default function ProductList() {
           method: "POST",
           headers,
           body: JSON.stringify({ quantity: qty }),
-        }
+        },
       );
 
       const body = await res.json().catch(() => ({}));
@@ -533,8 +533,8 @@ function EditProductModal({ product, onClose, onUpdated }: EditModalProps) {
       (product as any).basePrice ??
         (product as any).displayPrice ??
         (product as any).price ??
-        ""
-    )
+        "",
+    ),
   );
   const [stock, setStock] = useState(String(product.stock));
   const [description, setDescription] = useState(product.description ?? "");
