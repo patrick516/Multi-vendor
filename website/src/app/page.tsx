@@ -37,9 +37,9 @@ export default function HomePage() {
   const filteredCategories = useMemo(
     () =>
       categories.filter((cat) =>
-        cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+        cat.name.toLowerCase().includes(categorySearch.toLowerCase()),
       ),
-    [categories, categorySearch]
+    [categories, categorySearch],
   );
 
   // Small loading spinner
@@ -104,7 +104,7 @@ export default function HomePage() {
   // HERO products (just first 4)
   const heroProducts = useMemo(
     () => (topProducts.length > 0 ? topProducts.slice(0, 4) : []),
-    [topProducts]
+    [topProducts],
   );
 
   const activeHeroProduct =
@@ -139,7 +139,7 @@ export default function HomePage() {
 
       try {
         const products = await fetchJson<Product[]>(
-          "/public/top-products?limit=10"
+          "/public/top-products?limit=10",
         );
         setTopProducts(products);
       } catch (err: unknown) {
@@ -223,78 +223,25 @@ export default function HomePage() {
             </div>
           </div>
         </header>
-
         {/* HERO SECTION */}
-        <section className="grid gap-10 rounded-3xl bg-white/90 px-4 py-8 shadow-[0_24px_70px_rgba(15,23,42,0.14)] ring-1 ring-slate-100 md:grid-cols-[minmax(0,2.1fr),minmax(0,1.5fr)] md:px-8 md:py-10">
+        <section className="grid gap-6 rounded-3xl bg-white/90 px-4 py-5 shadow-[0_24px_70px_rgba(15,23,42,0.14)] ring-1 ring-slate-100 md:grid-cols-[minmax(0,2.1fr),minmax(0,1.5fr)] md:px-8 md:py-7">
           {/* Left side: text */}
-          <div className="flex flex-col justify-between gap-8">
-            <div className="space-y-5">
-              <h1 className="text-4xl font-bold leading-tight tracking-tight text-slate-900 md:text-5xl">
-                Gateway to trade{" "}
+          <div className="flex flex-col justify-center gap-5">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl md:text-4xl">
+                Trade{" "}
                 <span className="text-transparent bg-gradient-to-r from-emerald-600 to-sky-500 bg-clip-text">
                   reliably in Malawi
-                </span>{" "}
-                and beyond.
+                </span>
               </h1>
 
-              <p className="max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">
-                Trade Point Malawi connects buyers and vendors across all
-                districts. Discover verified vendors, compare offers and start
-                conversations – all from one simple marketplace.
+              <p className="max-w-xl text-sm leading-relaxed text-slate-600">
+                Buy and sell with verified vendors across all districts.
               </p>
-
-              {/* Three value props */}
-              <div className="grid gap-3 text-sm text-slate-600 sm:grid-cols-3">
-                <div className="p-3 space-y-1 rounded-2xl bg-slate-50/80 ring-1 ring-slate-100">
-                  <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-emerald-700">
-                    Vendors
-                  </p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    Grow your reach
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Manage products, districts and enquiries on one dashboard.
-                  </p>
-                </div>
-                <div className="p-3 space-y-1 rounded-2xl bg-slate-50/80 ring-1 ring-slate-100">
-                  <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-sky-700">
-                    Buyers
-                  </p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    Search smarter
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Filter by district & category to find trusted vendors near
-                    you.
-                  </p>
-                </div>
-                <div className="p-3 space-y-1 rounded-2xl bg-slate-50/80 ring-1 ring-slate-100">
-                  <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-amber-700">
-                    Safe trading
-                  </p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    Clear communication
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Every enquiry is tracked so both sides stay aligned.
-                  </p>
-                </div>
-              </div>
-
-              {/* Simple launch / trust strip */}
-              <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-slate-500 sm:text-sm">
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Early access · New marketplace
-                </span>
-                <span>
-                  Built for SMEs, farmers, traders and service providers.
-                </span>
-              </div>
             </div>
 
             {/* Primary actions */}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 pt-1">
               <button
                 onClick={handleBrowseClick}
                 className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_18px_35px_rgba(22,163,74,0.45)] transition hover:bg-emerald-700"
@@ -408,27 +355,60 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* TOP PICKS SECTION */}
+        <section className="space-y-4">
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
+                Top picks this week
+              </h2>
+              <p className="text-xs text-slate-600 sm:text-sm">
+                A snapshot of products from active vendors around Malawi.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/products")}
+              className="text-xs font-medium text-emerald-700 hover:text-emerald-800 sm:text-sm"
+            >
+              View all products →
+            </button>
+          </div>
+
+          {loadingTop && (
+            <div className="space-y-4">
+              <Spinner />
+              <TopProductsSkeleton />
+            </div>
+          )}
+
+          {topError && (
+            <p className="text-xs text-red-500 sm:text-sm">{topError}</p>
+          )}
+
+          {!loadingTop && !topError && topProducts.length === 0 && (
+            <p className="text-xs text-slate-600 sm:text-sm">
+              No products found yet. Once vendors start listing, they will
+              appear here.
+            </p>
+          )}
+
+          {!loadingTop && !topError && topProducts.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {topProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+        </section>
+
         {/* FILTER BAR */}
         <section
           id="filter-bar"
           className="px-4 py-5 shadow-sm bg-white/95 rounded-2xl ring-1 ring-slate-100"
         >
-          <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-slate-900 sm:text-base">
-                Fine-tune your search
-              </h2>
-              <p className="text-xs text-slate-500 sm:text-sm">
-                Filter by district, category or keyword – then explore detailed
-                vendor listings.
-              </p>
-            </div>
-
-            <div className="hidden text-xs text-slate-500 sm:inline-flex sm:items-center sm:gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>Search is free – you contact vendors directly.</span>
-            </div>
-          </div>
+          <h2 className="text-sm font-semibold text-slate-900 sm:text-base">
+            Filter products
+          </h2>
 
           <div className="grid items-end gap-3 md:grid-cols-[1.1fr,1.3fr,2.1fr,auto]">
             {/* District */}
@@ -559,10 +539,10 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p className="mt-3 text-xs text-slate-500 sm:text-sm">
+          {/* <p className="mt-3 text-xs text-slate-500 sm:text-sm">
             Showing popular products across Malawi. Use the filters above to
             narrow down by district and category.
-          </p>
+          </p> */}
         </section>
 
         {/* LIVE SNAPSHOT */}
@@ -570,7 +550,7 @@ export default function HomePage() {
           <LiveSnapshotStats />
         </section>
 
-        {/* TOP PICKS SECTION */}
+        {/* TOP PICKS SECTION
         <section className="space-y-4">
           <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
             <div>
@@ -614,66 +594,33 @@ export default function HomePage() {
               ))}
             </div>
           )}
-        </section>
+        </section> */}
 
         {/* How it works */}
         <section
           id="how-it-works"
-          className="px-4 py-6 mt-2 space-y-5 shadow-sm bg-white/95 rounded-2xl ring-1 ring-slate-100"
+          className="px-4 py-4 mt-2 space-y-3 shadow-sm bg-white/95 rounded-2xl ring-1 ring-slate-100"
         >
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
-                How Trade Point Malawi works
-              </h2>
-              <p className="text-xs text-slate-600 sm:text-sm">
-                Vendors manage their listings from a secure panel. Buyers browse
-                by district and category, send requests, and vendors contact
-                them to complete the trade.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] rounded-full bg-slate-50 text-slate-500">
-              ⚡ Simple 3-step flow – no payment is processed on the platform
-              (yet).
-            </span>
-          </div>
+          <h2 className="text-sm font-semibold text-slate-900">How it works</h2>
 
-          <div className="grid gap-4 text-xs text-slate-600 md:grid-cols-3 sm:text-sm">
-            <div className="relative p-4 rounded-xl bg-slate-50/90 ring-1 ring-slate-100">
-              <span className="absolute flex items-center justify-center w-8 h-8 text-sm font-semibold text-white rounded-full -top-3 -left-3 bg-emerald-600">
+          <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50/90">
+              <span className="flex items-center justify-center w-5 h-5 text-[11px] font-semibold text-white rounded-full shrink-0 bg-emerald-600">
                 1
               </span>
-              <p className="text-xs font-semibold tracking-[0.12em] uppercase text-slate-500 sm:text-[11px]">
-                Vendors list products
-              </p>
-              <p className="mt-2">
-                Vendors upload product details, images, prices and districts
-                from their dashboard.
-              </p>
+              <p>Vendors list products</p>
             </div>
-            <div className="relative p-4 rounded-xl bg-slate-50/90 ring-1 ring-slate-100">
-              <span className="absolute flex items-center justify-center w-8 h-8 text-sm font-semibold text-white rounded-full -top-3 -left-3 bg-sky-600">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50/90">
+              <span className="flex items-center justify-center w-5 h-5 text-[11px] font-semibold text-white rounded-full shrink-0 bg-sky-600">
                 2
               </span>
-              <p className="text-xs font-semibold tracking-[0.12em] uppercase text-slate-500 sm:text-[11px]">
-                Buyers search & request
-              </p>
-              <p className="mt-2">
-                Buyers filter by district and category, then send enquiries to
-                vendors they choose.
-              </p>
+              <p>Buyers search & request</p>
             </div>
-            <div className="relative p-4 rounded-xl bg-slate-50/90 ring-1 ring-slate-100">
-              <span className="absolute flex items-center justify-center w-8 h-8 text-sm font-semibold text-white rounded-full -top-3 -left-3 bg-amber-500">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50/90">
+              <span className="flex items-center justify-center w-5 h-5 text-[11px] font-semibold text-white rounded-full shrink-0 bg-amber-500">
                 3
               </span>
-              <p className="text-xs font-semibold tracking-[0.12em] uppercase text-slate-500 sm:text-[11px]">
-                Trade directly
-              </p>
-              <p className="mt-2">
-                Vendors follow up with buyers to agree on payment and delivery
-                details via phone, WhatsApp or their own channels.
-              </p>
+              <p>Vendors follow up to complete the trade</p>
             </div>
           </div>
         </section>

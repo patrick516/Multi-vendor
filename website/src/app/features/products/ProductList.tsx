@@ -75,7 +75,7 @@ export default function ProductList() {
       },
       (err) => {
         console.warn("Geolocation denied or failed:", err);
-      }
+      },
     );
   }, []);
 
@@ -117,7 +117,7 @@ export default function ProductList() {
     }
 
     const withCoords = allProducts.filter(
-      (p) => typeof p.latitude === "number" && typeof p.longitude === "number"
+      (p) => typeof p.latitude === "number" && typeof p.longitude === "number",
     );
 
     const productsWithDistance = withCoords.map((p) => {
@@ -146,13 +146,9 @@ export default function ProductList() {
         id="product-filters"
         className="px-4 py-4 space-y-3 bg-white shadow-sm rounded-2xl ring-1 ring-slate-100"
       >
-        <h2 className="text-lg font-semibold text-slate-900">
-          Find products near you
+        <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
+          Filter products
         </h2>
-        <p className="text-md text-slate-600">
-          Start by choosing the district you want to buy from, or let us use
-          your current location to find nearby products.
-        </p>
 
         <div className="grid items-end gap-3 md:grid-cols-3">
           {/* District */}
