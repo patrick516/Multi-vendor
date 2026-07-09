@@ -10,11 +10,11 @@ import Footer from "./components/Footer";
 export const metadata: Metadata = {
   title: "Trade Point Malawi",
   description: "Gateway to trade in Malawi and beyond",
-  icons: {
-    icon: "/tp_logo.svg",
-    shortcut: "/tp_logo.svg",
-    apple: "/tp_logo.svg",
-  },
+  // icons: {
+  //   icon: "/tp_logo.svg",
+  //   shortcut: "/tp_logo.svg",
+  //   apple: "/tp_logo.svg",
+  // },
 };
 
 export default function RootLayout({
