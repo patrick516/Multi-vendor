@@ -109,7 +109,7 @@ export default function Navbar() {
       try {
         setSuggestionsLoading(true);
         const res = await fetch(
-          `${API_BASE_URL}/search?q=${encodeURIComponent(q)}`
+          `${API_BASE_URL}/search?q=${encodeURIComponent(q)}`,
         );
         if (!res.ok) {
           throw new Error("Failed to load suggestions");
@@ -177,7 +177,7 @@ export default function Navbar() {
               src="/tp_logo.svg"
               alt="Trade Point Logo"
               width={20}
-              height={13}
+              height={20}
               className="h-auto"
             />
 
@@ -301,7 +301,7 @@ export default function Navbar() {
                                 "rounded-full px-2 py-[2px] text-[9px] font-semibold",
                                 v.subscriptionActive
                                   ? "bg-emerald-50 text-emerald-700"
-                                  : "bg-red-50 text-red-700"
+                                  : "bg-red-50 text-red-700",
                               )}
                             >
                               {v.subscriptionActive ? "Active" : "Blocked"}

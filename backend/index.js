@@ -29,6 +29,9 @@ const defaultOrigins = [
   "http://localhost:5173",
   "https://multi-vendor-1mzl.vercel.app",
   "https://multi-vendor-peach.vercel.app",
+  "https://www.tradepointmw.com",
+  "https://tradepointmw.com",
+  "https://admin.tradepointmw.com",
   "http://localhost:3000",
 ];
 
@@ -52,7 +55,7 @@ app.use(
       return callback(null, true);
     },
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());
