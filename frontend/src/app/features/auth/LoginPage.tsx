@@ -74,7 +74,7 @@ export default function LoginPage() {
         {/* Titles */}
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-gray-800 dark:text-white">
-            Multi Vendor Admin Login
+            Tradepointmw Vendors | Login
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Sign in to manage vendors, products and commissions.
