@@ -522,9 +522,7 @@ export default function HomePage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-                <span className="absolute inset-y-0 flex items-center left-3 text-slate-400">
-                  🔍
-                </span>
+                <span className="absolute inset-y-0 flex items-center left-3 text-slate-400"></span>
               </div>
             </div>
 
@@ -597,7 +595,7 @@ export default function HomePage() {
         </section> */}
 
         {/* How it works */}
-        <section
+        {/* <section
           id="how-it-works"
           className="px-4 py-4 mt-2 space-y-3 shadow-sm bg-white/95 rounded-2xl ring-1 ring-slate-100"
         >
@@ -623,7 +621,7 @@ export default function HomePage() {
               <p>Vendors follow up to complete the trade</p>
             </div>
           </div>
-        </section>
+        </section> */}
       </div>
 
       <ScrollTopButton />
