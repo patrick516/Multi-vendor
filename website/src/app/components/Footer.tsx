@@ -38,7 +38,7 @@ export default function Footer() {
 
         {/* Links columns */}
         <div className="grid flex-1 gap-6 md:grid-cols-3">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <p className="font-semibold text-md text-slate-900">Marketplace</p>
             <ul className="space-y-1">
               <li>
@@ -57,7 +57,7 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           <div className="space-y-2">
             <p className="font-semibold text-md text-slate-900">Support</p>
@@ -89,11 +89,6 @@ export default function Footer() {
               <li>
                 <Link href="/terms" className="hover:text-slate-900">
                   Terms &amp; Conditions
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-slate-900">
-                  Privacy Policy
                 </Link>
               </li>
             </ul>
