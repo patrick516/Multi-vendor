@@ -1,0 +1,32 @@
+<svg
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-label="Trade Point Malawi logo"
+>
+  <defs>
+    <linearGradient id="tpBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22C55E" />
+      <stop offset="100%" stop-color="#15803D" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="32" cy="32" r="32" fill="url(#tpBg)" />
+
+  <path
+    d="M18 24 L46 24 L42 30 L22 30 Z"
+    fill="#FACC15"
+  />
+
+  <path
+    d="M20 30 L44 30 L44 42 Q44 44 42 44 L22 44 Q20 44 20 42 Z"
+    fill="white"
+  />
+
+  <circle cx="27" cy="30" r="2.6" fill="#15803D" />
+  <circle cx="37" cy="30" r="2.6" fill="#15803D" />
+
+  <rect x="28" y="34" width="8" height="10" rx="1.4" fill="#22C55E" />
+</svg>
