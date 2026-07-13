@@ -37,7 +37,7 @@ export default function SellPage() {
 
       setSuccess(
         body.message ||
-          "Your vendor account has been created. Check your email for your temporary password."
+          "Your vendor account has been created. Check your email for your temporary password.",
       );
       setName("");
       setEmail("");
@@ -64,9 +64,15 @@ export default function SellPage() {
       </header>
 
       <section className="max-w-md p-5 bg-white shadow-sm rounded-2xl ring-1 ring-slate-100">
-        {error && <p className="mb-2 text-[11px] text-red-600">{error}</p>}
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-4">
+            <p className="text-lg font-semibold text-red-700">{error}</p>
+          </div>
+        )}
         {success && (
-          <p className="mb-2 text-[11px] text-emerald-700">{success}</p>
+          <div className="mb-4 rounded-lg border border-emerald-300 bg-emerald-50 p-4">
+            <p className="text-lg font-semibold text-emerald-800">{success}</p>
+          </div>
         )}
 
         <form className="space-y-3" onSubmit={handleSubmit}>
