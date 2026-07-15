@@ -1,20 +1,7 @@
-// backend/controllers/cartController.js
 const prisma = require("../config/prisma");
-const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-
-// Reuse SMTP settings
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
+const { sendMail } = require("../config/mailer");
 // Convert Malawi numbers: 0882 → 265882
 function normalizeToWhatsAppPhone(rawPhone, defaultCountry = "265") {
   if (!rawPhone) return null;
@@ -118,7 +105,7 @@ async function createCartRequest(req, res) {
     // Create or reuse a user for BUY NOW orders
     const customerUser = await findOrCreateCustomerUser(
       customerName,
-      customerEmail
+      customerEmail,
     );
 
     // Calculate price
@@ -215,13 +202,15 @@ Regards,
 ${process.env.BRAND_NAME || "Trade Point Malawi"} System
 `.trim();
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to: vendorEmail,
-      subject,
-      text,
-      replyTo: customerEmail || undefined,
-    });
+    try {
+      await sendMail({
+        to: vendorEmail,
+        subject,
+        text,
+      });
+    } catch (mailErr) {
+      console.error("[MAIL] Vendor notification failed, continuing:", mailErr);
+    }
 
     return res.status(201).json({
       message:
